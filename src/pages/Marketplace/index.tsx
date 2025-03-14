@@ -383,8 +383,22 @@ export function Marketplace() {
       {/* Property Listings */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-48 bg-gray-200 rounded-t-lg" />
+                <div className="p-4 bg-white rounded-b-lg">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-4" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-4" />
+                  <div className="flex space-x-4 mb-4">
+                    <div className="h-4 bg-gray-200 rounded w-1/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/4" />
+                  </div>
+                  <div className="h-10 bg-gray-200 rounded" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : properties.length === 0 ? (
           <div className="text-center py-12">
@@ -401,37 +415,76 @@ export function Marketplace() {
             {properties.map((property) => (
               <div
                 key={property.id}
-                className="bg-white overflow-hidden shadow rounded-lg border border-gray-200 transition-transform duration-200 hover:scale-[1.02]"
+                className="group bg-white overflow-hidden shadow rounded-lg border border-gray-200 transition-all duration-300 hover:shadow-xl"
               >
-                <div className="h-48 bg-gray-200 relative">
-                  {property.images?.[0] ? (
-                    <img
-                      src={property.images[0]}
-                      alt={property.name}
-                      className="w-full h-full object-cover"
-                    />
+                <div className="h-48 bg-gray-200 relative overflow-hidden">
+                  {property.images?.length ? (
+                    <div className="relative w-full h-full">
+                      <img
+                        src={property.images[0]}
+                        alt={property.name}
+                        className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+                      />
+                      {property.images.length > 1 && (
+                        <div className="absolute bottom-2 left-2 flex gap-2">
+                          {property.images.slice(0, 3).map((img, idx) => (
+                            <div
+                              key={idx}
+                              className="w-8 h-8 rounded border-2 border-white overflow-hidden"
+                            >
+                              <img
+                                src={img}
+                                alt={`Preview ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                          {property.images.length > 3 && (
+                            <div className="w-8 h-8 rounded bg-black bg-opacity-50 border-2 border-white flex items-center justify-center text-white text-xs">
+                              +{property.images.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="flex items-center justify-center h-full">
                       <Building2 className="h-12 w-12 text-gray-400" />
                     </div>
                   )}
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute top-2 right-2 flex flex-col gap-2">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-800">
                       {property.property_type.charAt(0).toUpperCase() +
                         property.property_type.slice(1)}
                     </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Available Now
+                    </span>
+                  </div>
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedProperty(property);
+                        setShowAppointmentModal(true);
+                      }}
+                      className="bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Schedule Viewing
+                    </button>
                   </div>
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-medium text-gray-900">
+                    <h3 className="text-lg font-medium text-gray-900 line-clamp-1">
                       {property.name}
                     </h3>
                     <span className="text-lg font-bold text-indigo-600">
                       ${property.price.toLocaleString()}/mo
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500 mb-2">
+                  <p className="text-sm text-gray-500 mb-2 line-clamp-1">
                     <MapPin className="h-4 w-4 inline mr-1" />
                     {property.address}, {property.city}, {property.state}
                   </p>
@@ -449,16 +502,6 @@ export function Marketplace() {
                       {property.square_feet.toLocaleString()} sqft
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setSelectedProperty(property);
-                      setShowAppointmentModal(true);
-                    }}
-                    className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
-                  >
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Schedule Viewing
-                  </button>
                 </div>
               </div>
             ))}
