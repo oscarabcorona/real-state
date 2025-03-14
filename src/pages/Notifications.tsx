@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Bell, CheckCircle, AlertCircle, Clock, X, Calendar, CreditCard, FileText } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useAuthStore } from '../store/authStore';
-import { format } from 'date-fns';
+import { format } from "date-fns";
+import {
+  Bell,
+  Calendar,
+  CheckCircle,
+  CreditCard,
+  FileText,
+  X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+import { useAuthStore } from "../store/authStore";
 
 interface Notification {
   id: string;
   type: string;
   title: string;
   message: string;
-  data: any;
+  data: Record<string, string>;
   read: boolean;
   created_at: string;
 }
@@ -25,40 +32,45 @@ export function Notifications() {
       fetchNotifications();
       // Subscribe to realtime notifications
       const subscription = supabase
-        .channel('notifications')
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        }, payload => {
-          setNotifications(prev => [payload.new as Notification, ...prev]);
-          if (!(payload.new as Notification).read) {
-            setUnreadCount(prev => prev + 1);
+        .channel("notifications")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            setNotifications((prev) => [payload.new as Notification, ...prev]);
+            if (!(payload.new as Notification).read) {
+              setUnreadCount((prev) => prev + 1);
+            }
           }
-        })
+        )
         .subscribe();
 
       return () => {
         subscription.unsubscribe();
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchNotifications = async () => {
     try {
       const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
 
       setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.read).length || 0);
+      setUnreadCount(data?.filter((n) => !n.read).length || 0);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -67,54 +79,52 @@ export function Notifications() {
   const markAsRead = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('notifications')
+        .from("notifications")
         .update({ read: true })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
 
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, read: true } : n)
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error marking notification as read:", error);
     }
   };
 
   const markAllAsRead = async () => {
     try {
       const { error } = await supabase
-        .from('notifications')
+        .from("notifications")
         .update({ read: true })
-        .eq('user_id', user?.id)
-        .eq('read', false);
+        .eq("user_id", user?.id)
+        .eq("read", false);
 
       if (error) throw error;
 
-      setNotifications(prev =>
-        prev.map(n => ({ ...n, read: true }))
-      );
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      console.error("Error marking all notifications as read:", error);
     }
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'appointment_scheduled':
-      case 'appointment_confirmed':
-      case 'appointment_cancelled':
-      case 'appointment_rescheduled':
+      case "appointment_scheduled":
+      case "appointment_confirmed":
+      case "appointment_cancelled":
+      case "appointment_rescheduled":
         return <Calendar className="h-6 w-6 text-indigo-500" />;
-      case 'document_verified':
-      case 'document_rejected':
+      case "document_verified":
+      case "document_rejected":
         return <FileText className="h-6 w-6 text-blue-500" />;
-      case 'payment_received':
-      case 'payment_due':
+      case "payment_received":
+      case "payment_due":
         return <CreditCard className="h-6 w-6 text-green-500" />;
-      case 'report_ready':
+      case "report_ready":
         return <CheckCircle className="h-6 w-6 text-purple-500" />;
       default:
         return <Bell className="h-6 w-6 text-gray-400" />;
@@ -123,21 +133,21 @@ export function Notifications() {
 
   const getNotificationLink = (notification: Notification) => {
     switch (notification.type) {
-      case 'appointment_scheduled':
-      case 'appointment_confirmed':
-      case 'appointment_cancelled':
-      case 'appointment_rescheduled':
+      case "appointment_scheduled":
+      case "appointment_confirmed":
+      case "appointment_cancelled":
+      case "appointment_rescheduled":
         return `/dashboard/appointments`;
-      case 'document_verified':
-      case 'document_rejected':
+      case "document_verified":
+      case "document_rejected":
         return `/dashboard/documents`;
-      case 'payment_received':
-      case 'payment_due':
+      case "payment_received":
+      case "payment_due":
         return `/dashboard/payments`;
-      case 'report_ready':
+      case "report_ready":
         return `/dashboard/reports`;
       default:
-        return '#';
+        return "#";
     }
   };
 
@@ -155,7 +165,9 @@ export function Notifications() {
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Notifications
+              </h1>
               {unreadCount > 0 && (
                 <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                   {unreadCount} unread
@@ -177,7 +189,9 @@ export function Notifications() {
           {notifications.length === 0 ? (
             <div className="p-6 text-center">
               <Bell className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No notifications</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No notifications
+              </h3>
               <p className="mt-1 text-sm text-gray-500">
                 You're all caught up! Check back later for updates.
               </p>
@@ -186,7 +200,7 @@ export function Notifications() {
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-6 ${!notification.read ? 'bg-indigo-50' : ''}`}
+                className={`p-6 ${!notification.read ? "bg-indigo-50" : ""}`}
               >
                 <div className="flex items-start">
                   {getNotificationIcon(notification.type)}
@@ -197,7 +211,10 @@ export function Notifications() {
                       </p>
                       <div className="ml-4 flex items-center space-x-4">
                         <span className="text-sm text-gray-500">
-                          {format(new Date(notification.created_at), 'MMM d, h:mm a')}
+                          {format(
+                            new Date(notification.created_at),
+                            "MMM d, h:mm a"
+                          )}
                         </span>
                         {!notification.read && (
                           <button
