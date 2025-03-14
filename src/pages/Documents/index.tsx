@@ -1,195 +1,67 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Upload, Trash2, CheckCircle, AlertCircle, Clock, X, Download, CreditCard, Building2, DollarSign, Shield, Search, Filter, ChevronDown, Eye, Check, AlertTriangle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useAuthStore } from '../store/authStore';
-
-interface Property {
-  id: string;
-  name: string;
-}
-
-interface Document {
-  id: string;
-  user_id: string;
-  title: string;
-  type: 'credit_report' | 'criminal_report' | 'eviction_report' | 'income_verification';
-  status: 'draft' | 'pending' | 'signed';
-  file_path: string;
-  created_at: string;
-  updated_at: string;
-  score?: number;
-  verified: boolean;
-  verification_date?: string;
-  verified_by?: string;
-  report_data?: any;
-  property?: {
-    name: string;
-  };
-}
-
-interface DocumentRequirement {
-  type: Document['type'];
-  label: string;
-  description: string;
-  required: boolean;
-  icon: React.ReactNode;
-}
-
-const DOCUMENT_REQUIREMENTS: DocumentRequirement[] = [
-  {
-    type: 'credit_report',
-    label: 'Credit Report',
-    description: 'TransUnion credit report with ResidentScore',
-    required: true,
-    icon: <CreditCard className="h-5 w-5" />
-  },
-  {
-    type: 'criminal_report',
-    label: 'Criminal Background Check',
-    description: 'National criminal background verification',
-    required: true,
-    icon: <Shield className="h-5 w-5" />
-  },
-  {
-    type: 'eviction_report',
-    label: 'Eviction History',
-    description: 'Nationwide eviction history report',
-    required: true,
-    icon: <AlertTriangle className="h-5 w-5" />
-  },
-  {
-    type: 'income_verification',
-    label: 'Income Verification',
-    description: 'Proof of income and employment',
-    required: true,
-    icon: <DollarSign className="h-5 w-5" />
-  }
-];
-
-const FileUploadInput = ({ 
-  onChange, 
-  disabled,
-  selectedFile 
-}: { 
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  disabled: boolean;
-  selectedFile: File | null;
-}) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const dropZoneRef = useRef<HTMLDivElement>(null);
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (dropZoneRef.current) {
-      dropZoneRef.current.classList.add('border-indigo-500', 'bg-indigo-50');
-    }
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (dropZoneRef.current) {
-      dropZoneRef.current.classList.remove('border-indigo-500', 'bg-indigo-50');
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (dropZoneRef.current) {
-      dropZoneRef.current.classList.remove('border-indigo-500', 'bg-indigo-50');
-    }
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const event = {
-        target: {
-          files: e.dataTransfer.files
-        }
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
-      onChange(event);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      <div 
-        ref={dropZoneRef}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-colors duration-200"
-      >
-        <Upload className="mx-auto h-12 w-12 text-gray-400" />
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled}
-            className={`inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md ${
-              disabled
-                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                : 'text-white bg-indigo-600 hover:bg-indigo-700'
-            }`}
-          >
-            Choose File
-          </button>
-        </div>
-        <p className="mt-2 text-sm text-gray-500">
-          {selectedFile ? selectedFile.name : 'Drag & drop a file here, or click to select'}
-        </p>
-        <p className="mt-1 text-xs text-gray-500">
-          PDF, DOC, DOCX up to 10MB
-        </p>
-      </div>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".pdf,.doc,.docx"
-        onChange={onChange}
-        disabled={disabled}
-        className="hidden"
-      />
-    </div>
-  );
-};
+import {
+  AlertCircle,
+  Check,
+  CheckCircle,
+  ChevronDown,
+  Clock,
+  Download,
+  Eye,
+  FileText,
+  Filter,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
+import { useAuthStore } from "../../store/authStore";
+import { DOCUMENT_REQUIREMENTS } from "./const";
+import type { Document, Property } from "./types";
+import { FileUploadInput } from "./FileUploadInput";
 
 export function Documents() {
   const { user } = useAuthStore();
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [, setProperties] = useState<Property[]>([]);
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null
+  );
   const [showFilters, setShowFilters] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [processingDocument, setProcessingDocument] = useState(false);
   const [filters, setFilters] = useState({
-    type: '',
-    status: '',
-    dateRange: '',
-    verified: ''
+    type: "",
+    status: "",
+    dateRange: "",
+    verified: "",
   });
   const [uploadForm, setUploadForm] = useState({
-    title: '',
-    type: 'credit_report' as Document['type'],
+    title: "",
+    type: "credit_report" as Document["type"],
     file: null as File | null,
-    property_id: ''
+    property_id: "",
   });
-  const [verificationNote, setVerificationNote] = useState('');
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [verificationNote, setVerificationNote] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
     if (user) {
       fetchProperties();
       fetchDocuments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
     filterDocuments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documents, filters]);
 
   useEffect(() => {
@@ -201,33 +73,37 @@ export function Documents() {
   const fetchProperties = async () => {
     try {
       const { data: accessData } = await supabase
-        .from('tenant_property_access')
-        .select('property_id')
-        .eq('tenant_user_id', user?.id);
+        .from("tenant_property_access")
+        .select("property_id")
+        .eq("tenant_user_id", user?.id);
 
       if (accessData && accessData.length > 0) {
-        const propertyIds = accessData.map(a => a.property_id);
+        const propertyIds = accessData.map((a) => a.property_id);
         const { data } = await supabase
-          .from('properties')
-          .select('id, name')
-          .in('id', propertyIds);
+          .from("properties")
+          .select("id, name")
+          .in("id", propertyIds);
         setProperties(data || []);
       }
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
     }
   };
 
   const validateFile = (file: File) => {
     const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
     if (!allowedTypes.includes(file.type)) {
-      throw new Error('Only PDF and Word documents are allowed');
+      throw new Error("Only PDF and Word documents are allowed");
     }
-    
+
     if (file.size > maxSize) {
-      throw new Error('File size must be less than 10MB');
+      throw new Error("File size must be less than 10MB");
     }
   };
 
@@ -238,18 +114,18 @@ export function Documents() {
     if (file) {
       try {
         validateFile(file);
-        setUploadForm(prev => ({ ...prev, file }));
+        setUploadForm((prev) => ({ ...prev, file }));
         if (!uploadForm.title) {
-          setUploadForm(prev => ({
+          setUploadForm((prev) => ({
             ...prev,
             file,
-            title: file.name.split('.')[0]
+            title: file.name.split(".")[0],
           }));
         }
       } catch (error) {
-        setUploadError(error instanceof Error ? error.message : 'Invalid file');
-        setUploadForm(prev => ({ ...prev, file: null }));
-        e.target.value = '';
+        setUploadError(error instanceof Error ? error.message : "Invalid file");
+        setUploadForm((prev) => ({ ...prev, file: null }));
+        e.target.value = "";
       }
     }
   };
@@ -264,12 +140,14 @@ export function Documents() {
     setUploadProgress(0);
 
     try {
-      const fileExt = uploadForm.file.name.split('.').pop()?.toLowerCase();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const fileExt = uploadForm.file.name.split(".").pop()?.toLowerCase();
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(7)}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
+        setUploadProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
@@ -279,7 +157,7 @@ export function Documents() {
       }, 200);
 
       const { error: uploadError } = await supabase.storage
-        .from('tenant_documents')
+        .from("tenant_documents")
         .upload(filePath, uploadForm.file);
 
       clearInterval(progressInterval);
@@ -288,16 +166,16 @@ export function Documents() {
 
       setUploadProgress(100);
 
-      const { error: dbError } = await supabase
-        .from('documents')
-        .insert([{
+      const { error: dbError } = await supabase.from("documents").insert([
+        {
           user_id: user.id,
           type: uploadForm.type,
-          title: uploadForm.title || uploadForm.file.name.split('.')[0],
+          title: uploadForm.title || uploadForm.file.name.split(".")[0],
           file_path: filePath,
-          status: 'pending',
-          verified: false
-        }]);
+          status: "pending",
+          verified: false,
+        },
+      ]);
 
       if (dbError) throw dbError;
 
@@ -309,8 +187,10 @@ export function Documents() {
         resetUploadForm();
       }, 2000);
     } catch (error) {
-      console.error('Error uploading document:', error);
-      setUploadError(error instanceof Error ? error.message : 'Failed to upload document');
+      console.error("Error uploading document:", error);
+      setUploadError(
+        error instanceof Error ? error.message : "Failed to upload document"
+      );
       setUploadProgress(0);
     } finally {
       setUploading(false);
@@ -319,10 +199,10 @@ export function Documents() {
 
   const resetUploadForm = () => {
     setUploadForm({
-      title: '',
-      type: 'credit_report',
+      title: "",
+      type: "credit_report",
       file: null,
-      property_id: ''
+      property_id: "",
     });
     setUploadError(null);
     setUploadSuccess(false);
@@ -332,21 +212,23 @@ export function Documents() {
   const fetchDocuments = async () => {
     try {
       const { data, error } = await supabase
-        .from('documents')
-        .select(`
+        .from("documents")
+        .select(
+          `
           *,
           property:property_id (
             name
           )
-        `)
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+        `
+        )
+        .eq("user_id", user?.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setDocuments(data || []);
       setFilteredDocuments(data || []);
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
     } finally {
       setLoading(false);
     }
@@ -356,33 +238,33 @@ export function Documents() {
     let filtered = [...documents];
 
     if (filters.type) {
-      filtered = filtered.filter(doc => doc.type === filters.type);
+      filtered = filtered.filter((doc) => doc.type === filters.type);
     }
 
     if (filters.status) {
-      filtered = filtered.filter(doc => doc.status === filters.status);
+      filtered = filtered.filter((doc) => doc.status === filters.status);
     }
 
     if (filters.dateRange) {
       const now = new Date();
       const past = new Date();
       switch (filters.dateRange) {
-        case '7days':
+        case "7days":
           past.setDate(now.getDate() - 7);
           break;
-        case '30days':
+        case "30days":
           past.setDate(now.getDate() - 30);
           break;
-        case '90days':
+        case "90days":
           past.setDate(now.getDate() - 90);
           break;
       }
-      filtered = filtered.filter(doc => new Date(doc.created_at) >= past);
+      filtered = filtered.filter((doc) => new Date(doc.created_at) >= past);
     }
 
     if (filters.verified) {
-      filtered = filtered.filter(doc => 
-        filters.verified === 'verified' ? doc.verified : !doc.verified
+      filtered = filtered.filter((doc) =>
+        filters.verified === "verified" ? doc.verified : !doc.verified
       );
     }
 
@@ -390,39 +272,39 @@ export function Documents() {
   };
 
   const handleDelete = async (id: string, filePath: string) => {
-    if (!confirm('Are you sure you want to delete this document?')) return;
+    if (!confirm("Are you sure you want to delete this document?")) return;
 
     try {
       const { error: storageError } = await supabase.storage
-        .from('tenant_documents')
+        .from("tenant_documents")
         .remove([filePath]);
 
       if (storageError) throw storageError;
 
       const { error: dbError } = await supabase
-        .from('documents')
+        .from("documents")
         .delete()
-        .eq('id', id);
+        .eq("id", id);
 
       if (dbError) throw dbError;
 
       fetchDocuments();
     } catch (error) {
-      console.error('Error deleting document:', error);
-      alert('Failed to delete document');
+      console.error("Error deleting document:", error);
+      alert("Failed to delete document");
     }
   };
 
   const handleDownload = async (filePath: string, fileName: string) => {
     try {
       const { data, error } = await supabase.storage
-        .from('tenant_documents')
+        .from("tenant_documents")
         .download(filePath);
 
       if (error) throw error;
 
       const url = window.URL.createObjectURL(data);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = fileName;
       document.body.appendChild(a);
@@ -430,8 +312,8 @@ export function Documents() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error downloading document:', error);
-      alert('Failed to download document');
+      console.error("Error downloading document:", error);
+      alert("Failed to download document");
     }
   };
 
@@ -444,22 +326,22 @@ export function Documents() {
     setProcessingDocument(true);
     try {
       const { error } = await supabase
-        .from('documents')
+        .from("documents")
         .update({
-          status: 'signed',
+          status: "signed",
           verified: true,
           verification_date: new Date().toISOString(),
-          notes: verificationNote || 'Document verified'
+          notes: verificationNote || "Document verified",
         })
-        .eq('id', document.id);
+        .eq("id", document.id);
 
       if (error) throw error;
       await fetchDocuments();
       setShowPreviewModal(false);
-      setVerificationNote('');
+      setVerificationNote("");
     } catch (error) {
-      console.error('Error verifying document:', error);
-      alert('Failed to verify document');
+      console.error("Error verifying document:", error);
+      alert("Failed to verify document");
     } finally {
       setProcessingDocument(false);
     }
@@ -467,29 +349,29 @@ export function Documents() {
 
   const handleRejectDocument = async (document: Document) => {
     if (!rejectionReason) {
-      alert('Please provide a reason for rejection');
+      alert("Please provide a reason for rejection");
       return;
     }
 
     setProcessingDocument(true);
     try {
       const { error } = await supabase
-        .from('documents')
+        .from("documents")
         .update({
-          status: 'rejected',
+          status: "rejected",
           verified: false,
           rejection_reason: rejectionReason,
-          notes: `Rejected: ${rejectionReason}`
+          notes: `Rejected: ${rejectionReason}`,
         })
-        .eq('id', document.id);
+        .eq("id", document.id);
 
       if (error) throw error;
       await fetchDocuments();
       setShowPreviewModal(false);
-      setRejectionReason('');
+      setRejectionReason("");
     } catch (error) {
-      console.error('Error rejecting document:', error);
-      alert('Failed to reject document');
+      console.error("Error rejecting document:", error);
+      alert("Failed to reject document");
     } finally {
       setProcessingDocument(false);
     }
@@ -497,11 +379,11 @@ export function Documents() {
 
   const getStatusIcon = (status: string, verified: boolean) => {
     if (verified) return <CheckCircle className="h-5 w-5 text-green-500" />;
-    
+
     switch (status) {
-      case 'signed':
+      case "signed":
         return <Check className="h-5 w-5 text-green-500" />;
-      case 'rejected':
+      case "rejected":
         return <AlertCircle className="h-5 w-5 text-red-500" />;
       default:
         return <Clock className="h-5 w-5 text-yellow-500" />;
@@ -509,20 +391,20 @@ export function Documents() {
   };
 
   const getStatusClass = (status: string, verified: boolean) => {
-    if (verified) return 'bg-green-100 text-green-800';
-    
+    if (verified) return "bg-green-100 text-green-800";
+
     switch (status) {
-      case 'signed':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
+      case "signed":
+        return "bg-green-100 text-green-800";
+      case "rejected":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-yellow-100 text-yellow-800';
+        return "bg-yellow-100 text-yellow-800";
     }
   };
 
   const getStatusText = (status: string, verified: boolean) => {
-    if (verified) return 'Verified';
+    if (verified) return "Verified";
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
@@ -544,58 +426,87 @@ export function Documents() {
               <dl className="grid grid-cols-2 gap-4">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Title</dt>
-                  <dd className="text-sm text-gray-900">{selectedDocument.title}</dd>
+                  <dd className="text-sm text-gray-900">
+                    {selectedDocument.title}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Type</dt>
                   <dd className="text-sm text-gray-900">
-                    {selectedDocument.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    {selectedDocument.type
+                      .split("_")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
+                      .join(" ")}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Status</dt>
                   <dd className="text-sm text-gray-900">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(selectedDocument.status, selectedDocument.verified)}`}>
-                      {getStatusText(selectedDocument.status, selectedDocument.verified)}
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(
+                        selectedDocument.status,
+                        selectedDocument.verified
+                      )}`}
+                    >
+                      {getStatusText(
+                        selectedDocument.status,
+                        selectedDocument.verified
+                      )}
                     </span>
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Uploaded</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Uploaded
+                  </dt>
                   <dd className="text-sm text-gray-900">
                     {new Date(selectedDocument.created_at).toLocaleDateString()}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Property</dt>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Property
+                  </dt>
                   <dd className="text-sm text-gray-900">
                     {selectedDocument.property?.name}
                   </dd>
                 </div>
                 {selectedDocument.verification_date && (
                   <div>
-                    <dt className="text-sm font-medium text-gray-500">Verified On</dt>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Verified On
+                    </dt>
                     <dd className="text-sm text-gray-900">
-                      {new Date(selectedDocument.verification_date).toLocaleDateString()}
+                      {new Date(
+                        selectedDocument.verification_date
+                      ).toLocaleDateString()}
                     </dd>
                   </div>
                 )}
                 {selectedDocument.rejection_reason && (
                   <div className="col-span-2">
-                    <dt className="text-sm font-medium text-gray-500">Rejection Reason</dt>
-                    <dd className="text-sm text-red-600">{selectedDocument.rejection_reason}</dd>
+                    <dt className="text-sm font-medium text-gray-500">
+                      Rejection Reason
+                    </dt>
+                    <dd className="text-sm text-red-600">
+                      {selectedDocument.rejection_reason}
+                    </dd>
                   </div>
                 )}
                 {selectedDocument.notes && (
                   <div className="col-span-2">
                     <dt className="text-sm font-medium text-gray-500">Notes</dt>
-                    <dd className="text-sm text-gray-900">{selectedDocument.notes}</dd>
+                    <dd className="text-sm text-gray-900">
+                      {selectedDocument.notes}
+                    </dd>
                   </div>
                 )}
               </dl>
             </div>
 
-            {selectedDocument.status === 'pending' && (
+            {selectedDocument.status === "pending" && (
               <div className="space-y-4 border-t pt-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -620,7 +531,9 @@ export function Documents() {
                   </button>
                   <button
                     onClick={() => {
-                      const reason = prompt('Please provide a reason for rejection:');
+                      const reason = prompt(
+                        "Please provide a reason for rejection:"
+                      );
                       if (reason) {
                         setRejectionReason(reason);
                         handleRejectDocument(selectedDocument);
@@ -638,14 +551,21 @@ export function Documents() {
 
             <div className="flex justify-end space-x-3">
               <button
-                onClick={() => handleDownload(selectedDocument.file_path, `${selectedDocument.title || selectedDocument.type}.pdf`)}
+                onClick={() =>
+                  handleDownload(
+                    selectedDocument.file_path,
+                    `${selectedDocument.title || selectedDocument.type}.pdf`
+                  )
+                }
                 className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Download
               </button>
               <button
-                onClick={() => handleDelete(selectedDocument.id, selectedDocument.file_path)}
+                onClick={() =>
+                  handleDelete(selectedDocument.id, selectedDocument.file_path)
+                }
                 className="inline-flex items-center px-4 py-2 border border-red-300 shadow-sm text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
@@ -672,14 +592,21 @@ export function Documents() {
         </div>
         <form onSubmit={handleUpload} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Document Type</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Document Type
+            </label>
             <select
               value={uploadForm.type}
-              onChange={(e) => setUploadForm(prev => ({ ...prev, type: e.target.value as Document['type'] }))}
+              onChange={(e) =>
+                setUploadForm((prev) => ({
+                  ...prev,
+                  type: e.target.value as Document["type"],
+                }))
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               required
             >
-              {DOCUMENT_REQUIREMENTS.map(req => (
+              {DOCUMENT_REQUIREMENTS.map((req) => (
                 <option key={req.type} value={req.type}>
                   {req.label}
                 </option>
@@ -688,11 +615,15 @@ export function Documents() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Title</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Title
+            </label>
             <input
               type="text"
               value={uploadForm.title}
-              onChange={(e) => setUploadForm(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) =>
+                setUploadForm((prev) => ({ ...prev, title: e.target.value }))
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               placeholder="Document title"
             />
@@ -711,7 +642,9 @@ export function Documents() {
                   <AlertCircle className="h-5 w-5 text-red-400" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-red-800">{uploadError}</p>
+                  <p className="text-sm font-medium text-red-800">
+                    {uploadError}
+                  </p>
                 </div>
               </div>
             </div>
@@ -724,7 +657,9 @@ export function Documents() {
                   <CheckCircle className="h-5 w-5 text-green-400" />
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-green-800">Document uploaded successfully!</p>
+                  <p className="text-sm font-medium text-green-800">
+                    Document uploaded successfully!
+                  </p>
                 </div>
               </div>
             </div>
@@ -761,7 +696,7 @@ export function Documents() {
                 Uploaded
               </>
             ) : (
-              'Upload Document'
+              "Upload Document"
             )}
           </button>
         </form>
@@ -782,12 +717,16 @@ export function Documents() {
               >
                 <Filter className="h-4 w-4 mr-2" />
                 Filters
-                {Object.values(filters).some(v => v) && (
+                {Object.values(filters).some((v) => v) && (
                   <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    {Object.values(filters).filter(v => v).length}
+                    {Object.values(filters).filter((v) => v).length}
                   </span>
                 )}
-                <ChevronDown className={`ml-2 h-4 w-4 transition-transform ${showFilters ? 'transform rotate-180' : ''}`} />
+                <ChevronDown
+                  className={`ml-2 h-4 w-4 transition-transform ${
+                    showFilters ? "transform rotate-180" : ""
+                  }`}
+                />
               </button>
               <button
                 onClick={() => setShowUploadModal(true)}
@@ -803,37 +742,45 @@ export function Documents() {
         <div className="p-6">
           {/* Document Requirements */}
           <div className="mb-8">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Required Documents</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Required Documents
+            </h2>
             <div className="grid grid-cols-1  md:grid-cols-2 lg:grid-cols-4 gap-4">
               {DOCUMENT_REQUIREMENTS.map((req) => {
-                const doc = documents.find(d => d.type === req.type);
+                const doc = documents.find((d) => d.type === req.type);
                 const isComplete = doc?.verified;
-                const isPending = doc?.status === 'pending';
+                const isPending = doc?.status === "pending";
 
                 return (
                   <div
                     key={req.type}
                     className={`p-4 rounded-lg border ${
                       isComplete
-                        ? 'bg-green-50 border-green-200'
+                        ? "bg-green-50 border-green-200"
                         : isPending
-                        ? 'bg-yellow-50 border-yellow-200'
-                        : 'bg-white border-gray-200'
+                        ? "bg-yellow-50 border-yellow-200"
+                        : "bg-white border-gray-200"
                     }`}
                   >
                     <div className="flex items-start">
-                      <div className={`p-2 rounded-lg ${
-                        isComplete
-                          ? 'bg-green-100'
-                          : isPending
-                          ? 'bg-yellow-100'
-                          : 'bg-gray-100'
-                      }`}>
+                      <div
+                        className={`p-2 rounded-lg ${
+                          isComplete
+                            ? "bg-green-100"
+                            : isPending
+                            ? "bg-yellow-100"
+                            : "bg-gray-100"
+                        }`}
+                      >
                         {req.icon}
                       </div>
                       <div className="ml-3">
-                        <h3 className="text-sm font-medium text-gray-900">{req.label}</h3>
-                        <p className="mt-1 text-xs text-gray-500">{req.description}</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          {req.label}
+                        </h3>
+                        <p className="mt-1 text-xs text-gray-500">
+                          {req.description}
+                        </p>
                         <div className="mt-2">
                           {isComplete ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
@@ -848,7 +795,10 @@ export function Documents() {
                           ) : (
                             <button
                               onClick={() => {
-                                setUploadForm(prev => ({ ...prev, type: req.type }));
+                                setUploadForm((prev) => ({
+                                  ...prev,
+                                  type: req.type,
+                                }));
                                 setShowUploadModal(true);
                               }}
                               className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
@@ -870,10 +820,17 @@ export function Documents() {
             <div className="mb-6 bg-gray-50 p-4 rounded-lg">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Status</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Status
+                  </label>
                   <select
                     value={filters.status}
-                    onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        status: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">All Statuses</option>
@@ -884,14 +841,18 @@ export function Documents() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Document Type</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Document Type
+                  </label>
                   <select
                     value={filters.type}
-                    onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, type: e.target.value }))
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">All Types</option>
-                    {DOCUMENT_REQUIREMENTS.map(req => (
+                    {DOCUMENT_REQUIREMENTS.map((req) => (
                       <option key={req.type} value={req.type}>
                         {req.label}
                       </option>
@@ -900,10 +861,17 @@ export function Documents() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Date Range</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Date Range
+                  </label>
                   <select
                     value={filters.dateRange}
-                    onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        dateRange: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">All Time</option>
@@ -914,10 +882,17 @@ export function Documents() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Verification</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Verification
+                  </label>
                   <select
                     value={filters.verified}
-                    onChange={(e) => setFilters(prev => ({ ...prev, verified: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        verified: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   >
                     <option value="">All Documents</option>
@@ -927,10 +902,17 @@ export function Documents() {
                 </div>
               </div>
 
-              {Object.values(filters).some(v => v) && (
+              {Object.values(filters).some((v) => v) && (
                 <div className="mt-4 flex justify-end">
                   <button
-                    onClick={() => setFilters({ type: '', status: '', dateRange: '', verified: '' })}
+                    onClick={() =>
+                      setFilters({
+                        type: "",
+                        status: "",
+                        dateRange: "",
+                        verified: "",
+                      })
+                    }
                     className="text-sm text-gray-600 hover:text-gray-900"
                   >
                     Clear filters
@@ -947,8 +929,12 @@ export function Documents() {
           ) : filteredDocuments.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No documents</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by uploading a document.</p>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No documents
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Get started by uploading a document.
+              </p>
               <div className="mt-6">
                 <button
                   onClick={() => setShowUploadModal(true)}
@@ -962,30 +948,55 @@ export function Documents() {
           ) : (
             <div className="divide-y divide-gray-200">
               {filteredDocuments.map((doc) => (
-                <div key={doc.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+                <div
+                  key={doc.id}
+                  className="px-6 py-4 flex items-center justify-between hover:bg-gray-50"
+                >
                   <div className="flex items-center flex-1 min-w-0">
                     <FileText className="h-5 w-5 text-gray-400 mr-3" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {doc.title || doc.type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                        {doc.title ||
+                          doc.type
+                            .split("_")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1)
+                            )
+                            .join(" ")}
                       </p>
                       <div className="flex items-center text-sm text-gray-500">
                         <span>{doc.property?.name}</span>
                         <span className="mx-2">•</span>
-                        <span>Uploaded on {new Date(doc.created_at).toLocaleDateString()}</span>
+                        <span>
+                          Uploaded on{" "}
+                          {new Date(doc.created_at).toLocaleDateString()}
+                        </span>
                         {doc.verification_date && (
                           <>
                             <span className="mx-2">•</span>
-                            <span>Verified on {new Date(doc.verification_date).toLocaleDateString()}</span>
+                            <span>
+                              Verified on{" "}
+                              {new Date(
+                                doc.verification_date
+                              ).toLocaleDateString()}
+                            </span>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
                   <div className="ml-4 flex items-center space-x-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(doc.status, doc.verified)}`}>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(
+                        doc.status,
+                        doc.verified
+                      )}`}
+                    >
                       {getStatusIcon(doc.status, doc.verified)}
-                      <span className="ml-1">{getStatusText(doc.status, doc.verified)}</span>
+                      <span className="ml-1">
+                        {getStatusText(doc.status, doc.verified)}
+                      </span>
                     </span>
                     <div className="flex items-center space-x-2">
                       <button
@@ -996,7 +1007,12 @@ export function Documents() {
                         <Eye className="h-5 w-5" />
                       </button>
                       <button
-                        onClick={() => handleDownload(doc.file_path, `${doc.title || doc.type}.pdf`)}
+                        onClick={() =>
+                          handleDownload(
+                            doc.file_path,
+                            `${doc.title || doc.type}.pdf`
+                          )
+                        }
                         className="text-gray-400 hover:text-gray-500"
                         title="Download"
                       >
