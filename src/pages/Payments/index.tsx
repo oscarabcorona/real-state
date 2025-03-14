@@ -13,33 +13,9 @@ import {
   XCircle,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { useAuthStore } from "../store/authStore";
-
-interface Property {
-  id: string;
-  name: string;
-}
-
-interface Payment {
-  id: string;
-  amount: number;
-  payment_method: "credit_card" | "ach" | "cash";
-  status: "pending" | "completed" | "failed";
-  description: string;
-  created_at: string;
-  properties: {
-    name: string;
-  };
-}
-
-interface PaymentFilters {
-  status: string;
-  paymentMethod: string;
-  dateRange: string;
-  minAmount: string;
-  maxAmount: string;
-}
+import { supabase } from "../../lib/supabase";
+import { useAuthStore } from "../../store/authStore";
+import { Payment, PaymentFilters, Property } from "./types";
 
 export function Payments() {
   const [activeTab, setActiveTab] = useState("overview");
@@ -77,10 +53,12 @@ export function Payments() {
       fetchProperties();
       fetchPayments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
     applyFilters();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, payments]);
 
   const fetchProperties = async () => {
@@ -103,9 +81,9 @@ export function Payments() {
         .from("payments")
         .select(
           `
-          *,
-          properties (name)
-        `
+            *,
+            properties (name)
+          `
         )
         .eq("user_id", user?.id)
         .order("created_at", { ascending: false });

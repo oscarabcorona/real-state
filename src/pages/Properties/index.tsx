@@ -1,83 +1,56 @@
-import React, { useState, useEffect } from 'react';
-import { Home, Plus, Pencil, Trash2, X, ExternalLink, Share2, Camera, Bed, Bath, DollarSign, Building2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { useAuthStore } from '../store/authStore';
-
-interface Tenant {
-  id: string;
-  name: string;
-  description: string;
-  status: 'active' | 'inactive';
-}
-
-interface Property {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  description: string;
-  price: number;
-  bedrooms: number;
-  bathrooms: number;
-  square_feet: number;
-  property_type: 'house' | 'apartment' | 'condo' | 'townhouse';
-  amenities: string[];
-  images: string[];
-  available_date: string;
-  pet_policy: string;
-  lease_terms: string;
-  published: boolean;
-  syndication: {
-    zillow: boolean;
-    trulia: boolean;
-    realtor: boolean;
-    hotpads: boolean;
-  };
-  compliance_status: 'compliant' | 'pending' | 'non_compliant';
-  created_at: string;
-  property_leases?: {
-    tenant: {
-      name: string;
-    };
-  }[];
-}
+import React, { useState, useEffect } from "react";
+import {
+  Home,
+  Plus,
+  Pencil,
+  Trash2,
+  X,
+  ExternalLink,
+  Share2,
+  Camera,
+  Bed,
+  Bath,
+  DollarSign,
+  Building2,
+} from "lucide-react";
+import { supabase } from "../../lib/supabase";
+import { useAuthStore } from "../../store/authStore";
+import { Property, Tenant } from "./types";
 
 export function Properties() {
   const { user } = useAuthStore();
   const [properties, setProperties] = useState<Property[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [selectedTenant, setSelectedTenant] = useState<string>('');
+  const [selectedTenant, setSelectedTenant] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
-  const [activeTab, setActiveTab] = useState('details');
+  const [activeTab, setActiveTab] = useState("details");
   const [formData, setFormData] = useState({
-    tenant_id: '',
-    name: '',
-    address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    description: '',
-    price: '',
-    bedrooms: '',
-    bathrooms: '',
-    square_feet: '',
-    property_type: 'house',
+    tenant_id: "",
+    name: "",
+    address: "",
+    city: "",
+    state: "",
+    zip_code: "",
+    description: "",
+    price: "",
+    bedrooms: "",
+    bathrooms: "",
+    square_feet: "",
+    property_type: "house",
     amenities: [] as string[],
     images: [] as string[],
-    available_date: '',
-    pet_policy: '',
-    lease_terms: '',
+    available_date: "",
+    pet_policy: "",
+    lease_terms: "",
     published: false,
     syndication: {
       zillow: false,
       trulia: false,
       realtor: false,
-      hotpads: false
-    }
+      hotpads: false,
+    },
   });
 
   useEffect(() => {
@@ -85,47 +58,52 @@ export function Properties() {
       fetchTenants();
       fetchProperties();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, selectedTenant]);
 
   const fetchTenants = async () => {
     try {
       const { data, error } = await supabase
-        .from('tenants')
-        .select('*')
-        .eq('status', 'active')
-        .order('name');
+        .from("tenants")
+        .select("*")
+        .eq("status", "active")
+        .order("name");
 
       if (error) throw error;
       setTenants(data || []);
     } catch (error) {
-      console.error('Error fetching tenants:', error);
+      console.error("Error fetching tenants:", error);
     }
   };
 
   const fetchProperties = async () => {
     try {
       let query = supabase
-        .from('properties')
-        .select(`
+        .from("properties")
+        .select(
+          `
           *,
           property_leases (
             tenant:tenant_id (
               name
             )
           )
-        `)
-        .eq('user_id', user?.id);
+        `
+        )
+        .eq("user_id", user?.id);
 
       if (selectedTenant) {
-        query = query.eq('property_leases.tenant_id', selectedTenant);
+        query = query.eq("property_leases.tenant_id", selectedTenant);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query.order("created_at", {
+        ascending: false,
+      });
 
       if (error) throw error;
       setProperties(data || []);
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error("Error fetching properties:", error);
     }
   };
 
@@ -139,29 +117,27 @@ export function Properties() {
         price: parseFloat(formData.price),
         bedrooms: parseInt(formData.bedrooms),
         bathrooms: parseFloat(formData.bathrooms),
-        square_feet: parseInt(formData.square_feet)
+        square_feet: parseInt(formData.square_feet),
       };
 
       if (editingProperty) {
         const { error } = await supabase
-          .from('properties')
+          .from("properties")
           .update({
             ...propertyData,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
-          .eq('id', editingProperty.id);
+          .eq("id", editingProperty.id);
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('properties')
-          .insert([
-            {
-              ...propertyData,
-              user_id: user?.id,
-              compliance_status: 'pending'
-            }
-          ]);
+        const { error } = await supabase.from("properties").insert([
+          {
+            ...propertyData,
+            user_id: user?.id,
+            compliance_status: "pending",
+          },
+        ]);
 
         if (error) throw error;
       }
@@ -170,7 +146,7 @@ export function Properties() {
       resetForm();
       fetchProperties();
     } catch (error) {
-      console.error('Error saving property:', error);
+      console.error("Error saving property:", error);
     } finally {
       setLoading(false);
     }
@@ -178,96 +154,93 @@ export function Properties() {
 
   const resetForm = () => {
     setFormData({
-      tenant_id: '',
-      name: '',
-      address: '',
-      city: '',
-      state: '',
-      zip_code: '',
-      description: '',
-      price: '',
-      bedrooms: '',
-      bathrooms: '',
-      square_feet: '',
-      property_type: 'house',
+      tenant_id: "",
+      name: "",
+      address: "",
+      city: "",
+      state: "",
+      zip_code: "",
+      description: "",
+      price: "",
+      bedrooms: "",
+      bathrooms: "",
+      square_feet: "",
+      property_type: "house",
       amenities: [],
       images: [],
-      available_date: '',
-      pet_policy: '',
-      lease_terms: '',
+      available_date: "",
+      pet_policy: "",
+      lease_terms: "",
       published: false,
       syndication: {
         zillow: false,
         trulia: false,
         realtor: false,
-        hotpads: false
-      }
+        hotpads: false,
+      },
     });
     setEditingProperty(null);
-    setActiveTab('details');
+    setActiveTab("details");
   };
 
   const handleEdit = (property: Property) => {
     setEditingProperty(property);
     setFormData({
-      tenant_id: property.property_leases?.[0]?.tenant?.name || '',
+      tenant_id: property.property_leases?.[0]?.tenant?.name || "",
       name: property.name,
       address: property.address,
       city: property.city,
       state: property.state,
       zip_code: property.zip_code,
-      description: property.description || '',
-      price: property.price?.toString() || '',
-      bedrooms: property.bedrooms?.toString() || '',
-      bathrooms: property.bathrooms?.toString() || '',
-      square_feet: property.square_feet?.toString() || '',
-      property_type: property.property_type || 'house',
+      description: property.description || "",
+      price: property.price?.toString() || "",
+      bedrooms: property.bedrooms?.toString() || "",
+      bathrooms: property.bathrooms?.toString() || "",
+      square_feet: property.square_feet?.toString() || "",
+      property_type: property.property_type || "house",
       amenities: property.amenities || [],
       images: property.images || [],
-      available_date: property.available_date || '',
-      pet_policy: property.pet_policy || '',
-      lease_terms: property.lease_terms || '',
+      available_date: property.available_date || "",
+      pet_policy: property.pet_policy || "",
+      lease_terms: property.lease_terms || "",
       published: property.published || false,
       syndication: property.syndication || {
         zillow: false,
         trulia: false,
         realtor: false,
-        hotpads: false
-      }
+        hotpads: false,
+      },
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this property?')) return;
+    if (!confirm("Are you sure you want to delete this property?")) return;
 
     try {
-      const { error } = await supabase
-        .from('properties')
-        .delete()
-        .eq('id', id);
+      const { error } = await supabase.from("properties").delete().eq("id", id);
 
       if (error) throw error;
       fetchProperties();
     } catch (error) {
-      console.error('Error deleting property:', error);
+      console.error("Error deleting property:", error);
     }
   };
 
   const handlePublish = async (property: Property) => {
     try {
       const { error } = await supabase
-        .from('properties')
+        .from("properties")
         .update({
           published: !property.published,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', property.id);
+        .eq("id", property.id);
 
       if (error) throw error;
       fetchProperties();
     } catch (error) {
-      console.error('Error publishing property:', error);
+      console.error("Error publishing property:", error);
     }
   };
 
@@ -277,7 +250,7 @@ export function Properties() {
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-6 border-b">
           <h3 className="text-lg font-medium">
-            {editingProperty ? 'Edit Property' : 'Add New Property'}
+            {editingProperty ? "Edit Property" : "Add New Property"}
           </h3>
           <button
             onClick={() => {
@@ -293,14 +266,14 @@ export function Properties() {
         {/* Tabs */}
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex px-6" aria-label="Tabs">
-            {['details', 'features', 'media', 'marketplace'].map((tab) => (
+            {["details", "features", "media", "marketplace"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`${
                   activeTab === tab
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 } whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm capitalize`}
               >
                 {tab}
@@ -311,13 +284,17 @@ export function Properties() {
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Details Tab */}
-          {activeTab === 'details' && (
+          {activeTab === "details" && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Tenant</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Tenant
+                </label>
                 <select
                   value={formData.tenant_id}
-                  onChange={(e) => setFormData({ ...formData, tenant_id: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tenant_id: e.target.value })
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="">Select a tenant</option>
@@ -329,62 +306,86 @@ export function Properties() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Property Name</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Property Name
+                </label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Description
+                </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   rows={3}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Address</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Address
+                </label>
                 <input
                   type="text"
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, address: e.target.value })
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   required
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">City</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    City
+                  </label>
                   <input
                     type="text"
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, city: e.target.value })
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">State</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    State
+                  </label>
                   <input
                     type="text"
                     value={formData.state}
-                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, state: e.target.value })
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     required
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">ZIP Code</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  ZIP Code
+                </label>
                 <input
                   type="text"
                   value={formData.zip_code}
-                  onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, zip_code: e.target.value })
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   required
                 />
@@ -393,11 +394,13 @@ export function Properties() {
           )}
 
           {/* Features Tab */}
-          {activeTab === 'features' && (
+          {activeTab === "features" && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Monthly Rent</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Monthly Rent
+                  </label>
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span className="text-gray-500 sm:text-sm">$</span>
@@ -405,48 +408,69 @@ export function Properties() {
                     <input
                       type="number"
                       value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, price: e.target.value })
+                      }
                       className="pl-7 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Square Feet</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Square Feet
+                  </label>
                   <input
                     type="number"
                     value={formData.square_feet}
-                    onChange={(e) => setFormData({ ...formData, square_feet: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, square_feet: e.target.value })
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Bedrooms</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Bedrooms
+                  </label>
                   <input
                     type="number"
                     value={formData.bedrooms}
-                    onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bedrooms: e.target.value })
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Bathrooms</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Bathrooms
+                  </label>
                   <input
                     type="number"
                     value={formData.bathrooms}
-                    onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bathrooms: e.target.value })
+                    }
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                     step="0.5"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Property Type</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Property Type
+                </label>
                 <select
                   value={formData.property_type}
-                  onChange={(e) => setFormData({ ...formData, property_type: e.target.value as any })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      property_type: e.target.value,
+                    })
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 >
                   <option value="house">House</option>
@@ -456,28 +480,40 @@ export function Properties() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Available Date</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Available Date
+                </label>
                 <input
                   type="date"
                   value={formData.available_date}
-                  onChange={(e) => setFormData({ ...formData, available_date: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, available_date: e.target.value })
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Pet Policy</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Pet Policy
+                </label>
                 <textarea
                   value={formData.pet_policy}
-                  onChange={(e) => setFormData({ ...formData, pet_policy: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, pet_policy: e.target.value })
+                  }
                   rows={2}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Lease Terms</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Lease Terms
+                </label>
                 <textarea
                   value={formData.lease_terms}
-                  onChange={(e) => setFormData({ ...formData, lease_terms: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, lease_terms: e.target.value })
+                  }
                   rows={2}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
@@ -486,7 +522,7 @@ export function Properties() {
           )}
 
           {/* Media Tab */}
-          {activeTab === 'media' && (
+          {activeTab === "media" && (
             <div className="space-y-4">
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <Camera className="mx-auto h-12 w-12 text-gray-400" />
@@ -506,35 +542,39 @@ export function Properties() {
           )}
 
           {/* Marketplace Tab */}
-          {activeTab === 'marketplace' && (
+          {activeTab === "marketplace" && (
             <div className="space-y-4">
               <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-900">Syndication Settings</h4>
+                <h4 className="text-sm font-medium text-gray-900">
+                  Syndication Settings
+                </h4>
                 <p className="mt-1 text-sm text-gray-500">
                   Choose where to list your property
                 </p>
                 <div className="mt-4 space-y-4">
-                  {Object.entries(formData.syndication).map(([platform, enabled]) => (
-                    <div key={platform} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={enabled}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            syndication: {
-                              ...formData.syndication,
-                              [platform]: e.target.checked
-                            }
-                          })
-                        }
-                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                      />
-                      <label className="ml-3 text-sm text-gray-700 capitalize">
-                        {platform}
-                      </label>
-                    </div>
-                  ))}
+                  {Object.entries(formData.syndication).map(
+                    ([platform, enabled]) => (
+                      <div key={platform} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={enabled}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              syndication: {
+                                ...formData.syndication,
+                                [platform]: e.target.checked,
+                              },
+                            })
+                          }
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        />
+                        <label className="ml-3 text-sm text-gray-700 capitalize">
+                          {platform}
+                        </label>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
               <div className="flex items-center">
@@ -544,7 +584,7 @@ export function Properties() {
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      published: e.target.checked
+                      published: e.target.checked,
                     })
                   }
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
@@ -577,8 +617,10 @@ export function Properties() {
                   <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2" />
                   Processing...
                 </>
+              ) : editingProperty ? (
+                "Update Property"
               ) : (
-                editingProperty ? 'Update Property' : 'Add Property'
+                "Add Property"
               )}
             </button>
           </div>
@@ -621,8 +663,12 @@ export function Properties() {
           {properties.length === 0 ? (
             <div className="text-center py-12">
               <Home className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No properties</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by adding a new property.</p>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">
+                No properties
+              </h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Get started by adding a new property.
+              </p>
               <div className="mt-6">
                 <button
                   onClick={() => setIsModalOpen(true)}
@@ -655,18 +701,21 @@ export function Properties() {
                     <div className="absolute top-2 right-2">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                          ${property.published
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                          ${
+                            property.published
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
                           }`}
                       >
-                        {property.published ? 'Published' : 'Draft'}
+                        {property.published ? "Published" : "Draft"}
                       </span>
                     </div>
                   </div>
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-medium text-gray-900">{property.name}</h3>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {property.name}
+                      </h3>
                       {property.property_leases?.[0]?.tenant?.name && (
                         <div className="flex items-center text-sm text-gray-500">
                           <Building2 className="h-4 w-4 mr-1" />
@@ -694,11 +743,12 @@ export function Properties() {
                       </div>
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                          ${property.compliance_status === 'compliant'
-                            ? 'bg-green-100 text-green-800'
-                            : property.compliance_status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
+                          ${
+                            property.compliance_status === "compliant"
+                              ? "bg-green-100 text-green-800"
+                              : property.compliance_status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
                           }`}
                       >
                         {property.compliance_status}
@@ -727,7 +777,7 @@ export function Properties() {
                           className="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
                         >
                           <Share2 className="h-4 w-4 mr-1" />
-                          {property.published ? 'Unpublish' : 'Publish'}
+                          {property.published ? "Unpublish" : "Publish"}
                         </button>
                         {property.published && (
                           <a

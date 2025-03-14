@@ -1,8 +1,16 @@
 export interface User {
   id: string;
   email: string;
-  role: 'lessor' | 'tenant';
+  role: "lessor" | "tenant";
   full_name?: string;
+  avatar_url?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip_code?: string;
+  date_of_birth?: string | null;
+  bio?: string;
   created_at: string;
   updated_at: string;
 }

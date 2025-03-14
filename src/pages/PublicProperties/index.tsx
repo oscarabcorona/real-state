@@ -1,98 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { Bed, Bath, DollarSign, Calendar, MapPin, Building2, Search, Filter, X } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-
-interface Property {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  description: string;
-  price: number;
-  bedrooms: number;
-  bathrooms: number;
-  square_feet: number;
-  property_type: string;
-  amenities: string[];
-  images: string[];
-  available_date: string;
-  pet_policy: string;
-  lease_terms: string;
-  tenants: {
-    name: string;
-  };
-}
+import {
+  Bath,
+  Bed,
+  Building2,
+  Calendar,
+  DollarSign,
+  Filter,
+  MapPin,
+  X,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabase";
+import { Property } from "./types";
 
 export function PublicProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
+    null
+  );
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(0);
   const [filters, setFilters] = useState({
-    type: '',
-    minPrice: '',
-    maxPrice: '',
-    bedrooms: '',
-    city: '',
-    state: ''
+    type: "",
+    minPrice: "",
+    maxPrice: "",
+    bedrooms: "",
+    city: "",
+    state: "",
   });
   const [appointmentForm, setAppointmentForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    date: '',
-    time: '',
-    message: ''
+    name: "",
+    email: "",
+    phone: "",
+    date: "",
+    time: "",
+    message: "",
   });
 
   useEffect(() => {
     fetchProperties();
     // Count active filters
-    const activeCount = Object.values(filters).filter(value => value !== '').length;
+    const activeCount = Object.values(filters).filter(
+      (value) => value !== ""
+    ).length;
     setActiveFilters(activeCount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const fetchProperties = async () => {
     try {
       let query = supabase
-        .from('properties')
-        .select(`
-          *,
-          tenants (
-            name
-          )
-        `)
-        .eq('published', true);
+        .from("properties")
+        .select(
+          `
+            *,
+            tenants (
+              name
+            )
+          `
+        )
+        .eq("published", true);
 
       if (filters.type) {
-        query = query.eq('property_type', filters.type);
+        query = query.eq("property_type", filters.type);
       }
       if (filters.minPrice) {
-        query = query.gte('price', parseFloat(filters.minPrice));
+        query = query.gte("price", parseFloat(filters.minPrice));
       }
       if (filters.maxPrice) {
-        query = query.lte('price', parseFloat(filters.maxPrice));
+        query = query.lte("price", parseFloat(filters.maxPrice));
       }
       if (filters.bedrooms) {
-        query = query.eq('bedrooms', parseInt(filters.bedrooms));
+        query = query.eq("bedrooms", parseInt(filters.bedrooms));
       }
       if (filters.city) {
-        query = query.ilike('city', `%${filters.city}%`);
+        query = query.ilike("city", `%${filters.city}%`);
       }
       if (filters.state) {
-        query = query.ilike('state', `%${filters.state}%`);
+        query = query.ilike("state", `%${filters.state}%`);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      const { data, error } = await query.order("created_at", {
+        ascending: false,
+      });
 
       if (error) throw error;
       setProperties(data || []);
     } catch (error) {
-      console.error('Error fetching properties:', error);
+      console.error("Error fetching properties:", error);
     } finally {
       setLoading(false);
     }
@@ -100,12 +96,12 @@ export function PublicProperties() {
 
   const resetFilters = () => {
     setFilters({
-      type: '',
-      minPrice: '',
-      maxPrice: '',
-      bedrooms: '',
-      city: '',
-      state: ''
+      type: "",
+      minPrice: "",
+      maxPrice: "",
+      bedrooms: "",
+      city: "",
+      state: "",
     });
   };
 
@@ -114,7 +110,7 @@ export function PublicProperties() {
     if (!selectedProperty) return;
 
     try {
-      const { error } = await supabase.from('appointments').insert([
+      const { error } = await supabase.from("appointments").insert([
         {
           property_id: selectedProperty.id,
           name: appointmentForm.name,
@@ -123,25 +119,25 @@ export function PublicProperties() {
           preferred_date: appointmentForm.date,
           preferred_time: appointmentForm.time,
           message: appointmentForm.message,
-          status: 'pending'
-        }
+          status: "pending",
+        },
       ]);
 
       if (error) throw error;
 
       setShowAppointmentModal(false);
       setAppointmentForm({
-        name: '',
-        email: '',
-        phone: '',
-        date: '',
-        time: '',
-        message: ''
+        name: "",
+        email: "",
+        phone: "",
+        date: "",
+        time: "",
+        message: "",
       });
-      alert('Appointment request submitted successfully!');
+      alert("Appointment request submitted successfully!");
     } catch (error) {
-      console.error('Error submitting appointment:', error);
-      alert('Failed to submit appointment request. Please try again.');
+      console.error("Error submitting appointment:", error);
+      alert("Failed to submit appointment request. Please try again.");
     }
   };
 
@@ -159,60 +155,93 @@ export function PublicProperties() {
         </div>
         <form onSubmit={handleAppointmentSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Name
+            </label>
             <input
               type="text"
               required
               value={appointmentForm.name}
-              onChange={(e) => setAppointmentForm({ ...appointmentForm, name: e.target.value })}
+              onChange={(e) =>
+                setAppointmentForm({ ...appointmentForm, name: e.target.value })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <input
               type="email"
               required
               value={appointmentForm.email}
-              onChange={(e) => setAppointmentForm({ ...appointmentForm, email: e.target.value })}
+              onChange={(e) =>
+                setAppointmentForm({
+                  ...appointmentForm,
+                  email: e.target.value,
+                })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Phone</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Phone
+            </label>
             <input
               type="tel"
               required
               value={appointmentForm.phone}
-              onChange={(e) => setAppointmentForm({ ...appointmentForm, phone: e.target.value })}
+              onChange={(e) =>
+                setAppointmentForm({
+                  ...appointmentForm,
+                  phone: e.target.value,
+                })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Preferred Date</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Preferred Date
+            </label>
             <input
               type="date"
               required
               value={appointmentForm.date}
-              onChange={(e) => setAppointmentForm({ ...appointmentForm, date: e.target.value })}
+              onChange={(e) =>
+                setAppointmentForm({ ...appointmentForm, date: e.target.value })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Preferred Time</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Preferred Time
+            </label>
             <input
               type="time"
               required
               value={appointmentForm.time}
-              onChange={(e) => setAppointmentForm({ ...appointmentForm, time: e.target.value })}
+              onChange={(e) =>
+                setAppointmentForm({ ...appointmentForm, time: e.target.value })
+              }
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Message</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Message
+            </label>
             <textarea
               value={appointmentForm.message}
-              onChange={(e) => setAppointmentForm({ ...appointmentForm, message: e.target.value })}
+              onChange={(e) =>
+                setAppointmentForm({
+                  ...appointmentForm,
+                  message: e.target.value,
+                })
+              }
               rows={3}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
@@ -236,7 +265,9 @@ export function PublicProperties() {
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               <Building2 className="h-8 w-8 text-indigo-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Property Listings</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">
+                Property Listings
+              </span>
             </div>
             <div className="flex items-center space-x-4">
               <button
@@ -270,16 +301,23 @@ export function PublicProperties() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-900">Property Type</h3>
+                <h3 className="text-sm font-medium text-gray-900">
+                  Property Type
+                </h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {['house', 'apartment', 'condo', 'townhouse'].map((type) => (
+                  {["house", "apartment", "condo", "townhouse"].map((type) => (
                     <button
                       key={type}
-                      onClick={() => setFilters({ ...filters, type: filters.type === type ? '' : type })}
+                      onClick={() =>
+                        setFilters({
+                          ...filters,
+                          type: filters.type === type ? "" : type,
+                        })
+                      }
                       className={`px-3 py-2 text-sm font-medium rounded-md ${
                         filters.type === type
-                          ? 'bg-indigo-100 text-indigo-800'
-                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                          ? "bg-indigo-100 text-indigo-800"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -289,7 +327,9 @@ export function PublicProperties() {
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-900">Price Range</h3>
+                <h3 className="text-sm font-medium text-gray-900">
+                  Price Range
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="sr-only">Min Price</label>
@@ -300,7 +340,9 @@ export function PublicProperties() {
                       <input
                         type="number"
                         value={filters.minPrice}
-                        onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
+                        onChange={(e) =>
+                          setFilters({ ...filters, minPrice: e.target.value })
+                        }
                         placeholder="Min"
                         className="pl-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                       />
@@ -315,7 +357,9 @@ export function PublicProperties() {
                       <input
                         type="number"
                         value={filters.maxPrice}
-                        onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
+                        onChange={(e) =>
+                          setFilters({ ...filters, maxPrice: e.target.value })
+                        }
                         placeholder="Max"
                         className="pl-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                       />
@@ -327,17 +371,22 @@ export function PublicProperties() {
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-gray-900">Bedrooms</h3>
                 <div className="grid grid-cols-4 gap-2">
-                  {['Any', '1+', '2+', '3+', '4+'].map((bed) => (
+                  {["Any", "1+", "2+", "3+", "4+"].map((bed) => (
                     <button
                       key={bed}
-                      onClick={() => setFilters({
-                        ...filters,
-                        bedrooms: filters.bedrooms === bed.replace('+', '') ? '' : bed.replace('+', '')
-                      })}
+                      onClick={() =>
+                        setFilters({
+                          ...filters,
+                          bedrooms:
+                            filters.bedrooms === bed.replace("+", "")
+                              ? ""
+                              : bed.replace("+", ""),
+                        })
+                      }
                       className={`px-3 py-2 text-sm font-medium rounded-md ${
-                        filters.bedrooms === bed.replace('+', '')
-                          ? 'bg-indigo-100 text-indigo-800'
-                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                        filters.bedrooms === bed.replace("+", "")
+                          ? "bg-indigo-100 text-indigo-800"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                       }`}
                     >
                       {bed}
@@ -353,7 +402,9 @@ export function PublicProperties() {
                     <input
                       type="text"
                       value={filters.city}
-                      onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, city: e.target.value })
+                      }
                       placeholder="City"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     />
@@ -362,7 +413,9 @@ export function PublicProperties() {
                     <input
                       type="text"
                       value={filters.state}
-                      onChange={(e) => setFilters({ ...filters, state: e.target.value })}
+                      onChange={(e) =>
+                        setFilters({ ...filters, state: e.target.value })
+                      }
                       placeholder="State"
                       className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     />
@@ -383,8 +436,12 @@ export function PublicProperties() {
         ) : properties.length === 0 ? (
           <div className="text-center py-12">
             <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No properties found</h3>
-            <p className="mt-1 text-sm text-gray-500">Try adjusting your filters</p>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              No properties found
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Try adjusting your filters
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -407,14 +464,19 @@ export function PublicProperties() {
                   )}
                   <div className="absolute top-2 right-2">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-800">
-                      {property.property_type.charAt(0).toUpperCase() + property.property_type.slice(1)}
+                      {property.property_type.charAt(0).toUpperCase() +
+                        property.property_type.slice(1)}
                     </span>
                   </div>
                 </div>
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-medium text-gray-900">{property.name}</h3>
-                    <span className="text-lg font-bold text-indigo-600">${property.price.toLocaleString()}/mo</span>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      {property.name}
+                    </h3>
+                    <span className="text-lg font-bold text-indigo-600">
+                      ${property.price.toLocaleString()}/mo
+                    </span>
                   </div>
                   <p className="text-sm text-gray-500 mb-2">
                     <MapPin className="h-4 w-4 inline mr-1" />

@@ -8,18 +8,9 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { useAuthStore } from "../store/authStore";
-
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  data: Record<string, string>;
-  read: boolean;
-  created_at: string;
-}
+import { supabase } from "../../lib/supabase";
+import { useAuthStore } from "../../store/authStore";
+import { Notification } from "./types";
 
 export function Notifications() {
   const { user } = useAuthStore();
