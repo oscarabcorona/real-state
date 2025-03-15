@@ -1,35 +1,39 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Building2, Home, User } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
-
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Building2, User } from "lucide-react";
+import { useAuthStore } from "../store/authStore";
+// Double check this
 export function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
-  const [role, setRole] = useState<'lessor' | 'tenant' | ''>('');
-  const [error, setError] = useState('');
+  const [role, setRole] = useState<"lessor" | "tenant" | "">("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { signIn, signUp } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
-    
+
     try {
       if (isSignUp) {
         if (!role) {
-          throw new Error('Please select a role');
+          throw new Error("Please select a role");
         }
         await signUp(email, password, role);
       }
       await signIn(email, password);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      const message = err instanceof Error ? err.message : 
-        isSignUp ? 'Failed to create account' : 'Invalid email or password';
+      const message =
+        err instanceof Error
+          ? err.message
+          : isSignUp
+          ? "Failed to create account"
+          : "Invalid email or password";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -43,7 +47,7 @@ export function Login() {
           <Building2 className="h-12 w-12 text-indigo-600" />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          {isSignUp ? 'Create your account' : 'Sign in to ShortStay Hub'}
+          {isSignUp ? "Create your account" : "Sign in to ShortStay Hub"}
         </h2>
       </div>
 
@@ -51,7 +55,10 @@ export function Login() {
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <div className="mt-1">
@@ -70,7 +77,10 @@ export function Login() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <div className="mt-1">
@@ -78,7 +88,7 @@ export function Login() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  autoComplete={isSignUp ? "new-password" : "current-password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -96,31 +106,33 @@ export function Login() {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
-                    onClick={() => setRole('lessor')}
+                    onClick={() => setRole("lessor")}
                     className={`relative flex flex-col items-center justify-center p-4 border rounded-lg ${
-                      role === 'lessor'
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-200 hover:border-indigo-500 hover:bg-indigo-50'
+                      role === "lessor"
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        : "border-gray-200 hover:border-indigo-500 hover:bg-indigo-50"
                     }`}
                   >
                     <Building2 className="h-8 w-8 mb-2" />
-                    <span className="text-sm font-medium">Property Owner/Manager</span>
-                    {role === 'lessor' && (
+                    <span className="text-sm font-medium">
+                      Property Owner/Manager
+                    </span>
+                    {role === "lessor" && (
                       <div className="absolute top-2 right-2 h-2 w-2 bg-indigo-500 rounded-full" />
                     )}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setRole('tenant')}
+                    onClick={() => setRole("tenant")}
                     className={`relative flex flex-col items-center justify-center p-4 border rounded-lg ${
-                      role === 'tenant'
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-200 hover:border-indigo-500 hover:bg-indigo-50'
+                      role === "tenant"
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700"
+                        : "border-gray-200 hover:border-indigo-500 hover:bg-indigo-50"
                     }`}
                   >
                     <User className="h-8 w-8 mb-2" />
                     <span className="text-sm font-medium">Tenant</span>
-                    {role === 'tenant' && (
+                    {role === "tenant" && (
                       <div className="absolute top-2 right-2 h-2 w-2 bg-indigo-500 rounded-full" />
                     )}
                   </button>
@@ -143,10 +155,12 @@ export function Login() {
                 {isLoading ? (
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-                    {isSignUp ? 'Creating account...' : 'Signing in...'}
+                    {isSignUp ? "Creating account..." : "Signing in..."}
                   </div>
+                ) : isSignUp ? (
+                  "Sign up"
                 ) : (
-                  isSignUp ? 'Sign up' : 'Sign in'
+                  "Sign in"
                 )}
               </button>
             </div>
@@ -156,14 +170,14 @@ export function Login() {
             <button
               onClick={() => {
                 setIsSignUp(!isSignUp);
-                setError('');
-                setRole('');
+                setError("");
+                setRole("");
               }}
               className="w-full text-center text-sm text-indigo-600 hover:text-indigo-500 disabled:opacity-50"
               disabled={isLoading}
             >
               {isSignUp
-                ? 'Already have an account? Sign in'
+                ? "Already have an account? Sign in"
                 : "Don't have an account? Sign up"}
             </button>
           </div>

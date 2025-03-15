@@ -2,6 +2,7 @@ import { Building2, Key, Mail, User } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/authStore";
+import { Button } from "@/components/ui/button";
 
 export function Login() {
   const [email, setEmail] = useState("");
@@ -122,14 +123,11 @@ export function Login() {
                     I am a...
                   </label>
                   <div className="grid grid-cols-2 gap-4">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setRole("lessor")}
-                      className={`relative flex flex-col items-center justify-center p-4 border rounded-lg transition-all duration-200 ${
-                        role === "lessor"
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                          : "border-gray-200 hover:border-indigo-500 hover:bg-indigo-50"
-                      }`}
+                      variant={role === "lessor" ? "default" : "outline"}
+                      className="relative flex flex-col items-center justify-center p-4 h-auto"
                     >
                       <Building2 className="h-8 w-8 mb-2" />
                       <span className="text-sm font-medium">
@@ -138,22 +136,19 @@ export function Login() {
                       {role === "lessor" && (
                         <div className="absolute top-2 right-2 h-2 w-2 bg-indigo-500 rounded-full" />
                       )}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() => setRole("tenant")}
-                      className={`relative flex flex-col items-center justify-center p-4 border rounded-lg transition-all duration-200 ${
-                        role === "tenant"
-                          ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md"
-                          : "border-gray-200 hover:border-indigo-500 hover:bg-indigo-50"
-                      }`}
+                      variant={role === "tenant" ? "default" : "outline"}
+                      className="relative flex flex-col items-center justify-center p-4 h-auto"
                     >
                       <User className="h-8 w-8 mb-2" />
                       <span className="text-sm font-medium">Tenant</span>
                       {role === "tenant" && (
                         <div className="absolute top-2 right-2 h-2 w-2 bg-indigo-500 rounded-full" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -184,9 +179,9 @@ export function Login() {
               )}
 
               <div>
-                <button
+                <Button
                   type="submit"
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  className="w-full"
                   disabled={isLoading || (isSignUp && !role)}
                 >
                   {isLoading ? (
@@ -199,7 +194,7 @@ export function Login() {
                   ) : (
                     "Sign in"
                   )}
-                </button>
+                </Button>
               </div>
             </form>
 
@@ -218,17 +213,18 @@ export function Login() {
               </div>
 
               <div className="mt-6">
-                <button
+                <Button
                   onClick={() => {
                     setIsSignUp(!isSignUp);
                     setError("");
                     setRole("");
                   }}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors duration-200"
+                  variant="outline"
+                  className="w-full"
                   disabled={isLoading}
                 >
                   {isSignUp ? "Sign in instead" : "Create an account"}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

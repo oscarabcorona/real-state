@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { PlayCircle, Rocket } from "lucide-react";
 import { AnimatedElement } from "../../components/AnimatedElement";
 import { AnimatedNumber } from "../../components/AnimatedNumber";
 import { AnimatedText } from "../../components/AnimatedText";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 export function HeroSection() {
   return (
@@ -32,22 +35,26 @@ export function HeroSection() {
                 platform reduces costs by 40%, automates daily tasks, and
                 provides real-time insights for better decision-making.
               </p>
+              <ModeToggle />
             </AnimatedElement>
 
             <AnimatedElement animation="slideUp" delay={1.2}>
               <div className="mt-10 flex items-center gap-x-6">
-                <Link
-                  to="/login"
-                  className="rounded-md bg-indigo-500 px-8 py-3 text-lg font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
+                <Button size="lg" asChild>
+                  <Link to="/login">
+                    <Rocket />
+                    Start Free Trial
+                  </Link>
+                </Button>
+                <Button
+                  variant="link"
+                  className="text-white hover:text-white"
+                  asChild
                 >
-                  Start Free Trial
-                </Link>
-                <a
-                  href="#features"
-                  className="text-lg font-semibold leading-6 text-white"
-                >
-                  See How It Works <span aria-hidden="true">→</span>
-                </a>
+                  <a href="#features">
+                    <PlayCircle /> See How It Works
+                  </a>
+                </Button>
               </div>
             </AnimatedElement>
 
