@@ -4,17 +4,26 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
+export interface PasswordInputProps extends React.ComponentProps<typeof Input> {
+  icon?: React.ReactNode;
+}
+
 export const PasswordInput = React.forwardRef<
   HTMLInputElement,
-  React.ComponentProps<"input">
->(({ className, ...props }, ref) => {
+  PasswordInputProps
+>(({ className, icon, ...props }, ref) => {
   const [showPassword, setShowPassword] = React.useState(false);
 
   return (
     <div className="relative w-full">
+      {icon && (
+        <div className="text-muted-foreground pointer-events-none absolute left-3 top-2.5">
+          {icon}
+        </div>
+      )}
       <Input
         type={showPassword ? "text" : "password"}
-        className={cn("hide-password-toggle pr-10", className)}
+        className={cn("hide-password-toggle pr-10", icon && "pl-9", className)}
         ref={ref}
         {...props}
       />
@@ -35,15 +44,14 @@ export const PasswordInput = React.forwardRef<
         </span>
       </Button>
 
-      {/* hides browsers password toggles */}
       <style>{`
-					.hide-password-toggle::-ms-reveal,
-					.hide-password-toggle::-ms-clear {
-						visibility: hidden;
-						pointer-events: none;
-						display: none;
-					}
-				`}</style>
+          .hide-password-toggle::-ms-reveal,
+          .hide-password-toggle::-ms-clear {
+            visibility: hidden;
+            pointer-events: none;
+            display: none;
+          }
+        `}</style>
     </div>
   );
 });
