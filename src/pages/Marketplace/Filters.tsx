@@ -1,4 +1,12 @@
 import { DollarSign } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function Filters({
   showFilters,
@@ -26,134 +34,139 @@ export function Filters({
   return (
     <>
       {showFilters && (
-        <div className="bg-white border-b shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-900">
-                  Property Type
-                </h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {["house", "apartment", "condo", "townhouse"].map((type) => (
-                    <button
-                      key={type}
-                      onClick={() =>
-                        setFilters({
-                          ...filters,
-                          type: filters.type === type ? "" : type,
-                        })
-                      }
-                      className={`px-3 py-2 text-sm font-medium rounded-md ${
-                        filters.type === type
-                          ? "bg-indigo-100 text-indigo-800"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </button>
-                  ))}
+        <Card className="border-none shadow-sm">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Property Type and Price Range Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Property Type</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {["house", "apartment", "condo", "townhouse"].map(
+                      (type) => (
+                        <Tooltip key={type}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant={
+                                filters.type === type ? "default" : "outline"
+                              }
+                              onClick={() =>
+                                setFilters({
+                                  ...filters,
+                                  type: filters.type === type ? "" : type,
+                                })
+                              }
+                              className="w-full capitalize"
+                            >
+                              {type}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            Filter by {type} properties
+                          </TooltipContent>
+                        </Tooltip>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-900">
-                  Price Range
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="sr-only">Min Price</label>
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Price Range</h3>
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <DollarSign className="h-4 w-4 text-gray-400" />
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <input
+                      <Input
                         type="number"
                         value={filters.minPrice}
                         onChange={(e) =>
                           setFilters({ ...filters, minPrice: e.target.value })
                         }
-                        placeholder="Min"
-                        className="pl-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Min Price"
+                        className="pl-8"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="sr-only">Max Price</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <DollarSign className="h-4 w-4 text-gray-400" />
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      <input
+                      <Input
                         type="number"
                         value={filters.maxPrice}
                         onChange={(e) =>
                           setFilters({ ...filters, maxPrice: e.target.value })
                         }
-                        placeholder="Max"
-                        className="pl-8 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Max Price"
+                        className="pl-8"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
+              {/* Bedrooms Row */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-900">Bedrooms</h3>
-                <div className="grid grid-cols-4 gap-2">
+                <h3 className="text-sm font-medium">Bedrooms</h3>
+                <div className="flex justify-start gap-2 flex-wrap sm:flex-nowrap">
                   {["Any", "1+", "2+", "3+", "4+"].map((bed) => (
-                    <button
-                      key={bed}
-                      onClick={() =>
-                        setFilters({
-                          ...filters,
-                          bedrooms:
+                    <Tooltip key={bed}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={
                             filters.bedrooms === bed.replace("+", "")
-                              ? ""
-                              : bed.replace("+", ""),
-                        })
-                      }
-                      className={`px-3 py-2 text-sm font-medium rounded-md ${
-                        filters.bedrooms === bed.replace("+", "")
-                          ? "bg-indigo-100 text-indigo-800"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {bed}
-                    </button>
+                              ? "default"
+                              : "outline"
+                          }
+                          onClick={() =>
+                            setFilters({
+                              ...filters,
+                              bedrooms:
+                                filters.bedrooms === bed.replace("+", "")
+                                  ? ""
+                                  : bed.replace("+", ""),
+                            })
+                          }
+                          className="flex-1 sm:flex-none min-w-[64px]"
+                        >
+                          {bed}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {bed === "Any"
+                          ? "Any number of bedrooms"
+                          : `${bed} bedrooms`}
+                      </TooltipContent>
+                    </Tooltip>
                   ))}
                 </div>
               </div>
 
+              {/* Location Row */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-gray-900">Location</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <input
-                      type="text"
-                      value={filters.city}
-                      onChange={(e) =>
-                        setFilters({ ...filters, city: e.target.value })
-                      }
-                      placeholder="City"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type="text"
-                      value={filters.state}
-                      onChange={(e) =>
-                        setFilters({ ...filters, state: e.target.value })
-                      }
-                      placeholder="State"
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    />
-                  </div>
+                <h3 className="text-sm font-medium">Location</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
+                  <Input
+                    type="text"
+                    value={filters.city}
+                    onChange={(e) =>
+                      setFilters({ ...filters, city: e.target.value })
+                    }
+                    placeholder="City"
+                  />
+                  <Input
+                    type="text"
+                    value={filters.state}
+                    onChange={(e) =>
+                      setFilters({ ...filters, state: e.target.value })
+                    }
+                    placeholder="State"
+                  />
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
     </>
   );
