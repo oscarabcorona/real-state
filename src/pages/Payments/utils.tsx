@@ -1,4 +1,11 @@
-import { CheckCircle, Clock, XCircle } from "lucide-react";
+import {
+  CheckCircle,
+  Clock,
+  XCircle,
+  CreditCard,
+  Banknote,
+  DollarSign,
+} from "lucide-react";
 
 export const getStatusIcon = (status: string) => {
   switch (status) {
@@ -22,6 +29,19 @@ export const getStatusClass = (status: string) => {
   }
 };
 
+export const getStatusBadgeVariant = (
+  status: string
+): "default" | "destructive" | "secondary" | "outline" => {
+  switch (status) {
+    case "completed":
+      return "default";
+    case "failed":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+};
+
 export const formatCurrency = (amount: number): string => {
   return `$${amount.toLocaleString()}`;
 };
@@ -32,4 +52,17 @@ export const formatPaymentMethod = (method: string): string => {
 
 export const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString();
+};
+
+export const getPaymentMethodIcon = (method: string) => {
+  switch (method) {
+    case "credit_card":
+      return <CreditCard className="h-4 w-4 text-muted-foreground" />;
+    case "ach":
+      return <Banknote className="h-4 w-4 text-muted-foreground" />;
+    case "cash":
+      return <DollarSign className="h-4 w-4 text-muted-foreground" />;
+    default:
+      return <CreditCard className="h-4 w-4 text-muted-foreground" />;
+  }
 };

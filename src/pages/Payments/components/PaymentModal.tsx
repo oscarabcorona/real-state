@@ -1,6 +1,19 @@
 import React from "react";
 import { X } from "lucide-react";
 import { Property } from "../types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface PaymentModalProps {
   formData: {
@@ -18,7 +31,7 @@ interface PaymentModalProps {
     }>
   >;
   properties: Property[];
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
+  handleSubmit: (e: React.FormEvent) => Promise<boolean | void>;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
 }
@@ -30,114 +43,150 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   handleSubmit,
   setIsModalOpen,
   loading,
-}) => (
-  <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-    <div className="bg-white rounded-lg max-w-md w-full">
-      <div className="flex justify-between items-center p-6 border-b">
-        <h3 className="text-lg font-medium">New Payment</h3>
-        <button
-          onClick={() => setIsModalOpen(false)}
-          className="text-gray-400 hover:text-gray-500"
-        >
-          <X className="h-5 w-5" />
-        </button>
+}) => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const result = await handleSubmit(e);
+      if (result) {
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error submitting payment:", error);
+    }
+  };
+
+  const isFormValid =
+    formData.property_id &&
+    formData.amount &&
+    parseFloat(formData.amount) > 0 &&
+    formData.payment_method;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <div className="min-h-[200px] w-full max-w-md">
+        <Card className="w-full">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle>New Payment</CardTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsModalOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={onSubmit} className="space-y-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="property" className="font-medium">
+                  Property
+                </Label>
+                <Select
+                  value={formData.property_id}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, property_id: value })
+                  }
+                  required
+                >
+                  <SelectTrigger id="property">
+                    <SelectValue placeholder="Select a property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {properties.map((property) => (
+                      <SelectItem key={property.id} value={property.id}>
+                        {property.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="amount" className="font-medium">
+                  Amount
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    $
+                  </span>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    value={formData.amount}
+                    onChange={(e) =>
+                      setFormData({ ...formData, amount: e.target.value })
+                    }
+                    className={cn(
+                      "pl-6",
+                      parseFloat(formData.amount || "0") <= 0 &&
+                        "border-red-500"
+                    )}
+                    placeholder="0.00"
+                    required
+                    min="0.01"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="payment_method" className="font-medium">
+                  Payment Method
+                </Label>
+                <Select
+                  value={formData.payment_method}
+                  onValueChange={(value: "credit_card" | "ach" | "cash") =>
+                    setFormData({ ...formData, payment_method: value })
+                  }
+                  required
+                >
+                  <SelectTrigger id="payment_method">
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="credit_card">Credit Card</SelectItem>
+                    <SelectItem value="ach">ACH Transfer</SelectItem>
+                    <SelectItem value="cash">Cash</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description" className="font-medium">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Payment description (optional)"
+                  rows={3}
+                />
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loading || !isFormValid}
+                >
+                  {loading ? (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      Processing...
+                    </>
+                  ) : (
+                    "Create Payment"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-      <form onSubmit={handleSubmit} className="p-6 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Property
-          </label>
-          <select
-            value={formData.property_id}
-            onChange={(e) =>
-              setFormData({ ...formData, property_id: e.target.value })
-            }
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            required
-          >
-            <option value="">Select a property</option>
-            {properties.map((property) => (
-              <option key={property.id} value={property.id}>
-                {property.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Amount
-          </label>
-          <div className="mt-1 relative rounded-md shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">$</span>
-            </div>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.amount}
-              onChange={(e) =>
-                setFormData({ ...formData, amount: e.target.value })
-              }
-              className="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              placeholder="0.00"
-              required
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Payment Method
-          </label>
-          <select
-            value={formData.payment_method}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                payment_method: e.target.value as
-                  | "credit_card"
-                  | "ach"
-                  | "cash",
-              })
-            }
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            required
-          >
-            <option value="credit_card">Credit Card</option>
-            <option value="ach">ACH Transfer</option>
-            <option value="cash">Cash</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Description
-          </label>
-          <textarea
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            rows={3}
-            placeholder="Payment description"
-          />
-        </div>
-        <div className="mt-6">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2" />
-                Processing...
-              </>
-            ) : (
-              "Create Payment"
-            )}
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
-);
+  );
+};

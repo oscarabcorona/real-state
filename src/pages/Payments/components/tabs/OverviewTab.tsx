@@ -13,7 +13,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { usePagination } from "@/hooks/usePayment";
-import { formatCurrency, formatDate } from "../../utils";
+import { formatCurrency, formatDate, getStatusBadgeVariant } from "../../utils";
 
 interface OverviewTabProps {
   stats: {
@@ -50,13 +50,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="mt-[-12px]">
-            <div className="flex items-baseline justify-between">
-              <div className="text-2xl font-bold">
-                {formatCurrency(stats.totalCollected)}
-              </div>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(stats.totalCollected)}
             </div>
-            <p className="text-xs text-muted-foreground">All time earnings</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              All time earnings
+            </p>
           </CardContent>
         </Card>
 
@@ -67,13 +67,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="mt-[-12px]">
-            <div className="flex items-baseline justify-between">
-              <div className="text-2xl font-bold">
-                {formatCurrency(stats.pending)}
-              </div>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(stats.pending)}
             </div>
-            <p className="text-xs text-muted-foreground">Awaiting collection</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Awaiting collection
+            </p>
           </CardContent>
         </Card>
 
@@ -84,11 +84,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="mt-[-12px]">
-            <div className="flex items-baseline justify-between">
-              <div className="text-2xl font-bold">{stats.propertiesCount}</div>
-            </div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.propertiesCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Total managed properties
             </p>
           </CardContent>
@@ -101,11 +99,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             </CardTitle>
             <Smartphone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="mt-[-12px]">
-            <div className="flex items-baseline justify-between">
-              <div className="text-2xl font-bold">{stats.autoPayActive}</div>
-            </div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.autoPayActive}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Active subscriptions
             </p>
           </CardContent>
@@ -117,7 +113,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <CardTitle>Recent Transactions</CardTitle>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="relative min-h-[300px]">
+          <ScrollArea className="h-[400px]">
             {filteredPayments.length === 0 ? (
               <div className="flex h-[300px] items-center justify-center">
                 <p className="text-muted-foreground text-sm">
@@ -126,11 +122,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </div>
             ) : (
               <>
-                <div className="space-y-4 pr-4">
+                <div className="space-y-4">
                   {currentItems.map((payment) => (
                     <div
                       key={payment.id}
-                      className="group flex items-center justify-between space-x-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                      className="group flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center space-x-4">
                         <div className="text-muted-foreground transition-colors group-hover:text-foreground">
@@ -147,11 +143,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       </div>
                       <div className="flex items-center space-x-4">
                         <Badge
-                          variant={
-                            payment.status === "completed"
-                              ? "default"
-                              : "secondary"
-                          }
+                          variant={getStatusBadgeVariant(payment.status)}
                           className="capitalize"
                         >
                           {payment.status}
@@ -163,46 +155,49 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     </div>
                   ))}
                 </div>
-                <div className="mt-6">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            prevPage();
-                          }}
-                          aria-disabled={currentPage === 1}
-                        />
-                      </PaginationItem>
-                      {[...Array(totalPages)].map((_, i) => (
-                        <PaginationItem key={i + 1}>
-                          <PaginationLink
+
+                {totalPages > 1 && (
+                  <div className="mt-6">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              goToPage(i + 1);
+                              prevPage();
                             }}
-                            isActive={currentPage === i + 1}
-                          >
-                            {i + 1}
-                          </PaginationLink>
+                            aria-disabled={currentPage === 1}
+                          />
                         </PaginationItem>
-                      ))}
-                      <PaginationItem>
-                        <PaginationNext
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            nextPage();
-                          }}
-                          aria-disabled={currentPage === totalPages}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
+                        {[...Array(totalPages)].map((_, i) => (
+                          <PaginationItem key={i + 1}>
+                            <PaginationLink
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                goToPage(i + 1);
+                              }}
+                              isActive={currentPage === i + 1}
+                            >
+                              {i + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+                        <PaginationItem>
+                          <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              nextPage();
+                            }}
+                            aria-disabled={currentPage === totalPages}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </>
             )}
           </ScrollArea>

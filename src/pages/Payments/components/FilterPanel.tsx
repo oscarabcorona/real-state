@@ -25,9 +25,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   resetFilters,
 }) => (
   <Card className="mb-4">
-    <CardContent className="pt-6">
+    <CardContent className="p-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="grid gap-2">
+        <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Select
             value={filters.status || "all"}
@@ -38,7 +38,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               }))
             }
           >
-            <SelectTrigger id="status">
+            <SelectTrigger id="status" className="w-full">
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
@@ -50,7 +50,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </Select>
         </div>
 
-        <div className="grid gap-2">
+        <div className="space-y-2">
           <Label htmlFor="payment-method">Payment Method</Label>
           <Select
             value={filters.paymentMethod || "all"}
@@ -61,7 +61,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               }))
             }
           >
-            <SelectTrigger id="payment-method">
+            <SelectTrigger id="payment-method" className="w-full">
               <SelectValue placeholder="All Methods" />
             </SelectTrigger>
             <SelectContent>
@@ -73,7 +73,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </Select>
         </div>
 
-        <div className="grid gap-2">
+        <div className="space-y-2">
           <Label htmlFor="date-range">Date Range</Label>
           <Select
             value={filters.dateRange || "all"}
@@ -84,7 +84,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               }))
             }
           >
-            <SelectTrigger id="date-range">
+            <SelectTrigger id="date-range" className="w-full">
               <SelectValue placeholder="All Time" />
             </SelectTrigger>
             <SelectContent>
@@ -96,7 +96,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </Select>
         </div>
 
-        <div className="grid gap-2">
+        <div className="space-y-2">
           <Label htmlFor="min-amount">Min Amount</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -115,7 +115,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
         </div>
 
-        <div className="grid gap-2">
+        <div className="space-y-2">
           <Label htmlFor="max-amount">Max Amount</Label>
           <div className="relative">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -137,7 +137,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
       {Object.values(filters).some((value) => value !== "") && (
         <div className="mt-4 flex justify-end">
-          <Button variant="outline" onClick={resetFilters} className="h-8">
+          <Button
+            variant="outline"
+            onClick={resetFilters}
+            size="sm"
+            className="flex items-center"
+          >
             <XIcon className="mr-2 h-4 w-4" />
             Clear Filters
           </Button>
