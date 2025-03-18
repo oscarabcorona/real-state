@@ -1,6 +1,14 @@
 import { AnimatedElement } from "../../components/AnimatedElement";
-import { ChevronDown, HelpCircle } from "lucide-react";
-import { useState } from "react";
+import { HelpCircle } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface FAQItem {
   question: string;
@@ -41,90 +49,126 @@ const faqs: FAQItem[] = [
   },
 ];
 
+const categories = [
+  { id: "general", label: "General" },
+  { id: "pricing", label: "Pricing" },
+  { id: "security", label: "Security" },
+] as const;
+
 export function FAQSection() {
-  const [openItem, setOpenItem] = useState<number | null>(null);
-  const [activeCategory, setActiveCategory] =
-    useState<FAQItem["category"]>("general");
+  const [questionCount, setQuestionCount] = useState(0);
+
+  const updateQuestionCount = (category: FAQItem["category"]) => {
+    const count = faqs.filter((faq) => faq.category === category).length;
+    let start = 0;
+    const duration = 1000;
+    const steps = Math.ceil(duration / (1000 / 60));
+    const stepValue = count / steps;
+
+    const timer = setInterval(() => {
+      start += stepValue;
+      if (start > count) {
+        setQuestionCount(count);
+        clearInterval(timer);
+      } else {
+        setQuestionCount(Math.floor(start));
+      }
+    }, 1000 / 60);
+
+    return () => clearInterval(timer);
+  };
+
+  useEffect(() => {
+    updateQuestionCount("general");
+  }, []);
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-white py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <AnimatedElement animation="slideUp">
-          <div className="lg:text-center mb-16">
-            <span className="inline-flex items-center text-sm font-semibold text-indigo-600 gap-2">
-              <HelpCircle className="h-4 w-4" /> SUPPORT
-            </span>
-            <h2 className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Frequently Asked Questions
-            </h2>
-            <p className="mt-4 text-xl text-gray-500 max-w-2xl lg:mx-auto">
-              Everything you need to know about our property management platform
-            </p>
-          </div>
-        </AnimatedElement>
-
-        <div className="max-w-3xl mx-auto">
-          <div className="flex justify-center gap-4 mb-8">
-            {["general", "pricing", "security"].map((category) => (
-              <button
-                key={category}
-                onClick={() =>
-                  setActiveCategory(category as FAQItem["category"])
-                }
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
-                  ${
-                    activeCategory === category
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-              >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          <dl className="space-y-6">
-            {faqs
-              .filter((faq) => faq.category === activeCategory)
-              .map((faq, index) => (
-                <AnimatedElement
-                  key={index}
-                  animation="slideLeft"
-                  delay={index * 0.1}
+    <section className="relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+      <div className="relative py-24">
+        <div className="container max-w-4xl mx-auto px-4">
+          <AnimatedElement animation="slideUp">
+            <div className="text-center space-y-6">
+              <div className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-primary/20 to-primary/10 px-4 py-1.5">
+                <HelpCircle className="mr-2 h-4 w-4 text-primary" />
+                <span className="text-sm font-medium bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                  {questionCount} Questions Answered
+                </span>
+              </div>
+              <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                Frequently Asked Questions
+              </h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Everything you need to know about our property management
+                platform. Can't find what you're looking for?{" "}
+                <a
+                  href="#contact"
+                  className="text-primary hover:text-primary/80 underline-offset-4 hover:underline"
                 >
-                  <div className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                    <dt className="text-lg">
-                      <button
-                        onClick={() =>
-                          setOpenItem(openItem === index ? null : index)
-                        }
-                        className="text-left w-full flex justify-between items-center text-gray-900 font-medium"
-                      >
-                        <span>{faq.question}</span>
-                        <ChevronDown
-                          className={`h-5 w-5 text-indigo-500 transition-transform
-                            ${
-                              openItem === index ? "transform rotate-180" : ""
-                            }`}
-                        />
-                      </button>
-                    </dt>
-                    <dd
-                      className={`mt-2 text-base text-gray-500 transition-all duration-200 ease-in-out
-                        ${
-                          openItem === index
-                            ? "max-h-40 opacity-100"
-                            : "max-h-0 opacity-0 overflow-hidden"
-                        }`}
+                  Contact us
+                </a>
+              </p>
+            </div>
+          </AnimatedElement>
+
+          <div className="mt-16">
+            <Tabs
+              defaultValue="general"
+              className="w-full"
+              onValueChange={(value) =>
+                updateQuestionCount(value as FAQItem["category"])
+              }
+            >
+              <div className="flex justify-center mb-12">
+                <TabsList className="bg-muted p-1 rounded-full">
+                  {categories.map(({ id, label }) => (
+                    <TabsTrigger
+                      key={id}
+                      value={id}
+                      className="px-6 py-2 rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/90 data-[state=active]:text-primary-foreground"
                     >
-                      {faq.answer}
-                    </dd>
-                  </div>
-                </AnimatedElement>
+                      {label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
+
+              {categories.map(({ id }) => (
+                <TabsContent key={id} value={id}>
+                  <AnimatedElement animation="slideUp" delay={0.1}>
+                    <Accordion type="single" collapsible className="grid gap-4">
+                      {faqs
+                        .filter((faq) => faq.category === id)
+                        .map((faq, index) => (
+                          <AccordionItem
+                            key={index}
+                            value={`item-${index}`}
+                            className={cn(
+                              "bg-card hover:bg-accent/5 data-[state=open]:bg-accent/10",
+                              "rounded-xl border shadow-sm",
+                              "transition-all duration-200"
+                            )}
+                          >
+                            <AccordionTrigger className="px-6 py-4 text-base font-medium hover:no-underline group">
+                              <span className="group-hover:text-primary transition-colors">
+                                {faq.question}
+                              </span>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-4">
+                              <div className="text-muted-foreground prose prose-sm max-w-none">
+                                {faq.answer}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                    </Accordion>
+                  </AnimatedElement>
+                </TabsContent>
               ))}
-          </dl>
+            </Tabs>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
