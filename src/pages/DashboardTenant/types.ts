@@ -6,10 +6,10 @@ export interface Property {
   state: string;
   price: number;
   images: string[];
-  user_id: string;
   bedrooms: number;
   bathrooms: number;
   square_feet: number;
+  user_id: string;
   property_manager: {
     email: string;
   } | null;

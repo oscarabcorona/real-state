@@ -1,6 +1,14 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useTransition } from "react";
 import { Link } from "react-router-dom";
+import { useOptimistic } from "../../hooks/useOptimisticAction";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { PropertiesSections } from "./PropertiesSection";
@@ -9,14 +17,7 @@ import { RecentDocuments } from "./RecentDocuments";
 import { RecentPayments } from "./RecentPayments";
 import { StatsOverview } from "./StatsOverview";
 import { UpcomingViewings } from "./UpcomingViewings";
-import type { Appointment, Document, Payment, Property } from "./types";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Payment, Document, Appointment, Property } from "./types";
 
 export function EmptyDashboard() {
   return (
@@ -38,189 +39,189 @@ export function EmptyDashboard() {
   );
 }
 
-export function DashboardTenant() {
-  const { user } = useAuthStore();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalPaid: 0,
-    pending: 0,
+const fetchDashboardAction = async (userId: string) => {
+  const { data: accessData } = await supabase
+    .from("tenant_property_access")
+    .select("property_id")
+    .eq("tenant_user_id", userId);
+
+  if (!accessData?.length) {
+    return {
+      properties: [],
+      payments: [],
+      documents: [],
+      appointments: [],
+      stats: {
+        propertiesCount: 0,
+        totalPaid: 0,
+        documentsVerified: 0,
+        documentsTotal: 0,
+        upcomingViewings: 0,
+        pending: 0,
+        autoPayActive: 0,
+      },
+    };
+  }
+
+  const propertyIds = accessData.map((a) => a.property_id);
+
+  // Fetch all data in parallel
+  const [propertiesData, paymentsData, documentsData, appointmentsData] =
+    await Promise.all([
+      supabase
+        .from("properties")
+        .select(
+          `
+          id,
+          name,
+          address,
+          city,
+          state,
+          price,
+          images,
+          bedrooms,
+          bathrooms,
+          square_feet,
+          user_id,
+          property_manager:users!properties_user_id_fkey (
+            email
+          )
+        `
+        )
+        .in("id", propertyIds),
+
+      supabase
+        .from("payments")
+        .select(
+          `
+          id,
+          amount,
+          status,
+          payment_method,
+          created_at,
+          properties:property_id (name)
+        `
+        )
+        .in("property_id", propertyIds)
+        .order("created_at", { ascending: false })
+        .limit(5),
+
+      supabase
+        .from("documents")
+        .select(
+          `
+          id,
+          title,
+          type,
+          status,
+          created_at,
+          properties:property_id (name)
+        `
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(5),
+
+      supabase
+        .from("appointments")
+        .select(
+          `
+          id,
+          property_id,
+          preferred_date,
+          preferred_time,
+          status,
+          properties (name, address)
+        `
+        )
+        .eq("tenant_user_id", userId)
+        .gte("preferred_date", new Date().toISOString())
+        .order("preferred_date", { ascending: true })
+        .limit(5),
+    ]);
+
+  // Calculate stats
+  const stats = {
+    totalPaid:
+      paymentsData.data
+        ?.filter((p) => p.status === "completed")
+        .reduce((sum, p) => sum + p.amount, 0) || 0,
+    pending:
+      paymentsData.data
+        ?.filter((p) => p.status === "pending")
+        .reduce((sum, p) => sum + p.amount, 0) || 0,
+    propertiesCount: propertiesData.data?.length || 0,
+    autoPayActive:
+      paymentsData.data?.filter((p) => p.payment_method === "ach").length || 0,
+    documentsVerified:
+      documentsData.data?.filter((d) => d.status === "signed").length || 0,
+    documentsTotal: documentsData.data?.length || 0,
+    upcomingViewings:
+      appointmentsData.data?.filter((a) => a.status === "confirmed").length ||
+      0,
+  };
+
+  return {
+    properties: propertiesData.data || [],
+    payments: paymentsData.data || [],
+    documents: documentsData.data || [],
+    appointments: appointmentsData.data || [],
+    stats,
+  };
+};
+
+interface DashboardData {
+  properties: Property[];
+  payments: Payment[];
+  documents: Document[];
+  appointments: Appointment[];
+  stats: {
+    propertiesCount: number;
+    totalPaid: number;
+    documentsVerified: number;
+    documentsTotal: number;
+    upcomingViewings: number;
+    pending: number;
+    autoPayActive: number;
+  };
+}
+
+const INITIAL_STATE: DashboardData = {
+  properties: [],
+  payments: [],
+  documents: [],
+  appointments: [],
+  stats: {
     propertiesCount: 0,
-    autoPayActive: 0,
+    totalPaid: 0,
     documentsVerified: 0,
     documentsTotal: 0,
     upcomingViewings: 0,
-  });
+    pending: 0,
+    autoPayActive: 0,
+  },
+};
 
-  useEffect(() => {
-    if (user) {
-      fetchDashboardData();
-      subscribeToNotifications();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+export function DashboardTenant() {
+  const { user } = useAuthStore();
+  const [isPending, startTransition] = useTransition();
+  const [optimisticData, setOptimisticData] = useOptimistic(INITIAL_STATE);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboard = useCallback(async () => {
+    if (!user?.id) return;
     try {
-      // Get property access
-      const { data: accessData } = await supabase
-        .from("tenant_property_access")
-        .select("property_id")
-        .eq("tenant_user_id", user?.id);
-
-      if (accessData && accessData.length > 0) {
-        const propertyIds = accessData.map((a) => a.property_id);
-
-        // Fetch properties
-        const { data: propertiesData } = await supabase
-          .from("properties")
-          .select(
-            `
-            id,
-            name,
-            address,
-            city,
-            state,
-            price,
-            images,
-            bedrooms,
-            bathrooms,
-            square_feet,
-            user_id,
-            property_manager:users!properties_user_id_fkey (
-              email
-            )
-          `
-          )
-          .in("id", propertyIds);
-
-        setProperties(propertiesData || []);
-        setStats((prev) => ({
-          ...prev,
-          propertiesCount: propertiesData?.length || 0,
-        }));
-
-        // Fetch payments
-        const { data: paymentsData } = await supabase
-          .from("payments")
-          .select(
-            `
-            id,
-            amount,
-            status,
-            payment_method,
-            created_at,
-            properties:property_id (name)
-          `
-          )
-          .in("property_id", propertyIds)
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        setPayments(paymentsData || []);
-
-        // Calculate payment stats
-        const totalPaid =
-          paymentsData
-            ?.filter((p) => p.status === "completed")
-            .reduce((sum, p) => sum + p.amount, 0) || 0;
-
-        const pendingPayments =
-          paymentsData
-            ?.filter((p) => p.status === "pending")
-            .reduce((sum, p) => sum + p.amount, 0) || 0;
-
-        const autoPayActive =
-          paymentsData?.filter((p) => p.payment_method === "ach").length || 0;
-
-        setStats((prev) => ({
-          ...prev,
-          totalPaid,
-          pending: pendingPayments,
-          autoPayActive,
-        }));
-
-        // Fetch documents
-        const { data: documentsData } = await supabase
-          .from("documents")
-          .select(
-            `
-            id,
-            title,
-            type,
-            status,
-            created_at,
-            properties:property_id (name)
-          `
-          )
-          .eq("user_id", user?.id)
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        setDocuments(documentsData || []);
-
-        // Calculate document stats
-        const verifiedDocs =
-          documentsData?.filter((d) => d.status === "signed").length || 0;
-        const totalDocs = documentsData?.length || 0;
-
-        setStats((prev) => ({
-          ...prev,
-          documentsVerified: verifiedDocs,
-          documentsTotal: totalDocs,
-        }));
-
-        // Fetch appointments
-        const { data: appointmentsData } = await supabase
-          .from("appointments")
-          .select(
-            `
-            id,
-            property_id,
-            preferred_date,
-            preferred_time,
-            status,
-            properties (
-              name,
-              address
-            )
-          `
-          )
-          .eq("tenant_user_id", user?.id)
-          .gte("preferred_date", new Date().toISOString())
-          .order("preferred_date", { ascending: true })
-          .limit(5);
-
-        setAppointments(appointmentsData || []);
-        setStats((prev) => ({
-          ...prev,
-          upcomingViewings:
-            appointmentsData?.filter((a) => a.status === "confirmed").length ||
-            0,
-        }));
-
-        // Fetch notifications
-        const { data: notificationsData } = await supabase
-          .from("notifications")
-          .select("*")
-          .eq("user_id", user?.id)
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        setNotifications(notificationsData || []);
-      }
+      const data = await fetchDashboardAction(user.id);
+      startTransition(() => {
+        setOptimisticData(data);
+      });
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [user?.id, startTransition, setOptimisticData]);
 
-  const subscribeToNotifications = () => {
+  const subscribeToNotifications = useCallback(() => {
+    if (!user?.id) return;
+
     const subscription = supabase
       .channel("notifications")
       .on(
@@ -229,10 +230,12 @@ export function DashboardTenant() {
           event: "INSERT",
           schema: "public",
           table: "notifications",
-          filter: `user_id=eq.${user?.id}`,
+          filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          setNotifications((prev) => [payload.new as Notification, ...prev]);
+        () => {
+          startTransition(() => {
+            fetchDashboard();
+          });
         }
       )
       .subscribe();
@@ -240,23 +243,40 @@ export function DashboardTenant() {
     return () => {
       subscription.unsubscribe();
     };
-  };
+  }, [user?.id, fetchDashboard, startTransition]);
 
-  if (properties.length === 0) {
+  useEffect(() => {
+    if (user) {
+      fetchDashboard();
+      const unsubscribe = subscribeToNotifications();
+      return () => {
+        unsubscribe?.();
+      };
+    }
+  }, [user, fetchDashboard, subscribeToNotifications]);
+
+  if (!optimisticData.properties.length) {
     return <EmptyDashboard />;
   }
 
   return (
     <div className="space-y-6">
-      <StatsOverview stats={stats} isLoading={loading} />
-      <PropertiesSections properties={properties} isLoading={loading} />
+      <StatsOverview stats={optimisticData.stats} isLoading={isPending} />
+      <PropertiesSections
+        properties={optimisticData.properties}
+        isLoading={isPending}
+      />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RecentPayments payments={payments} isLoading={loading} />
-        <RecentDocuments documents={documents} isLoading={loading} />
+        <RecentPayments
+          payments={optimisticData.payments}
+          isLoading={isPending}
+        />
+        <RecentDocuments
+          documents={optimisticData.documents}
+          isLoading={isPending}
+        />
       </div>
-      {/* Upcoming Viewings */}
-      <UpcomingViewings appointments={appointments} />
-      {/* Quick Actions */}
+      <UpcomingViewings appointments={optimisticData.appointments} />
       <QuickActions />
     </div>
   );
