@@ -1,7 +1,4 @@
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -10,22 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ViewingModal } from "@/components/ViewingModal";
-import { fetchMarketplaceProperties } from "@/services/marketplaceService";
-import {
-  Bath,
-  Bed,
-  Building2,
-  Calendar,
-  Heart,
-  Home,
-  Info,
-  MapPin,
-  ScrollText,
-  X,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Building2, X } from "lucide-react";
+import { useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { Filters } from "./Filters";
 import { Header } from "./Header";
@@ -40,293 +24,43 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Badge } from "@/components/ui/badge";
+import { PropertyCard } from "./components/PropertyCard";
+import { LoadingSkeleton } from "./components/LoadingSkeleton";
+import { useProperties, SortOption } from "./hooks/useProperties";
+import { usePagination } from "./hooks/usePagination";
+import { useFavorites } from "./hooks/useFavorites";
+import { useFilters } from "./hooks/useFilters";
 
 export function Marketplace() {
   const { user } = useAuthStore();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sortOption, setSortOption] = useState<SortOption>("newest");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
   );
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  // Use a ref for instant response when toggling filters
-  const showFiltersRef = useRef(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [sortOption, setSortOption] = useState("newest");
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [filters, setFilters] = useState({
-    type: "",
-    minPrice: "",
-    maxPrice: "",
-    bedrooms: "",
-    city: "",
-    state: "",
-  });
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9; // 3 columns x 3 rows feels right for this layout
 
-  // Ensure filter UI updates happen immediately
-  const handleToggleFilters = (value: boolean) => {
-    showFiltersRef.current = value;
-    setShowFilters(value);
-  };
+  // Use custom hooks - add setFilters to the destructuring
+  const {
+    filters,
+    setFilters, // Add this line
+    showFilters,
+    handleToggleFilters,
+    countActiveFilters,
+    clearAllFilters,
+    handleFilterChange,
+  } = useFilters();
 
-  useEffect(() => {
-    fetchProperties();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
-
-  const fetchProperties = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchMarketplaceProperties(filters);
-
-      // Sort properties based on selected option
-      const sortedData = [...data].sort((a, b) => {
-        switch (sortOption) {
-          case "price-low-high":
-            return a.price - b.price;
-          case "price-high-low":
-            return b.price - a.price;
-          case "bedrooms":
-            return b.bedrooms - a.bedrooms;
-          case "newest":
-          default:
-            return (
-              new Date(b.available_date).getTime() -
-              new Date(a.available_date).getTime()
-            );
-        }
-      });
-
-      setProperties(sortedData);
-    } catch (error) {
-      console.error("Error fetching properties:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (properties.length > 0) {
-      fetchProperties();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortOption]);
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((prevFavorites) =>
-      prevFavorites.includes(id)
-        ? prevFavorites.filter((fav) => fav !== id)
-        : [...prevFavorites, id]
-    );
-  };
-
-  const countActiveFilters = () => {
-    return Object.values(filters).filter((val) => val !== "").length;
-  };
-
-  const clearAllFilters = () => {
-    setFilters({
-      type: "",
-      minPrice: "",
-      maxPrice: "",
-      bedrooms: "",
-      city: "",
-      state: "",
-    });
-  };
-
-  const handleFilterChange = (key: keyof typeof filters, value: string) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [key]: value,
-    }));
-  };
-
-  // Calculate pagination
-  const totalPages = Math.ceil(properties.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = properties.slice(indexOfFirstItem, indexOfLastItem);
-
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Scroll to top of results when page changes
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // Generate page numbers to display
-  const getPageNumbers = () => {
-    const pageNumbers: (number | "ellipsis")[] = [];
-
-    if (totalPages <= 5) {
-      // Show all pages if 5 or fewer
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      // Always show first page
-      pageNumbers.push(1);
-
-      if (currentPage > 3) {
-        pageNumbers.push("ellipsis");
-      }
-
-      // Show current page and surrounding pages
-      const startPage = Math.max(2, currentPage - 1);
-      const endPage = Math.min(totalPages - 1, currentPage + 1);
-
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-
-      if (currentPage < totalPages - 2) {
-        pageNumbers.push("ellipsis");
-      }
-
-      // Always show last page
-      pageNumbers.push(totalPages);
-    }
-
-    return pageNumbers;
-  };
-
-  const PropertyCard = ({ property }: { property: Property }) => (
-    <Card className="group overflow-hidden transition-all hover:shadow-lg border-muted hover:border-primary/20 flex flex-col h-full">
-      <AspectRatio ratio={16 / 9} className="overflow-hidden bg-muted">
-        <div className="relative h-full">
-          {property.images?.length ? (
-            <img
-              src={property.images[0]}
-              alt={property.name}
-              className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full bg-muted">
-              <Home className="h-8 w-8 text-muted-foreground" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="absolute top-2 right-2 flex flex-col gap-1">
-            <Badge
-              variant="secondary"
-              className="bg-background/90 backdrop-blur-sm"
-            >
-              {property.property_type.charAt(0).toUpperCase() +
-                property.property_type.slice(1)}
-            </Badge>
-            <Badge className="bg-emerald-500/90 backdrop-blur-sm text-white">
-              Available Now
-            </Badge>
-          </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFavorite(property.id);
-            }}
-            className="absolute top-2 left-2 p-1.5 rounded-full bg-background/80 hover:bg-background transition-colors backdrop-blur-sm opacity-0 group-hover:opacity-100"
-          >
-            <Heart
-              className={`h-4 w-4 ${
-                favorites.includes(property.id)
-                  ? "fill-red-500 text-red-500"
-                  : "text-muted-foreground"
-              }`}
-            />
-          </button>
-        </div>
-      </AspectRatio>
-
-      <CardContent className="p-4 flex-grow">
-        <div className="space-y-2">
-          <div className="flex items-baseline justify-between gap-2">
-            <h3 className="font-medium truncate">{property.name}</h3>
-            <p className="text-lg font-semibold text-primary shrink-0">
-              ${property.price.toLocaleString()}
-              <span className="text-xs font-normal text-muted-foreground">
-                /mo
-              </span>
-            </p>
-          </div>
-
-          <p className="text-sm text-muted-foreground flex items-center gap-1 overflow-hidden">
-            <MapPin className="h-4 w-4 shrink-0 text-muted-foreground/70" />
-            <span className="truncate">
-              {property.address}, {property.city}, {property.state}
-            </span>
-          </p>
-
-          <div className="flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Bed className="h-4 w-4" /> {property.bedrooms}
-            </span>
-            <span className="flex items-center gap-1">
-              <Bath className="h-4 w-4" /> {property.bathrooms}
-            </span>
-            <span className="flex items-center gap-1">
-              <ScrollText className="h-4 w-4" />{" "}
-              {property.square_feet.toLocaleString()} sqft
-            </span>
-          </div>
-        </div>
-      </CardContent>
-
-      <CardFooter className="px-4 py-3 bg-muted/30 flex-wrap gap-2 border-t">
-        <Button
-          size="sm"
-          variant="outline"
-          className="flex-1"
-          onClick={() => {
-            setSelectedProperty(property);
-            setShowDetailsModal(true);
-          }}
-        >
-          <Info className="h-4 w-4 mr-2" />
-          View Details
-        </Button>
-        <Button
-          size="sm"
-          className="flex-1"
-          onClick={() => {
-            setSelectedProperty(property);
-            setShowAppointmentModal(true);
-          }}
-        >
-          <Calendar className="h-4 w-4 mr-2" />
-          Schedule
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-
-  const LoadingSkeleton = () => (
-    <Card className="overflow-hidden h-full">
-      <AspectRatio ratio={16 / 9}>
-        <Skeleton className="h-full w-full" />
-      </AspectRatio>
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          <div className="flex justify-between gap-2">
-            <Skeleton className="h-5 w-[120px]" />
-            <Skeleton className="h-5 w-[80px]" />
-          </div>
-          <Skeleton className="h-4 w-[200px]" />
-          <div className="flex gap-3 pt-2">
-            <Skeleton className="h-4 w-[40px]" />
-            <Skeleton className="h-4 w-[40px]" />
-            <Skeleton className="h-4 w-[80px]" />
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="px-4 py-3 border-t">
-        <Skeleton className="h-9 w-full" />
-      </CardFooter>
-    </Card>
-  );
+  const { properties, loading } = useProperties(filters, sortOption);
+  const { favorites, toggleFavorite } = useFavorites();
+  const {
+    currentItems,
+    currentPage,
+    totalPages,
+    handlePageChange,
+    getPageNumbers,
+  } = usePagination(properties, 9); // 9 items per page (3x3 grid)
 
   return (
     <div className="min-h-screen bg-background">
@@ -341,7 +75,10 @@ export function Marketplace() {
       <div className="container py-6">
         {/* Mobile search and sorting - only visible on mobile */}
         <div className="md:hidden mb-6">
-          <Select value={sortOption} onValueChange={setSortOption}>
+          <Select
+            value={sortOption}
+            onValueChange={(value: SortOption) => setSortOption(value)}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
@@ -355,7 +92,7 @@ export function Marketplace() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Desktop Filters - Fixed the transitions and layout issues */}
+          {/* Desktop Filters */}
           <div
             className={`hidden md:block sticky top-[5rem] self-start transition-all duration-300 ease-in-out overflow-hidden ${
               showFilters ? "w-72 opacity-100" : "w-0 opacity-0"
@@ -407,7 +144,10 @@ export function Marketplace() {
                     countActiveFilters() === 1 ? "filter" : "filters"
                   }`}
               </p>
-              <Select value={sortOption} onValueChange={setSortOption}>
+              <Select
+                value={sortOption}
+                onValueChange={(value: SortOption) => setSortOption(value)}
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
@@ -464,7 +204,7 @@ export function Marketplace() {
               </div>
             )}
 
-            {/* Results Grid - keep existing code */}
+            {/* Results Grid */}
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
@@ -488,7 +228,20 @@ export function Marketplace() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentItems.map((property) => (
-                    <PropertyCard key={property.id} property={property} />
+                    <PropertyCard
+                      key={property.id}
+                      property={property}
+                      isFavorite={favorites.includes(property.id)}
+                      onToggleFavorite={toggleFavorite}
+                      onViewDetails={(property) => {
+                        setSelectedProperty(property);
+                        setShowDetailsModal(true);
+                      }}
+                      onSchedule={(property) => {
+                        setSelectedProperty(property);
+                        setShowAppointmentModal(true);
+                      }}
+                    />
                   ))}
                 </div>
 
@@ -552,7 +305,7 @@ export function Marketplace() {
         </div>
       </div>
 
-      {/* Appointment Modal */}
+      {/* Modals */}
       {selectedProperty && (
         <>
           <ViewingModal
