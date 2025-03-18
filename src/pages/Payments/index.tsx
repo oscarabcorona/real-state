@@ -1,122 +1,37 @@
 import { Plus } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import {
-  calculatePaymentStats,
-  createPayment,
-  exportPaymentsToCSV,
-  fetchUserPayments,
-  fetchUserProperties,
-  filterPayments,
-} from "../../services/paymentService";
-import { useAuthStore } from "../../store/authStore";
+import React, { useState } from "react";
 import { PaymentModal } from "./components/PaymentModal";
 import { OverviewTab } from "./components/tabs/OverviewTab";
 import { SettingsTab } from "./components/tabs/SettingsTab";
 import { TransactionsTab } from "./components/tabs/TransactionsTab";
-import { Payment, PaymentFilters, Property } from "./types";
 import { getStatusIcon } from "./utils";
+import {
+  usePaymentData,
+  usePaymentModals,
+  usePaymentForm,
+  usePaymentExport,
+} from "@/hooks/usePayment";
 
 export function Payments() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [filteredPayments, setFilteredPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState({
-    totalCollected: 0,
-    pending: 0,
-    propertiesCount: 0,
-    autoPayActive: 0,
-  });
-  const { user } = useAuthStore();
+  const {
+    filteredPayments,
+    properties,
+    stats,
+    filters,
+    setFilters,
+    resetFilters,
+  } = usePaymentData();
 
-  const [filters, setFilters] = useState<PaymentFilters>({
-    status: "",
-    paymentMethod: "",
-    dateRange: "",
-    minAmount: "",
-    maxAmount: "",
-  });
+  const {
+    isModalOpen,
+    isFilterModalOpen,
+    setIsModalOpen,
+    setIsFilterModalOpen,
+  } = usePaymentModals();
 
-  const [formData, setFormData] = useState({
-    property_id: "",
-    amount: "",
-    payment_method: "credit_card" as "credit_card" | "ach" | "cash",
-    description: "",
-  });
-
-  useEffect(() => {
-    if (user) {
-      fetchData();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (payments.length) {
-      const filtered = filterPayments(payments, filters);
-      setFilteredPayments(filtered);
-    }
-  }, [filters, payments]);
-
-  const fetchData = async () => {
-    if (!user?.id) return;
-
-    try {
-      const [propsData, paymentsData] = await Promise.all([
-        fetchUserProperties(user.id),
-        fetchUserPayments(user.id),
-      ]);
-
-      setProperties(propsData);
-      setPayments(paymentsData);
-      setFilteredPayments(paymentsData);
-
-      setStats(calculatePaymentStats(paymentsData, propsData.length));
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  const resetFilters = () => {
-    setFilters({
-      status: "",
-      paymentMethod: "",
-      dateRange: "",
-      minAmount: "",
-      maxAmount: "",
-    });
-    setFilteredPayments(payments);
-  };
-
-  const handleExportPayments = () => {
-    exportPaymentsToCSV(filteredPayments);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user?.id) return;
-
-    setLoading(true);
-
-    try {
-      await createPayment(user.id, formData);
-
-      setFormData({
-        property_id: "",
-        amount: "",
-        payment_method: "credit_card",
-        description: "",
-      });
-      setIsModalOpen(false);
-      fetchData();
-    } catch (error) {
-      console.error("Error creating payment:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { formData, setFormData, handleSubmit, loading } = usePaymentForm();
+  const { handleExportPayments } = usePaymentExport();
 
   return (
     <div className="space-y-6">
@@ -200,7 +115,10 @@ export function Payments() {
           formData={formData}
           setFormData={setFormData}
           properties={properties}
-          handleSubmit={handleSubmit}
+          handleSubmit={async (e) => {
+            const success = await handleSubmit(e);
+            if (success) setIsModalOpen(false);
+          }}
           setIsModalOpen={setIsModalOpen}
           loading={loading}
         />

@@ -12,6 +12,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { usePagination } from "@/hooks/usePayment";
+import { formatCurrency, formatDate } from "../../utils";
 
 interface OverviewTabProps {
   stats: {
@@ -29,14 +31,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   filteredPayments,
   getStatusIcon,
 }) => {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const itemsPerPage = 5;
-  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
-
-  const currentItems = React.useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredPayments.slice(start, start + itemsPerPage);
-  }, [currentPage, filteredPayments]);
+  const {
+    currentPage,
+    totalPages,
+    currentItems,
+    goToPage,
+    prevPage,
+    nextPage,
+  } = usePagination(filteredPayments, 5);
 
   return (
     <div className="space-y-6">
@@ -51,7 +53,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <CardContent className="mt-[-12px]">
             <div className="flex items-baseline justify-between">
               <div className="text-2xl font-bold">
-                ${stats.totalCollected.toLocaleString()}
+                {formatCurrency(stats.totalCollected)}
               </div>
             </div>
             <p className="text-xs text-muted-foreground">All time earnings</p>
@@ -68,7 +70,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <CardContent className="mt-[-12px]">
             <div className="flex items-baseline justify-between">
               <div className="text-2xl font-bold">
-                ${stats.pending.toLocaleString()}
+                {formatCurrency(stats.pending)}
               </div>
             </div>
             <p className="text-xs text-muted-foreground">Awaiting collection</p>
@@ -139,7 +141,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                             {payment.properties?.name}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(payment.created_at).toLocaleDateString()}
+                            {formatDate(payment.created_at)}
                           </p>
                         </div>
                       </div>
@@ -155,7 +157,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                           {payment.status}
                         </Badge>
                         <span className="font-medium tabular-nums">
-                          ${payment.amount.toLocaleString()}
+                          {formatCurrency(payment.amount)}
                         </span>
                       </div>
                     </div>
@@ -169,7 +171,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            setCurrentPage((p) => Math.max(1, p - 1));
+                            prevPage();
                           }}
                           aria-disabled={currentPage === 1}
                         />
@@ -180,7 +182,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              setCurrentPage(i + 1);
+                              goToPage(i + 1);
                             }}
                             isActive={currentPage === i + 1}
                           >
@@ -193,7 +195,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                           href="#"
                           onClick={(e) => {
                             e.preventDefault();
-                            setCurrentPage((p) => Math.min(totalPages, p + 1));
+                            nextPage();
                           }}
                           aria-disabled={currentPage === totalPages}
                         />

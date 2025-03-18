@@ -21,3 +21,15 @@ export const getStatusClass = (status: string) => {
       return "bg-yellow-100 text-yellow-800";
   }
 };
+
+export const formatCurrency = (amount: number): string => {
+  return `$${amount.toLocaleString()}`;
+};
+
+export const formatPaymentMethod = (method: string): string => {
+  return method.replace("_", " ").toUpperCase();
+};
+
+export const formatDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleDateString();
+};

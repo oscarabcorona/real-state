@@ -13,6 +13,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { usePagination } from "@/hooks/usePayment";
+import { formatCurrency, formatDate, formatPaymentMethod } from "../../utils";
 
 interface TransactionsTabProps {
   isFilterModalOpen: boolean;
@@ -33,14 +35,14 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
   exportPayments,
   filteredPayments,
 }) => {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
-
-  const currentItems = React.useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredPayments.slice(start, start + itemsPerPage);
-  }, [currentPage, filteredPayments]);
+  const {
+    currentPage,
+    totalPages,
+    currentItems,
+    goToPage,
+    prevPage,
+    nextPage,
+  } = usePagination(filteredPayments);
 
   return (
     <div className="space-y-4">
@@ -92,7 +94,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                       {payment.properties?.name}
                     </span>
                     <span className="text-muted-foreground text-sm">
-                      - {payment.payment_method.replace("_", " ").toUpperCase()}
+                      - {formatPaymentMethod(payment.payment_method)}
                     </span>
                   </div>
                   <div className="flex items-center text-muted-foreground text-sm">
@@ -103,7 +105,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                 <div className="flex flex-col items-end gap-2">
                   <div className="flex items-center gap-4">
                     <span className="tabular-nums text-sm font-medium">
-                      ${payment.amount.toLocaleString()}
+                      {formatCurrency(payment.amount)}
                     </span>
                     <Badge
                       variant={
@@ -115,7 +117,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                     </Badge>
                   </div>
                   <span className="text-muted-foreground text-sm">
-                    {new Date(payment.created_at).toLocaleDateString()}
+                    {formatDate(payment.created_at)}
                   </span>
                 </div>
               </div>
@@ -132,7 +134,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentPage((p) => Math.max(1, p - 1));
+                  prevPage();
                 }}
                 aria-disabled={currentPage === 1}
               />
@@ -143,7 +145,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    setCurrentPage(i + 1);
+                    goToPage(i + 1);
                   }}
                   isActive={currentPage === i + 1}
                 >
@@ -156,7 +158,7 @@ export const TransactionsTab: React.FC<TransactionsTabProps> = ({
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentPage((p) => Math.min(totalPages, p + 1));
+                  nextPage();
                 }}
                 aria-disabled={currentPage === totalPages}
               />

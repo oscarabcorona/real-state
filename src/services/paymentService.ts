@@ -30,7 +30,7 @@ export async function fetchUserProperties(userId: string): Promise<Property[]> {
   }
 }
 
-export async function fetchUserPayments(userId: string) {
+export async function fetchUserPayments(userId: string): Promise<Payment[]> {
   try {
     const { data, error } = await supabase
       .from("payments")
@@ -44,10 +44,44 @@ export async function fetchUserPayments(userId: string) {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    
+    // Map the data to ensure payment_method is properly typed
+    return (data || []).map(payment => ({
+      ...payment,
+      // Normalize payment_method to ensure it matches our expected types
+      payment_method: normalizePaymentMethod(payment.payment_method),
+      // Ensure created_at is always a string
+      created_at: payment.created_at || new Date().toISOString(),
+      // Set defaults for potentially nullable fields
+      description: payment.description || null,
+      status: payment.status || "pending"
+    })) as Payment[];
   } catch (error) {
     console.error("Error fetching payments:", error);
     throw error;
+  }
+}
+
+// Helper function to normalize payment methods
+function normalizePaymentMethod(method: string): "credit_card" | "ach" | "cash" {
+  switch(method?.toLowerCase()) {
+    case "credit_card":
+    case "credit card":
+    case "card":
+      return "credit_card";
+    case "ach":
+    case "bank":
+    case "direct deposit":
+    case "bank transfer":
+      return "ach";
+    case "cash":
+    case "money":
+    case "check":
+      return "cash";
+    default:
+      // Default to credit_card if unknown
+      console.warn(`Unknown payment method: ${method}, defaulting to credit_card`);
+      return "credit_card";
   }
 }
 
