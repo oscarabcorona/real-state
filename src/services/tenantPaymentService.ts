@@ -1,0 +1,240 @@
+import { supabase } from "../lib/supabase";
+import { Payment, PaymentDetails } from "@/pages/PaymentTenant/types";
+
+interface PaymentFilters {
+  status: string;
+  paymentMethod: string;
+  dateRange: string;
+  minAmount: string;
+  maxAmount: string;
+}
+
+interface PaymentStats {
+  totalPaid: number;
+  pending: number;
+  failed: number;
+}
+
+// Helper function to normalize payment methods
+function normalizePaymentMethod(method: string | null): "credit_card" | "ach" | "cash" {
+  switch(method?.toLowerCase()) {
+    case "credit_card":
+    case "credit card":
+    case "card":
+      return "credit_card";
+    case "ach":
+    case "bank":
+    case "direct deposit":
+    case "bank transfer":
+      return "ach";
+    case "cash":
+    case "money":
+    case "check":
+      return "cash";
+    default:
+      // Default to credit_card if unknown
+      console.warn(`Unknown payment method: ${method}, defaulting to credit_card`);
+      return "credit_card";
+  }
+}
+
+export async function fetchTenantPayments(userId: string, filters: PaymentFilters): Promise<{
+  payments: Payment[];
+  stats: PaymentStats;
+}> {
+  try {
+    const { data: accessData, error: accessError } = await supabase
+      .from("tenant_property_access")
+      .select("property_id")
+      .eq("tenant_user_id", userId);
+
+    if (accessError) throw accessError;
+
+    const propertyIds = accessData?.map((a) => a.property_id) || [];
+
+    if (propertyIds.length === 0) {
+      return {
+        payments: [],
+        stats: { totalPaid: 0, pending: 0, failed: 0 }
+      };
+    }
+
+    let query = supabase
+      .from("payments")
+      .select(
+        `
+          *,
+          properties:property_id (
+            name,
+            user:user_id (
+              email
+            )
+          )
+        `
+      )
+      .in("property_id", propertyIds);
+
+    if (filters.status) {
+      query = query.eq("status", filters.status);
+    }
+    if (filters.paymentMethod) {
+      query = query.eq("payment_method", filters.paymentMethod);
+    }
+    if (filters.dateRange) {
+      const now = new Date();
+      const startDate = new Date();
+
+      switch (filters.dateRange) {
+        case "7days":
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case "30days":
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case "90days":
+          startDate.setDate(now.getDate() - 90);
+          break;
+      }
+
+      query = query.gte("created_at", startDate.toISOString());
+    }
+    if (filters.minAmount) {
+      query = query.gte("amount", parseFloat(filters.minAmount));
+    }
+    if (filters.maxAmount) {
+      query = query.lte("amount", parseFloat(filters.maxAmount));
+    }
+
+    const { data: paymentsData, error: paymentsError } = await query.order(
+      "created_at",
+      { ascending: false }
+    );
+
+    if (paymentsError) throw paymentsError;
+
+    // Transform raw database records to match the Payment type
+    const normalizedPayments = (paymentsData || []).map(payment => ({
+      ...payment,
+      // Ensure all required fields have proper values
+      id: payment.id,
+      amount: payment.amount,
+      payment_method: normalizePaymentMethod(payment.payment_method),
+      status: (payment.status || 'pending') as Payment['status'],
+      description: payment.description || '',
+      created_at: payment.created_at || new Date().toISOString(),
+      property_id: payment.property_id,
+      user_id: payment.user_id,
+      invoice_number: payment.invoice_number || '',
+      invoice_file_path: payment.invoice_file_path || '',
+      receipt_file_path: payment.receipt_file_path || '',
+      verified_at: payment.verified_at,
+      verification_method: payment.verification_method as Payment['verification_method'] || null,
+      payment_details: payment.payment_details || null,
+      notes: payment.notes || '',
+      properties: payment.properties
+    })) as Payment[];
+
+    // Calculate stats
+    const total =
+      normalizedPayments.reduce(
+        (sum, payment) =>
+          payment.status === "completed" ? sum + payment.amount : sum,
+        0
+      ) || 0;
+    const pending =
+      normalizedPayments.reduce(
+        (sum, payment) =>
+          payment.status === "pending" ? sum + payment.amount : sum,
+        0
+      ) || 0;
+    const failed =
+      normalizedPayments.reduce(
+        (sum, payment) =>
+          payment.status === "failed" ? sum + payment.amount : sum,
+        0
+      ) || 0;
+
+    const stats = {
+      totalPaid: total,
+      pending: pending,
+      failed: failed,
+    };
+
+    return {
+      payments: normalizedPayments,
+      stats
+    };
+  } catch (error) {
+    console.error("Error fetching tenant payments:", error);
+    throw error;
+  }
+}
+
+export async function processPayment(
+  paymentId: string,
+  paymentMethod: "credit_card" | "ach" | "cash"
+): Promise<void> {
+  try {
+    // Create the payment details object
+    const paymentDetails: PaymentDetails = {
+      method: paymentMethod,
+      timestamp: new Date().toISOString(),
+      info:
+        paymentMethod === "credit_card"
+          ? {
+              last4: "4242",
+              brand: "visa",
+              exp_month: 12,
+              exp_year: 2025,
+            }
+          : paymentMethod === "ach"
+          ? {
+              bank_name: "Test Bank",
+              account_last4: "1234",
+              routing_last4: "5678",
+            }
+          : {
+              received_by: "Office",
+              location: "Main Office",
+            },
+    };
+
+    const { error } = await supabase
+      .from("payments")
+      .update({
+        status: "completed",
+        payment_method: paymentMethod,
+        payment_details: JSON.parse(JSON.stringify(paymentDetails)),
+        verified_at: new Date().toISOString(),
+        verification_method: "automatic",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", paymentId);
+
+    if (error) throw error;
+    
+    // Wait for document generation (simulating async process)
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    throw error;
+  }
+}
+
+export async function downloadInvoice(payment: Payment): Promise<Blob> {
+  if (!payment.invoice_file_path) {
+    throw new Error("Invoice not available");
+  }
+
+  try {
+    const { data, error } = await supabase.storage
+      .from("invoices")
+      .download(payment.invoice_file_path);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error downloading invoice:", error);
+    throw error;
+  }
+}
