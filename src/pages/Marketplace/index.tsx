@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ViewingModal } from "@/components/ViewingModal";
+import { fetchMarketplaceProperties } from "@/services/marketplaceService";
 import {
   Bath,
   Bed,
@@ -15,7 +16,6 @@ import {
   ScrollText,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { Filters } from "./Filters";
 import { Header } from "./Header";
@@ -46,43 +46,8 @@ export function Marketplace() {
 
   const fetchProperties = async () => {
     try {
-      let query = supabase
-        .from("properties")
-        .select(
-          `
-          *,
-          users (
-            email
-          )
-        `
-        )
-        .eq("published", true);
-
-      if (filters.type) {
-        query = query.eq("property_type", filters.type);
-      }
-      if (filters.minPrice) {
-        query = query.gte("price", parseFloat(filters.minPrice));
-      }
-      if (filters.maxPrice) {
-        query = query.lte("price", parseFloat(filters.maxPrice));
-      }
-      if (filters.bedrooms) {
-        query = query.eq("bedrooms", parseInt(filters.bedrooms));
-      }
-      if (filters.city) {
-        query = query.ilike("city", `%${filters.city}%`);
-      }
-      if (filters.state) {
-        query = query.ilike("state", `%${filters.state}%`);
-      }
-
-      const { data, error } = await query.order("created_at", {
-        ascending: false,
-      });
-
-      if (error) throw error;
-      setProperties(data || []);
+      const data = await fetchMarketplaceProperties(filters);
+      setProperties(data);
     } catch (error) {
       console.error("Error fetching properties:", error);
     } finally {
