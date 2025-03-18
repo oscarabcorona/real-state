@@ -1,4 +1,4 @@
-import { Document } from "../../types/documents";
+import { Document } from "../../types/dashboard.types";
 
 export interface Report {
   id: string;
