@@ -104,12 +104,6 @@ export function Navbar() {
             >
               <Link to="/login">Sign in</Link>
             </Button>
-            <Button
-              size="sm"
-              className="transition-all duration-300 hover:scale-105"
-            >
-              <Link to="/register">Get Started</Link>
-            </Button>
           </div>
 
           {/* Mobile navigation */}
