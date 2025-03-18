@@ -1,5 +1,5 @@
 import { Calendar, CreditCard, FileText, Home } from "lucide-react";
-import { Stats } from "./types";
+import { Stats } from "../../types/dashboard.types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 

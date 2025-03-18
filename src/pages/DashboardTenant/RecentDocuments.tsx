@@ -7,7 +7,7 @@ import {
   FolderIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { Document } from "./types";
+import type { Document } from "../../types/dashboard.types";
 import { Button } from "@/components/ui/button";
 import {
   Card,

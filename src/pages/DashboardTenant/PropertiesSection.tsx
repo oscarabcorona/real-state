@@ -1,6 +1,6 @@
 import { Bath, Bed, Building2, MapPin, User } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { Property } from "./types";
+import type { Property } from "../../types/dashboard.types";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import {
   Card,

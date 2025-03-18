@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { Calendar, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getStatusClass } from "./utils";
-import { Appointment } from "./types";
+import { Appointment } from "../../types/dashboard.types";
 import { Button } from "@/components/ui/button";
 import {
   Card,

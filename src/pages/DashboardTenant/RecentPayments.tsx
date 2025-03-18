@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { CreditCard, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { Payment } from "./types";
+import type { Payment } from "../../types/dashboard.types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
