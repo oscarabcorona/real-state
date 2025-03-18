@@ -13,31 +13,94 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+function ViewingSkeleton() {
+  return (
+    <div className="flex items-center gap-4 py-4 px-4">
+      <Skeleton className="h-10 w-10 rounded-lg" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-[200px]" />
+        <Skeleton className="h-3 w-[150px]" />
+      </div>
+      <Skeleton className="h-6 w-20 rounded-full" />
+    </div>
+  );
+}
+
+function EmptyViewings() {
+  return (
+    <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 text-center">
+      <div className="bg-muted/50 flex h-16 w-16 items-center justify-center rounded-full">
+        <Calendar className="h-8 w-8 text-muted-foreground/70" />
+      </div>
+      <div className="space-y-2">
+        <h3 className="font-semibold tracking-tight">No upcoming viewings</h3>
+        <p className="text-sm text-muted-foreground">
+          Schedule a viewing to get started
+        </p>
+      </div>
+      <Button asChild>
+        <Link to="/dashboard/appointments/new">Schedule Viewing</Link>
+      </Button>
+    </div>
+  );
+}
+
 export function UpcomingViewings({
   appointments,
   isLoading = false,
 }: {
-  appointments: Appointment[];
+  appointments: Appointment[] | null;
   isLoading?: boolean;
 }) {
-  // Render skeletons when loading
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Upcoming Viewings</CardTitle>
-        </CardHeader>
-        <CardContent>
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="divide-y divide-border">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-center space-x-2 py-2">
-              <Skeleton className="h-6 w-6" />
-              <Skeleton className="h-4 w-40" />
-            </div>
+            <ViewingSkeleton key={i} />
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      );
+    }
+
+    if (!appointments?.length) {
+      return <EmptyViewings />;
+    }
+
+    return (
+      <div className="space-y-4">
+        {appointments.map((appointment) => (
+          <div
+            key={appointment.id}
+            className="flex items-center gap-4 py-4 group hover:bg-muted/50 rounded-lg px-4 transition-colors"
+          >
+            <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg group-hover:bg-primary/20 transition-colors">
+              <Clock className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 space-y-1 min-w-0">
+              <p className="font-medium truncate group-hover:text-primary transition-colors">
+                {appointment.properties?.name ?? "Unnamed Property"}
+              </p>
+              <div className="flex items-center text-sm text-muted-foreground gap-2">
+                <Calendar className="h-4 w-4" />
+                <time dateTime={appointment.preferred_date}>
+                  {format(new Date(appointment.preferred_date), "MMM d, yyyy")}{" "}
+                  at {appointment.preferred_time ?? "TBD"}
+                </time>
+              </div>
+            </div>
+            <span
+              className={`shrink-0 px-2.5 py-0.5 text-xs font-medium rounded-full ${getStatusClass(
+                appointment.status ?? "pending"
+              )}`}
+            >
+              {appointment.status ?? "Pending"}
+            </span>
+          </div>
+        ))}
+      </div>
     );
-  }
+  };
 
   return (
     <Card>
@@ -45,67 +108,21 @@ export function UpcomingViewings({
         <div>
           <CardTitle>Upcoming Viewings</CardTitle>
           <CardDescription>
-            Schedule and manage your property visits
+            {isLoading
+              ? "Loading appointments..."
+              : appointments?.length
+              ? "Schedule and manage your property visits"
+              : "Start scheduling property viewings"}
           </CardDescription>
         </div>
-        <Button variant="outline" asChild>
-          <Link to="/dashboard/appointments">View All</Link>
-        </Button>
+        {!isLoading && appointments && appointments.length > 0 && (
+          <Button variant="outline" asChild>
+            <Link to="/dashboard/appointments">View All</Link>
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="divide-y divide-border">
-        {appointments.length === 0 ? (
-          <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 text-center">
-            <div className="bg-muted/50 flex h-16 w-16 items-center justify-center rounded-full">
-              <Calendar className="h-8 w-8 text-muted-foreground/70" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold tracking-tight">
-                No upcoming viewings
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Schedule a viewing to get started
-              </p>
-            </div>
-            <Button asChild>
-              <Link to="/dashboard/appointments/new">Schedule Viewing</Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {appointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="flex items-center gap-4 py-4 group hover:bg-muted/50 rounded-lg px-4 transition-colors"
-              >
-                <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg group-hover:bg-primary/20 transition-colors">
-                  <Clock className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 space-y-1 min-w-0">
-                  <p className="font-medium truncate group-hover:text-primary transition-colors">
-                    {appointment.properties.name}
-                  </p>
-                  <div className="flex items-center text-sm text-muted-foreground gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <time dateTime={appointment.preferred_date}>
-                      {format(
-                        new Date(appointment.preferred_date),
-                        "MMM d, yyyy"
-                      )}{" "}
-                      at {appointment.preferred_time}
-                    </time>
-                  </div>
-                </div>
-                <span
-                  className={`shrink-0 px-2.5 py-0.5 text-xs font-medium rounded-full ${getStatusClass(
-                    appointment.status ?? "pending"
-                  )}`}
-                >
-                  {appointment.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        {renderContent()}
       </CardContent>
     </Card>
   );

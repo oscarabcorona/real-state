@@ -19,8 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
-function getDocumentStatusConfig(status: string) {
-  switch (status.toLowerCase()) {
+function getDocumentStatusConfig(status: string | null | undefined) {
+  switch (status?.toLowerCase() ?? "pending") {
     case "signed":
       return {
         variant: "default" as const,
@@ -51,7 +51,7 @@ function getDocumentStatusConfig(status: string) {
 function DocumentItem({ doc }: { doc: Document }) {
   const status = getDocumentStatusConfig(doc.status);
   const StatusIcon = status.icon;
-  const createdDate = new Date(doc.created_at);
+  const createdDate = new Date(doc.created_at ?? Date.now());
 
   return (
     <div className="flex items-center justify-between space-x-4 rounded-lg border p-4 hover:bg-muted/50 transition-colors">
@@ -60,7 +60,9 @@ function DocumentItem({ doc }: { doc: Document }) {
           <StatusIcon className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <p className="text-sm font-medium leading-none">{doc.title}</p>
+          <p className="text-sm font-medium leading-none">
+            {doc.title ?? "Untitled Document"}
+          </p>
           <p className="text-sm text-muted-foreground">
             {format(createdDate, "MMM d, yyyy")}
           </p>
@@ -80,18 +82,36 @@ function DocumentItem({ doc }: { doc: Document }) {
 
 function DocumentCardSkeleton() {
   return (
-    <div className="flex items-center justify-between space-x-4 rounded-lg border p-4">
+    <div className="flex items-center justify-between space-x-4 rounded-lg border p-4 animate-pulse">
       <div className="flex items-center space-x-4">
-        <Skeleton className="h-10 w-10 rounded-lg" />
+        <div className="h-10 w-10 rounded-lg bg-muted" />
         <div className="space-y-2">
-          <Skeleton className="h-4 w-[150px]" />
-          <Skeleton className="h-3 w-[100px]" />
+          <Skeleton className="h-4 w-[200px]" />
+          <Skeleton className="h-3 w-[120px]" />
         </div>
       </div>
       <div className="flex flex-col items-end gap-2">
-        <Skeleton className="h-4 w-[60px]" />
-        <Skeleton className="h-5 w-[70px] rounded-full" />
+        <Skeleton className="h-5 w-[90px] rounded-full" />
       </div>
+    </div>
+  );
+}
+
+function EmptyDocuments() {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <FolderIcon className="h-16 w-16 text-muted-foreground/40" />
+      <h3 className="mt-4 text-lg font-medium">No Documents Found</h3>
+      <p className="mt-2 mb-6 text-sm text-muted-foreground max-w-sm">
+        You don't have any documents yet. Start by uploading your first
+        document.
+      </p>
+      <Button asChild size="lg">
+        <Link to="/dashboard/documents/upload">
+          <FileText className="mr-2 h-4 w-4" />
+          Upload Document
+        </Link>
+      </Button>
     </div>
   );
 }
@@ -100,52 +120,59 @@ export function RecentDocuments({
   documents,
   isLoading = false,
 }: {
-  documents: Document[];
+  documents: Document[] | null;
   isLoading?: boolean;
 }) {
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <>
+          {[...Array(3)].map((_, i) => (
+            <DocumentCardSkeleton key={i} />
+          ))}
+        </>
+      );
+    }
+
+    if (!documents?.length) {
+      return <EmptyDocuments />;
+    }
+
+    return (
+      <div className="grid gap-2">
+        {documents.map((doc) => (
+          <Link
+            key={doc.id}
+            to={`/dashboard/documents/${doc.id}`}
+            className="block"
+          >
+            <DocumentItem doc={doc} />
+          </Link>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
           <CardTitle>Recent Documents</CardTitle>
-          <CardDescription>Manage your property documents</CardDescription>
+          <CardDescription>
+            {isLoading
+              ? "Loading documents..."
+              : documents?.length
+              ? "Manage your property documents"
+              : "Start managing your documents"}
+          </CardDescription>
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link to="/dashboard/documents">View All</Link>
-        </Button>
-      </CardHeader>
-      <CardContent className="grid gap-2">
-        {isLoading ? (
-          <>
-            <DocumentCardSkeleton />
-            <DocumentCardSkeleton />
-            <DocumentCardSkeleton />
-          </>
-        ) : documents.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <FolderIcon className="h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-2 font-medium">No documents</h3>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Get started by uploading a document.
-            </p>
-            <Button asChild>
-              <Link to="/dashboard/documents/upload">Upload Document</Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            {documents.map((doc) => (
-              <Link
-                key={doc.id}
-                to={`/dashboard/documents/${doc.id}`}
-                className="block"
-              >
-                <DocumentItem doc={doc} />
-              </Link>
-            ))}
-          </div>
+        {!isLoading && documents && documents.length > 0 && (
+          <Button asChild variant="outline" size="sm">
+            <Link to="/dashboard/documents">View All</Link>
+          </Button>
         )}
-      </CardContent>
+      </CardHeader>
+      <CardContent className="grid gap-2">{renderContent()}</CardContent>
     </Card>
   );
 }

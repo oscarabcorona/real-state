@@ -26,7 +26,7 @@ export function StatsOverview({
   stats,
   isLoading = false,
 }: {
-  stats: Stats;
+  stats: Stats | null;
   isLoading?: boolean;
 }) {
   if (isLoading) {
@@ -35,6 +35,20 @@ export function StatsOverview({
         {[...Array(4)].map((_, i) => (
           <StatsCardSkeleton key={i} />
         ))}
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="col-span-full">
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">
+              No statistics available
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -50,8 +64,9 @@ export function StatsOverview({
         </CardHeader>
         <CardContent className={cardContentClass}>
           <div className="flex items-baseline justify-between">
-            <div className="text-2xl font-bold">{stats.propertiesCount}</div>
-            {/* {formatTrend(stats.propertiesTrend)} */}
+            <div className="text-2xl font-bold">
+              {stats?.propertiesCount ?? 0}
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">Total active rentals</p>
         </CardContent>
@@ -67,9 +82,8 @@ export function StatsOverview({
         <CardContent className={cardContentClass}>
           <div className="flex items-baseline justify-between">
             <div className="text-2xl font-bold">
-              ${stats.totalPaid.toLocaleString()}
+              ${(stats?.totalPaid ?? 0).toLocaleString()}
             </div>
-            {/* {formatTrend(stats.paymentTrend)} */}
           </div>
           <p className="text-xs text-muted-foreground">
             Compared to last month
@@ -85,15 +99,17 @@ export function StatsOverview({
         <CardContent className={cardContentClass}>
           <div className="flex items-baseline justify-between">
             <div className="text-2xl font-bold">
-              {Math.round(
-                (stats.documentsVerified / stats.documentsTotal) * 100
-              )}
+              {stats?.documentsTotal
+                ? Math.round(
+                    (stats.documentsVerified / stats.documentsTotal) * 100
+                  )
+                : 0}
               %
             </div>
-            {/* {formatTrend(stats.documentsTrend)} */}
           </div>
           <p className="text-xs text-muted-foreground">
-            {stats.documentsVerified} of {stats.documentsTotal} verified
+            {stats?.documentsVerified ?? 0} of {stats?.documentsTotal ?? 0}{" "}
+            verified
           </p>
         </CardContent>
       </Card>
@@ -107,12 +123,9 @@ export function StatsOverview({
         </CardHeader>
         <CardContent className={cardContentClass}>
           <div className="flex items-baseline justify-between">
-            <div className="text-2xl font-bold">{stats.upcomingViewings}</div>
-            {/* {stats.nextViewingInDays > 0 && (
-              <span className="text-xs text-muted-foreground">
-                Next in {stats.nextViewingInDays}d
-              </span>
-            )} */}
+            <div className="text-2xl font-bold">
+              {stats?.upcomingViewings ?? 0}
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             Scheduled property visits
