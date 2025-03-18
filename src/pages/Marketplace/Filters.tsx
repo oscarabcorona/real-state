@@ -1,4 +1,4 @@
-import { DollarSign } from "lucide-react";
+import { DollarSign, BedDouble, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,13 +34,14 @@ export function Filters({
   return (
     <>
       {showFilters && (
-        <Card className="border-none shadow-sm">
+        <Card className="border-none shadow-sm transition-all duration-200 animate-in slide-in-from-top-2">
           <CardContent className="p-6">
             <div className="grid grid-cols-1 gap-6">
-              {/* Property Type and Price Range Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium">Property Type</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-medium">Property Type</h3>
+                  </div>
                   <div className="grid grid-cols-2 gap-2">
                     {["house", "apartment", "condo", "townhouse"].map(
                       (type) => (
@@ -62,7 +63,10 @@ export function Filters({
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            Filter by {type} properties
+                            <div className="flex items-center gap-2">
+                              <span>Filter by {type}</span>
+                              {filters.type === type && "(Active)"}
+                            </div>
                           </TooltipContent>
                         </Tooltip>
                       )
@@ -71,7 +75,10 @@ export function Filters({
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium">Price Range</h3>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="text-sm font-medium">Price Range</h3>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -105,9 +112,11 @@ export function Filters({
                 </div>
               </div>
 
-              {/* Bedrooms Row */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium">Bedrooms</h3>
+                <div className="flex items-center gap-2">
+                  <BedDouble className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-sm font-medium">Bedrooms</h3>
+                </div>
                 <div className="flex justify-start gap-2 flex-wrap sm:flex-nowrap">
                   {["Any", "1+", "2+", "3+", "4+"].map((bed) => (
                     <Tooltip key={bed}>
@@ -142,9 +151,11 @@ export function Filters({
                 </div>
               </div>
 
-              {/* Location Row */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium">Location</h3>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-sm font-medium">Location</h3>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
                   <Input
                     type="text"

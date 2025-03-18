@@ -1,4 +1,12 @@
-import { Building2, ChevronDown, Filter } from "lucide-react";
+import { Building2, ChevronDown, Filter, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function Header({
   filters,
@@ -25,54 +33,70 @@ export function Header({
   showFilters: boolean;
   setShowFilters: (showFilters: boolean) => void;
 }) {
+  const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+
   return (
-    <div className="bg-white border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <Building2 className="h-8 w-8 text-indigo-600" />
-            <span className="ml-2 text-xl font-bold text-gray-900">
-              Property Listings
-            </span>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-              {Object.values(filters).some((v) => v) && (
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                  {Object.values(filters).filter((v) => v).length}
-                </span>
-              )}
-              <ChevronDown
-                className={`ml-2 h-4 w-4 transition-transform ${
-                  showFilters ? "transform rotate-180" : ""
-                }`}
-              />
-            </button>
-            {Object.values(filters).some((v) => v) && (
-              <button
-                onClick={() =>
-                  setFilters({
-                    type: "",
-                    minPrice: "",
-                    maxPrice: "",
-                    bedrooms: "",
-                    city: "",
-                    state: "",
-                  })
-                }
-                className="text-sm text-gray-600 hover:text-gray-900"
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center">
+        <div className="flex items-center gap-2 mr-4">
+          <Building2 className="h-6 w-6 text-primary" />
+          <h1 className="text-xl font-semibold">Property Listings</h1>
+        </div>
+        <Separator orientation="vertical" className="h-6 mx-4" />
+        <div className="flex items-center gap-2 ml-auto">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className="gap-2"
               >
-                Clear all
-              </button>
-            )}
-          </div>
+                <Filter className="h-4 w-4" />
+                <span>Filters</span>
+                {activeFiltersCount > 0 && (
+                  <Badge variant="secondary" className="ml-1">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    showFilters ? "rotate-180" : ""
+                  }`}
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {showFilters ? "Hide filters" : "Show filters"}
+            </TooltipContent>
+          </Tooltip>
+
+          {activeFiltersCount > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setFilters({
+                      type: "",
+                      minPrice: "",
+                      maxPrice: "",
+                      bedrooms: "",
+                      city: "",
+                      state: "",
+                    })
+                  }
+                  className="gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  <span>Clear all</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Reset all filters</TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </div>
-    </div>
+    </header>
   );
 }

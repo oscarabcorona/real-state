@@ -1,20 +1,25 @@
-import { addDays, isAfter, isBefore } from "date-fns";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ViewingModal } from "@/components/ViewingModal";
 import {
-  AlertCircle,
   Bath,
   Bed,
   Building2,
   Calendar,
+  Home,
   MapPin,
-  X,
+  ScrollText,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
-import { VIEWING_RULES } from "./const";
-import { Header } from "./Header";
-import type { AppointmentForm, Property } from "./types";
 import { Filters } from "./Filters";
+import { Header } from "./Header";
+import type { Property } from "./types";
 
 export function Marketplace() {
   const { user } = useAuthStore();
@@ -33,16 +38,6 @@ export function Marketplace() {
     city: "",
     state: "",
   });
-  const [appointmentForm, setAppointmentForm] = useState<AppointmentForm>({
-    name: user?.full_name || "",
-    email: user?.email || "",
-    phone: "",
-    date: "",
-    time: "",
-    message: "",
-  });
-  const [timeError, setTimeError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchProperties();
@@ -95,277 +90,108 @@ export function Marketplace() {
     }
   };
 
-  const validateAppointmentTime = (date: string, time: string): boolean => {
-    if (!date || !time) {
-      setTimeError("Please select both date and time");
-      return false;
-    }
-
-    const appointmentDateTime = new Date(`${date}T${time}`);
-    const now = new Date();
-    const minDateTime = new Date(
-      now.getTime() + VIEWING_RULES.minNotice * 60 * 60 * 1000
-    );
-    const maxDateTime = addDays(now, VIEWING_RULES.daysInAdvance);
-
-    if (isBefore(appointmentDateTime, minDateTime)) {
-      setTimeError(
-        `Please select a time at least ${VIEWING_RULES.minNotice} hours in advance`
-      );
-      return false;
-    }
-
-    if (isAfter(appointmentDateTime, maxDateTime)) {
-      setTimeError(
-        `Appointments can only be scheduled up to ${VIEWING_RULES.daysInAdvance} days in advance`
-      );
-      return false;
-    }
-
-    if (VIEWING_RULES.excludeDays.includes(appointmentDateTime.getDay())) {
-      setTimeError("Appointments are not available on weekends");
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleAppointmentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedProperty) return;
-
-    setTimeError("");
-
-    // Validate required fields
-    if (!appointmentForm.date || !appointmentForm.time) {
-      setTimeError("Please select both date and time");
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      if (
-        !validateAppointmentTime(appointmentForm.date, appointmentForm.time)
-      ) {
-        setSubmitting(false);
-        return;
-      }
-
-      // Format time to HH:mm format
-      const timeMatch = appointmentForm.time.match(/^(\d{1,2}):(\d{2})$/);
-      if (!timeMatch) {
-        setTimeError("Invalid time format");
-        setSubmitting(false);
-        return;
-      }
-
-      const [, hours, minutes] = timeMatch;
-      const formattedTime = `${hours.padStart(2, "0")}:${minutes}`;
-
-      const { error } = await supabase.from("appointments").insert([
-        {
-          property_id: selectedProperty.id,
-          name: appointmentForm.name,
-          email: appointmentForm.email,
-          phone: appointmentForm.phone,
-          preferred_date: appointmentForm.date,
-          preferred_time: formattedTime,
-          message: appointmentForm.message,
-          status: "pending",
-          tenant_user_id: user?.id,
-        },
-      ]);
-
-      if (error) throw error;
-
-      setShowAppointmentModal(false);
-      setAppointmentForm({
-        name: user?.full_name || "",
-        email: user?.email || "",
-        phone: "",
-        date: "",
-        time: "",
-        message: "",
-      });
-      alert("Viewing request submitted successfully!");
-    } catch (error) {
-      console.error("Error submitting appointment:", error);
-      alert("Failed to submit viewing request. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const AppointmentModal = () => (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Schedule a Viewing</h3>
-            <button
-              onClick={() => setShowAppointmentModal(false)}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-        <form onSubmit={handleAppointmentSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Name
-            </label>
-            <input
-              type="text"
-              required
-              value={appointmentForm.name}
-              onChange={(e) =>
-                setAppointmentForm({ ...appointmentForm, name: e.target.value })
-              }
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+  const PropertyCard = ({ property }: { property: Property }) => (
+    <Card className="group overflow-hidden transition-all hover:shadow-lg">
+      <AspectRatio ratio={16 / 9}>
+        <div className="relative h-full">
+          {property.images?.length ? (
+            <img
+              src={property.images[0]}
+              alt={property.name}
+              className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={appointmentForm.email}
-              onChange={(e) =>
-                setAppointmentForm({
-                  ...appointmentForm,
-                  email: e.target.value,
-                })
-              }
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Phone
-            </label>
-            <input
-              type="tel"
-              required
-              value={appointmentForm.phone}
-              onChange={(e) =>
-                setAppointmentForm({
-                  ...appointmentForm,
-                  phone: e.target.value,
-                })
-              }
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Preferred Date
-            </label>
-            <input
-              type="date"
-              required
-              value={appointmentForm.date}
-              onChange={(e) => {
-                setAppointmentForm({
-                  ...appointmentForm,
-                  date: e.target.value,
-                  time: "",
-                });
-                setTimeError("");
-              }}
-              min={new Date().toISOString().split("T")[0]}
-              max={
-                addDays(new Date(), VIEWING_RULES.daysInAdvance)
-                  .toISOString()
-                  .split("T")[0]
-              }
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-            <p className="mt-1 text-sm text-gray-500">
-              Viewings available Monday-Friday, up to{" "}
-              {VIEWING_RULES.daysInAdvance} days in advance
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Preferred Time
-            </label>
-            <input
-              type="time"
-              required
-              value={appointmentForm.time}
-              onChange={(e) => {
-                setAppointmentForm({
-                  ...appointmentForm,
-                  time: e.target.value,
-                });
-                setTimeError("");
-              }}
-              min={VIEWING_RULES.startTime}
-              max={VIEWING_RULES.endTime}
-              step="3600"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-            <p className="mt-1 text-sm text-gray-500">
-              Available times: {VIEWING_RULES.startTime} -{" "}
-              {VIEWING_RULES.endTime}
-            </p>
-          </div>
-
-          {timeError && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <AlertCircle className="h-5 w-5 text-red-400" />
-                <div className="ml-3">
-                  <p className="text-sm text-red-700">{timeError}</p>
-                </div>
-              </div>
+          ) : (
+            <div className="flex items-center justify-center h-full bg-muted">
+              <Home className="h-8 w-8 text-muted-foreground" />
             </div>
           )}
+          <div className="absolute top-2 right-2 flex flex-col gap-1">
+            <Badge
+              variant="secondary"
+              className="bg-background/80 backdrop-blur-sm"
+            >
+              {property.property_type.charAt(0).toUpperCase() +
+                property.property_type.slice(1)}
+            </Badge>
+            <Badge className="bg-emerald-500/80 backdrop-blur-sm text-white">
+              Available Now
+            </Badge>
+          </div>
+        </div>
+      </AspectRatio>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Message (Optional)
-            </label>
-            <textarea
-              value={appointmentForm.message}
-              onChange={(e) =>
-                setAppointmentForm({
-                  ...appointmentForm,
-                  message: e.target.value,
-                })
-              }
-              rows={3}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              placeholder="Any additional information..."
-            />
+      <CardContent className="p-4">
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between gap-2">
+            <h3 className="font-semibold truncate">{property.name}</h3>
+            <p className="text-lg font-bold text-primary shrink-0">
+              ${property.price.toLocaleString()}/mo
+            </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-          >
-            {submitting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2" />
-                Submitting...
-              </>
-            ) : (
-              "Schedule Viewing"
-            )}
-          </button>
-        </form>
-      </div>
-    </div>
+          <p className="text-sm text-muted-foreground flex items-center gap-1">
+            <MapPin className="h-4 w-4 shrink-0" />
+            <span className="truncate">
+              {property.address}, {property.city}, {property.state}
+            </span>
+          </p>
+        </div>
+      </CardContent>
+
+      <CardFooter className="px-4 py-3 border-t flex items-center justify-between">
+        <div className="flex gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Bed className="h-4 w-4" /> {property.bedrooms}
+          </span>
+          <span className="flex items-center gap-1">
+            <Bath className="h-4 w-4" /> {property.bathrooms}
+          </span>
+          <span className="flex items-center gap-1">
+            <ScrollText className="h-4 w-4" />{" "}
+            {property.square_feet.toLocaleString()} sqft
+          </span>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => {
+            setSelectedProperty(property);
+            setShowAppointmentModal(true);
+          }}
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <Calendar className="h-4 w-4 mr-2" />
+          View
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+
+  const LoadingSkeleton = () => (
+    <Card className="overflow-hidden">
+      <AspectRatio ratio={16 / 9}>
+        <Skeleton className="h-full w-full" />
+      </AspectRatio>
+      <CardContent className="p-4">
+        <div className="space-y-2">
+          <div className="flex justify-between gap-2">
+            <Skeleton className="h-5 w-[120px]" />
+            <Skeleton className="h-5 w-[80px]" />
+          </div>
+          <Skeleton className="h-4 w-[200px]" />
+        </div>
+      </CardContent>
+      <CardFooter className="px-4 py-3 border-t">
+        <div className="flex gap-4 w-full">
+          <Skeleton className="h-4 w-[60px]" />
+          <Skeleton className="h-4 w-[60px]" />
+          <Skeleton className="h-4 w-[80px]" />
+        </div>
+      </CardFooter>
+    </Card>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/50">
       {/* Header */}
       <Header
         filters={filters}
@@ -380,136 +206,45 @@ export function Marketplace() {
         showFilters={showFilters}
       />
 
-      {/* Property Listings */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-48 bg-gray-200 rounded-t-lg" />
-                <div className="p-4 bg-white rounded-b-lg">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-4" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-4" />
-                  <div className="flex space-x-4 mb-4">
-                    <div className="h-4 bg-gray-200 rounded w-1/4" />
-                    <div className="h-4 bg-gray-200 rounded w-1/4" />
-                    <div className="h-4 bg-gray-200 rounded w-1/4" />
-                  </div>
-                  <div className="h-10 bg-gray-200 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : properties.length === 0 ? (
-          <div className="text-center py-12">
-            <Building2 className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No properties found
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Try adjusting your filters
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {properties.map((property) => (
-              <div
-                key={property.id}
-                className="group bg-white overflow-hidden shadow rounded-lg border border-gray-200 transition-all duration-300 hover:shadow-xl"
-              >
-                <div className="h-48 bg-gray-200 relative overflow-hidden">
-                  {property.images?.length ? (
-                    <div className="relative w-full h-full">
-                      <img
-                        src={property.images[0]}
-                        alt={property.name}
-                        className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
-                      />
-                      {property.images.length > 1 && (
-                        <div className="absolute bottom-2 left-2 flex gap-2">
-                          {property.images.slice(0, 3).map((img, idx) => (
-                            <div
-                              key={idx}
-                              className="w-8 h-8 rounded border-2 border-white overflow-hidden"
-                            >
-                              <img
-                                src={img}
-                                alt={`Preview ${idx + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
-                          {property.images.length > 3 && (
-                            <div className="w-8 h-8 rounded bg-black bg-opacity-50 border-2 border-white flex items-center justify-center text-white text-xs">
-                              +{property.images.length - 3}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Building2 className="h-12 w-12 text-gray-400" />
-                    </div>
-                  )}
-                  <div className="absolute top-2 right-2 flex flex-col gap-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-800">
-                      {property.property_type.charAt(0).toUpperCase() +
-                        property.property_type.slice(1)}
-                    </span>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Available Now
-                    </span>
-                  </div>
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedProperty(property);
-                        setShowAppointmentModal(true);
-                      }}
-                      className="bg-white text-gray-800 px-4 py-2 rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105 flex items-center gap-2"
-                    >
-                      <Calendar className="h-4 w-4" />
-                      Schedule Viewing
-                    </button>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-lg font-medium text-gray-900 line-clamp-1">
-                      {property.name}
-                    </h3>
-                    <span className="text-lg font-bold text-indigo-600">
-                      ${property.price.toLocaleString()}/mo
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-500 mb-2 line-clamp-1">
-                    <MapPin className="h-4 w-4 inline mr-1" />
-                    {property.address}, {property.city}, {property.state}
-                  </p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-                    <div className="flex items-center">
-                      <Bed className="h-4 w-4 mr-1" />
-                      {property.bedrooms}
-                    </div>
-                    <div className="flex items-center">
-                      <Bath className="h-4 w-4 mr-1" />
-                      {property.bathrooms}
-                    </div>
-                    <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      {property.square_feet.toLocaleString()} sqft
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <ScrollArea className="flex-1">
+        <div className="container py-8">
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <LoadingSkeleton key={i} />
+              ))}
+            </div>
+          ) : properties.length === 0 ? (
+            <div className="text-center py-12">
+              <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-2 font-medium">No properties found</h3>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your filters
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {properties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          )}
+        </div>
+      </ScrollArea>
 
-      {showAppointmentModal && selectedProperty && <AppointmentModal />}
+      {selectedProperty && (
+        <ViewingModal
+          open={showAppointmentModal}
+          onOpenChange={setShowAppointmentModal}
+          propertyId={selectedProperty.id}
+          userId={user?.id}
+          userEmail={user?.email}
+          userName={user?.full_name}
+          onSuccess={() => {
+            setSelectedProperty(null);
+          }}
+        />
+      )}
     </div>
   );
 }
