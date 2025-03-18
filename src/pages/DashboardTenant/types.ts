@@ -12,7 +12,7 @@ export interface Property {
   square_feet: number;
   property_manager: {
     email: string;
-  };
+  } | null;
 }
 
 export interface Payment {
@@ -56,11 +56,15 @@ export interface Notification {
   created_at: string;
   read: boolean;
 }
-
+// TODO: Add the data for ?
 export interface Stats {
   propertiesCount: number;
+  // propertiesTrend?: number;
   totalPaid: number;
+  // paymentTrend?: number;
   documentsVerified: number;
   documentsTotal: number;
+  // documentsTrend?: number;
   upcomingViewings: number;
+  // nextViewingInDays?: number;
 }

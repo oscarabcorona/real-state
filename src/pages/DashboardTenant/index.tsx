@@ -10,6 +10,33 @@ import { RecentPayments } from "./RecentPayments";
 import { StatsOverview } from "./StatsOverview";
 import { UpcomingViewings } from "./UpcomingViewings";
 import type { Appointment, Document, Payment, Property } from "./types";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+
+export function EmptyDashboard() {
+  return (
+    <Card>
+      <CardContent className="p-6 text-center">
+        <Search className="mx-auto h-12 w-12 text-muted-foreground" />
+        <CardTitle className="mt-4">Find Your Next Home</CardTitle>
+        <CardDescription className="mt-2">
+          Browse available properties and schedule viewings.
+        </CardDescription>
+        <Button className="mt-4" asChild>
+          <Link to="/dashboard/marketplace">
+            <Search className="h-4 w-4 mr-2" />
+            Browse Properties
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
 
 export function DashboardTenant() {
   const { user } = useAuthStore();
@@ -71,7 +98,7 @@ export function DashboardTenant() {
           )
           .in("id", propertyIds);
 
-        setProperties((propertiesData as Property[]) || []);
+        setProperties(propertiesData || []);
         setStats((prev) => ({
           ...prev,
           propertiesCount: propertiesData?.length || 0,
@@ -215,42 +242,14 @@ export function DashboardTenant() {
     };
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
-      </div>
-    );
-  }
-
   if (properties.length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6 text-center">
-        <Search className="mx-auto h-12 w-12 text-gray-400" />
-        <h2 className="mt-4 text-lg font-medium text-gray-900">
-          Find Your Next Home
-        </h2>
-        <p className="mt-2 text-gray-500">
-          Browse available properties and schedule viewings.
-        </p>
-        <Link
-          to="/dashboard/marketplace"
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-        >
-          <Search className="h-4 w-4 mr-2" />
-          Browse Properties
-        </Link>
-      </div>
-    );
+    return <EmptyDashboard />;
   }
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
-      <StatsOverview stats={stats} />
-      {/* Properties Section */}
-      <PropertiesSections properties={properties} />
-      {/* Recent Activity */}
+      <StatsOverview stats={stats} isLoading={loading} />
+      <PropertiesSections properties={properties} isLoading={loading} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Payments */}
         <RecentPayments payments={payments} />
