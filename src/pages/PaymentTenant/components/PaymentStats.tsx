@@ -1,4 +1,5 @@
 import { CheckCircle, Clock, XCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type PaymentStatsProps = {
   totalPaid: number;
@@ -6,72 +7,59 @@ type PaymentStatsProps = {
   failed: number;
 };
 
+const cardContentClass = "mt-[-12px]";
+
 export function PaymentStats({
   totalPaid,
   pending,
   failed,
 }: PaymentStatsProps) {
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
-      <div className="bg-white overflow-hidden shadow rounded-lg">
-        <div className="p-5">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <CheckCircle className="h-6 w-6 text-green-400" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  Total Paid
-                </dt>
-                <dd className="text-lg font-medium text-gray-900">
-                  ${totalPaid.toLocaleString()}
-                </dd>
-              </dl>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-8">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
+          <CheckCircle className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent className={cardContentClass}>
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-bold">
+              ${totalPaid.toLocaleString()}
             </div>
           </div>
-        </div>
-      </div>
+          <p className="text-xs text-muted-foreground">
+            Total completed payments
+          </p>
+        </CardContent>
+      </Card>
 
-      <div className="bg-white overflow-hidden shadow rounded-lg">
-        <div className="p-5">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <Clock className="h-6 w-6 text-yellow-400" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  Pending
-                </dt>
-                <dd className="text-lg font-medium text-gray-900">
-                  ${pending.toLocaleString()}
-                </dd>
-              </dl>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Pending</CardTitle>
+          <Clock className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent className={cardContentClass}>
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-bold">
+              ${pending.toLocaleString()}
             </div>
           </div>
-        </div>
-      </div>
+          <p className="text-xs text-muted-foreground">Awaiting payment</p>
+        </CardContent>
+      </Card>
 
-      <div className="bg-white overflow-hidden shadow rounded-lg">
-        <div className="p-5">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <XCircle className="h-6 w-6 text-red-400" />
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  Failed
-                </dt>
-                <dd className="text-lg font-medium text-gray-900">
-                  ${failed.toLocaleString()}
-                </dd>
-              </dl>
-            </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Failed</CardTitle>
+          <XCircle className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent className={cardContentClass}>
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-bold">${failed.toLocaleString()}</div>
           </div>
-        </div>
-      </div>
+          <p className="text-xs text-muted-foreground">Failed transactions</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,73 +1,82 @@
-import { Building2, CreditCard, DollarSign, X } from "lucide-react";
+import { Building2, CreditCard, DollarSign } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Payment } from "../types";
 
 type PaymentModalProps = {
   payment: Payment;
+  open: boolean;
   onClose: () => void;
   onProcessPayment: (method: "credit_card" | "ach" | "cash") => void;
 };
 
 export function PaymentModal({
   payment,
+  open,
   onClose,
   onProcessPayment,
 }: PaymentModalProps) {
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Process Payment</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Process Payment</DialogTitle>
+        </DialogHeader>
         <div className="space-y-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-700">
-              <span className="font-medium">Amount:</span> $
-              {payment?.amount.toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-700">
-              <span className="font-medium">Property:</span>{" "}
-              {payment?.properties.name}
-            </p>
-            <p className="text-sm text-gray-700">
-              <span className="font-medium">Invoice:</span>{" "}
-              {payment?.invoice_number}
-            </p>
-          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <dl className="grid gap-2 text-sm">
+                <div className="grid grid-cols-2">
+                  <dt className="font-medium">Amount</dt>
+                  <dd>${payment?.amount.toLocaleString()}</dd>
+                </div>
+                <div className="grid grid-cols-2">
+                  <dt className="font-medium">Property</dt>
+                  <dd>{payment?.properties.name}</dd>
+                </div>
+                <div className="grid grid-cols-2">
+                  <dt className="font-medium">Invoice</dt>
+                  <dd>{payment?.invoice_number}</dd>
+                </div>
+              </dl>
+            </CardContent>
+          </Card>
 
-          <div className="space-y-2">
-            <button
+          <div className="grid gap-2">
+            <Button
               onClick={() => onProcessPayment("credit_card")}
-              className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+              className="w-full"
             >
-              <CreditCard className="h-4 w-4 mr-2" />
+              <CreditCard className="mr-2 h-4 w-4" />
               Pay with Credit Card
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="outline"
               onClick={() => onProcessPayment("ach")}
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="w-full"
             >
-              <Building2 className="h-4 w-4 mr-2" />
+              <Building2 className="mr-2 h-4 w-4" />
               Pay with ACH Transfer
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="outline"
               onClick={() => onProcessPayment("cash")}
-              className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              className="w-full"
             >
-              <DollarSign className="h-4 w-4 mr-2" />
+              <DollarSign className="mr-2 h-4 w-4" />
               Pay with Cash
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
