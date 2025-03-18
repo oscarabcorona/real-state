@@ -96,16 +96,16 @@ export function ValueProposition() {
   return (
     <div className="py-24 relative overflow-hidden" id="features">
       {/* Background with gradient mesh */}
-      <div className="absolute inset-0 bg-grid-gray-100/50 bg-[size:30px_30px] [mask-image:radial-gradient(white,transparent_70%)]" />
-      <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white to-white/50" />
+      <div className="absolute inset-0 bg-grid-gray-100/50 dark:bg-grid-gray-800/50 bg-[size:30px_30px] [mask-image:radial-gradient(white,transparent_70%)]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white to-white/50 dark:from-background/50 dark:via-background dark:to-background/50" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedElement animation="slideUp">
           <div className="text-center">
-            <h2 className="inline-flex items-center rounded-lg bg-gradient-to-r from-primary/80 to-primary px-3 py-1 text-sm font-medium text-white ring-1 ring-inset ring-primary/20">
+            <h2 className="inline-flex items-center rounded-lg bg-gradient-to-r from-primary/80 to-primary px-3 py-1 text-sm font-medium text-primary-foreground ring-1 ring-inset ring-primary/20">
               Powerful Features
             </h2>
-            <p className="mt-6 text-3xl font-extrabold tracking-tight sm:text-4xl">
+            <p className="mt-6 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
               Transform Your Property Management
             </p>
             <p className="mt-4 max-w-2xl mx-auto text-xl text-muted-foreground">
@@ -125,7 +125,7 @@ export function ValueProposition() {
               >
                 <Dialog>
                   <DialogTrigger asChild>
-                    <div className="group relative bg-white dark:bg-background p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+                    <div className="group relative bg-card dark:bg-card/80 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
                       <dt>
                         <div
                           className={`absolute flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-r ${feature.color} text-white -top-7 group-hover:scale-110 transition-transform`}
@@ -179,26 +179,28 @@ export function ValueProposition() {
                   <ChevronRightIcon className="ml-2 h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto bg-background dark:bg-background/95 backdrop-blur-sm">
                 <div className="p-6">
-                  <h2 className="text-2xl font-semibold mb-8">All Features</h2>
+                  <h2 className="text-2xl font-semibold mb-8 text-foreground">
+                    All Features
+                  </h2>
                   <div className="grid gap-8 md:grid-cols-2">
                     {Object.entries(allFeatures).map(([category, items]) => (
                       <div key={category} className="space-y-6">
-                        <h3 className="text-lg font-medium capitalize">
+                        <h3 className="text-lg font-medium capitalize text-foreground">
                           {category}
                         </h3>
                         <div className="space-y-4">
                           {items.map((item) => (
                             <div
                               key={item.title}
-                              className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                              className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 dark:hover:bg-muted/20 transition-colors"
                             >
-                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 text-primary">
                                 <item.icon className="h-5 w-5" />
                               </div>
                               <div>
-                                <h4 className="text-sm font-medium">
+                                <h4 className="text-sm font-medium text-foreground">
                                   {item.title}
                                 </h4>
                                 <p className="text-sm text-muted-foreground">

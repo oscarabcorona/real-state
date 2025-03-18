@@ -33,13 +33,13 @@ export function HeroSection() {
           alt="Modern building"
           className="w-full h-full object-cover scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-background/95" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/80 to-background/95 dark:from-primary/70 dark:via-primary/60 dark:to-background/90" />
 
-        {/* Floating Elements */}
+        {/* Floating Elements with improved dark mode opacity */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute size-96 -top-48 -left-48 bg-primary/20 rounded-full blur-3xl animate-blob" />
-          <div className="absolute size-96 top-1/2 -right-48 bg-secondary/20 rounded-full blur-3xl animate-blob animation-delay-2000" />
-          <div className="absolute size-96 -bottom-48 left-1/2 bg-accent/20 rounded-full blur-3xl animate-blob animation-delay-4000" />
+          <div className="absolute size-96 -top-48 -left-48 bg-primary/20 dark:bg-primary/5 rounded-full blur-3xl animate-blob" />
+          <div className="absolute size-96 top-1/2 -right-48 bg-secondary/20 dark:bg-secondary/5 rounded-full blur-3xl animate-blob animation-delay-2000" />
+          <div className="absolute size-96 -bottom-48 left-1/2 bg-accent/20 dark:bg-accent/5 rounded-full blur-3xl animate-blob animation-delay-4000" />
         </div>
       </div>
 
@@ -67,8 +67,12 @@ export function HeroSection() {
 
             {/* CTA Section with improved buttons */}
             <AnimatedElement animation="slideUp" delay={1.2}>
-              <div className="mt-10 flex items-center gap-4">
-                <Button size="lg" className="group" asChild>
+              <div className="flex items-center gap-4">
+                <Button
+                  size="lg"
+                  className="group bg-background/10 hover:bg-background/20 text-white dark:bg-background/5 dark:hover:bg-background/15"
+                  asChild
+                >
                   <Link to="/login">
                     <span>Start Free Trial</span>
                     <Rocket className="ml-2 transition-transform group-hover:translate-x-1" />
@@ -103,37 +107,39 @@ export function HeroSection() {
             {/* Stats with improved design */}
             <div className="mt-12 grid grid-cols-3 gap-8">
               <AnimatedElement animation="scale" delay={1.4}>
-                <div className="flex flex-col items-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                <div className="flex flex-col items-center p-3 bg-white/10 dark:bg-white/5 rounded-lg backdrop-blur-sm">
                   <AnimatedNumber
                     value={98}
                     suffix="%"
-                    className="text-3xl font-bold text-white"
+                    className="text-3xl font-bold text-white dark:text-white/90"
                   />
-                  <span className="text-sm text-indigo-200">
+                  <span className="text-sm text-indigo-200 dark:text-indigo-300">
                     Client Satisfaction
                   </span>
                 </div>
               </AnimatedElement>
 
               <AnimatedElement animation="scale" delay={1.6}>
-                <div className="flex flex-col items-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                <div className="flex flex-col items-center p-3 bg-white/10 dark:bg-white/5 rounded-lg backdrop-blur-sm">
                   <AnimatedNumber
                     value={75000}
                     suffix="+"
-                    className="text-3xl font-bold text-white"
+                    className="text-3xl font-bold text-white dark:text-white/90"
                   />
-                  <span className="text-sm text-indigo-200">Units Managed</span>
+                  <span className="text-sm text-indigo-200 dark:text-indigo-300">
+                    Units Managed
+                  </span>
                 </div>
               </AnimatedElement>
 
               <AnimatedElement animation="scale" delay={1.8}>
-                <div className="flex flex-col items-center p-3 bg-white/10 rounded-lg backdrop-blur-sm">
+                <div className="flex flex-col items-center p-3 bg-white/10 dark:bg-white/5 rounded-lg backdrop-blur-sm">
                   <AnimatedNumber
                     value={40}
                     suffix="%"
-                    className="text-3xl font-bold text-white"
+                    className="text-3xl font-bold text-white dark:text-white/90"
                   />
-                  <span className="text-sm text-indigo-200">
+                  <span className="text-sm text-indigo-200 dark:text-indigo-300">
                     Cost Reduction
                   </span>
                 </div>

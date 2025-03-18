@@ -84,18 +84,18 @@ export function FAQSection() {
 
   return (
     <section className="relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 dark:from-primary/10 via-background to-background" />
       <div className="relative py-24">
         <div className="container max-w-4xl mx-auto px-4">
           <AnimatedElement animation="slideUp">
             <div className="text-center space-y-6">
-              <div className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-primary/20 to-primary/10 px-4 py-1.5">
+              <div className="inline-flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 px-4 py-1.5">
                 <HelpCircle className="mr-2 h-4 w-4 text-primary" />
-                <span className="text-sm font-medium bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                <span className="text-sm font-medium text-primary">
                   {questionCount} Questions Answered
                 </span>
               </div>
-              <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              <h2 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
                 Frequently Asked Questions
               </h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -144,12 +144,13 @@ export function FAQSection() {
                             key={index}
                             value={`item-${index}`}
                             className={cn(
-                              "bg-card hover:bg-accent/5 data-[state=open]:bg-accent/10",
-                              "rounded-xl border shadow-sm",
+                              "bg-card dark:bg-card/80 hover:bg-accent/5 dark:hover:bg-accent/10",
+                              "data-[state=open]:bg-accent/10 dark:data-[state=open]:bg-accent/20",
+                              "rounded-xl border shadow-sm dark:border-gray-800",
                               "transition-all duration-200"
                             )}
                           >
-                            <AccordionTrigger className="px-6 py-4 text-base font-medium hover:no-underline group">
+                            <AccordionTrigger className="px-6 py-4 text-base font-medium text-foreground hover:no-underline group">
                               <span className="group-hover:text-primary transition-colors">
                                 {faq.question}
                               </span>

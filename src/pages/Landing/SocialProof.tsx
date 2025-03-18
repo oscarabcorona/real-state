@@ -71,9 +71,9 @@ function TestimonialCard({
     <AnimatedElement animation="slideUp" delay={delay}>
       <div
         ref={cardRef}
-        className="relative h-full bg-white p-8 rounded-2xl shadow-lg transition-shadow hover:shadow-xl"
+        className="relative h-full bg-card dark:bg-card/80 p-8 rounded-2xl shadow-lg transition-shadow hover:shadow-xl"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/0 rounded-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/0 dark:from-primary/10 dark:to-transparent rounded-2xl" />
         <div className="relative">
           <div className="flex items-center gap-4 mb-6">
             <img
@@ -82,7 +82,7 @@ function TestimonialCard({
               alt={name}
             />
             <div>
-              <h4 className="text-lg font-semibold text-gray-900">{name}</h4>
+              <h4 className="text-lg font-semibold text-foreground">{name}</h4>
               <p className="text-sm text-primary">
                 {role} at <span className="font-medium">{company}</span>
               </p>
@@ -95,7 +95,9 @@ function TestimonialCard({
                 <Star key={i} className="h-5 w-5 text-amber-400 fill-current" />
               ))}
           </div>
-          <p className="text-gray-700 leading-relaxed">{quote}</p>
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+            {quote}
+          </p>
         </div>
       </div>
     </AnimatedElement>
@@ -147,21 +149,21 @@ export function SocialProof() {
   }, []);
 
   return (
-    <div className="relative bg-gradient-to-b from-gray-50 to-white py-24 overflow-hidden">
+    <div className="relative bg-gradient-to-b from-gray-50 dark:from-gray-900/50 to-background py-24 overflow-hidden">
       {/* Background Grid Pattern */}
-      <div className="absolute inset-0 bg-grid-gray-100/50 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_70%)]" />
+      <div className="absolute inset-0 bg-grid-gray-100/50 dark:bg-grid-gray-800/50 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_70%)]" />
 
       {/* Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedElement animation="slideUp">
-          <div className="lg:text-center mb-16">
-            <span className="inline-flex items-center text-sm font-semibold text-indigo-600 gap-2">
+          <div className="text-center">
+            <span className="inline-flex items-center text-sm font-semibold text-primary gap-2">
               <Award className="h-4 w-4" /> TRUSTED BY INDUSTRY LEADERS
             </span>
-            <h2 className="mt-2 text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
               Join 2,000+ Property Managers Who Trust Our Solution
             </h2>
-            <p className="mt-4 text-xl text-gray-500 max-w-2xl mx-auto">
+            <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
               Empowering property management across 50+ countries with
               innovative AI solutions
             </p>
@@ -201,7 +203,7 @@ export function SocialProof() {
               animation="slideUp"
               delay={0.2 * (index + 1)}
             >
-              <div className="stat-card group relative flex flex-col items-center p-6 bg-white rounded-2xl">
+              <div className="stat-card group relative flex flex-col items-center p-6 bg-card dark:bg-card/80 rounded-2xl">
                 <div className="shine-effect pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition duration-300 group-hover:opacity-100" />
                 <div
                   className={cn(
@@ -215,9 +217,11 @@ export function SocialProof() {
                 <AnimatedNumber
                   value={stat.value}
                   suffix={stat.suffix}
-                  className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600"
+                  className="text-4xl font-bold text-foreground"
                 />
-                <p className="mt-2 text-gray-600 font-medium">{stat.label}</p>
+                <p className="mt-2 text-muted-foreground font-medium">
+                  {stat.label}
+                </p>
               </div>
             </AnimatedElement>
           ))}

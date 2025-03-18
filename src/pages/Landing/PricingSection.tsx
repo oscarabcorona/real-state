@@ -77,7 +77,7 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
   return (
     <AnimatedElement animation="slideUp" delay={delay}>
       <div
-        className={`group relative bg-gradient-to-b from-white to-gray-50/50 rounded-2xl overflow-hidden
+        className={`group relative bg-gradient-to-b from-background to-gray-50/50 dark:to-gray-900/50 rounded-2xl overflow-hidden
           ${
             plan.popular
               ? "lg:scale-105 shadow-2xl shadow-indigo-500/20 ring-2 ring-indigo-500"
@@ -100,13 +100,13 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
             <div
               className={`p-2 rounded-lg ${
                 plan.popular
-                  ? "bg-indigo-500 text-white"
-                  : "bg-indigo-50 text-indigo-500"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-primary/10 text-primary dark:bg-primary/20"
               }`}
             >
               <Icon className="h-6 w-6" />
             </div>
-            <h3 className="text-2xl font-bold">{plan.name}</h3>
+            <h3 className="text-2xl font-bold text-foreground">{plan.name}</h3>
           </div>
 
           <div className="flex items-baseline mb-6">
@@ -135,11 +135,11 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
                     plan.popular ? "text-indigo-500" : "text-green-500"
                   } flex-shrink-0`}
                 />
-                <span className="text-gray-600 group-hover/feature:text-gray-900 transition-colors">
+                <span className="text-muted-foreground group-hover/feature:text-foreground transition-colors">
                   {feature}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="inline-block ml-1.5 h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                      <HelpCircle className="inline-block ml-1.5 h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="w-64">
@@ -153,14 +153,14 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
           </ul>
         </div>
 
-        <div className="p-8 bg-gradient-to-b from-transparent to-gray-50">
+        <div className="p-8 bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900/50">
           <Link
             to={plan.buttonLink}
             className={`block w-full text-center px-6 py-3.5 text-sm font-semibold rounded-lg
               ${
                 plan.popular
                   ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600"
-                  : "bg-white text-gray-900 ring-1 ring-gray-200 hover:ring-gray-300 hover:bg-gray-50"
+                  : "bg-background dark:bg-background/90 text-foreground ring-1 ring-border hover:ring-primary/20 hover:bg-accent/50 dark:hover:bg-accent/20"
               } transition-all duration-200 shadow-sm`}
           >
             {plan.buttonText}
@@ -174,23 +174,23 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
 export function PricingSection() {
   return (
     <section id="pricing" className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-50 to-white" />
-      <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-r from-transparent to-indigo-50/30" />
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-50 dark:from-gray-900/50 to-background" />
+      <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-r from-transparent to-indigo-50/30 dark:to-indigo-950/30" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedElement animation="slideUp">
           <div className="text-center mb-20">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-50 mb-4">
-              <Star className="h-4 w-4 text-indigo-500 mr-2" />
-              <span className="text-sm font-semibold text-indigo-700">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 mb-4">
+              <Star className="h-4 w-4 text-primary mr-2" />
+              <span className="text-sm font-semibold text-primary">
                 FLEXIBLE PRICING
               </span>
             </div>
-            <h2 className="mt-4 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+            <h2 className="mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
               Scale Your Property{" "}
-              <span className="text-indigo-500">Management</span>
+              <span className="text-primary">Management</span>
             </h2>
-            <p className="mt-6 text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
               Start free, upgrade as you grow. No hidden fees or long-term
               contracts.
             </p>

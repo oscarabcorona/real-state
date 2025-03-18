@@ -47,12 +47,12 @@ const quickLinks = {
 
 export function FooterSection() {
   return (
-    <footer className="relative border-t bg-gradient-to-b from-background/50 via-background to-background">
+    <footer className="relative border-t bg-gradient-to-b from-background/50 via-background to-background dark:border-gray-800">
       <div className="container relative max-w-7xl mx-auto pt-16 pb-8 px-4">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-8 mb-12">
           <AnimatedElement animation="slideRight">
-            <Card className="bg-card/50 backdrop-blur relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent" />
+            <Card className="bg-card/50 dark:bg-card/30 backdrop-blur relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/5 dark:via-primary/2" />
               <div className="relative p-8">
                 <h3 className="text-2xl font-bold tracking-tight">
                   Stay ahead of the curve
