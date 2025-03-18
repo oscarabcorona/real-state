@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AnimatedElement } from "../../components/AnimatedElement";
+import { AnimatedElement } from "../../components/animated/AnimatedElement";
 
 const socialLinks = [
   {

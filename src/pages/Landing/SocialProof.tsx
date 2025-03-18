@@ -1,8 +1,8 @@
 import { animate, inView, spring } from "motion";
 import { Star, Award, ChartBar, Building } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { AnimatedElement } from "../../components/AnimatedElement";
-import { AnimatedNumber } from "../../components/AnimatedNumber";
+import { AnimatedElement } from "../../components/animated/AnimatedElement";
+import { AnimatedNumber } from "../../components/animated/AnimatedNumber";
 import { cn } from "@/lib/utils";
 
 const testimonials = [

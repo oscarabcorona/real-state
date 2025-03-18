@@ -1,4 +1,4 @@
-import { AnimatedElement } from "../../components/AnimatedElement";
+import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import { HelpCircle } from "lucide-react";
 import {
   Accordion,

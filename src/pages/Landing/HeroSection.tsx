@@ -8,9 +8,9 @@ import {
   PlayCircle,
   Rocket,
 } from "lucide-react";
-import { AnimatedElement } from "../../components/AnimatedElement";
-import { AnimatedNumber } from "../../components/AnimatedNumber";
-import { AnimatedText } from "../../components/AnimatedText";
+import { AnimatedElement } from "../../components/animated/AnimatedElement";
+import { AnimatedNumber } from "../../components/animated/AnimatedNumber";
+import { AnimatedText } from "../../components/animated/AnimatedText";
 import { useEffect, useRef, useState } from "react";
 
 export function HeroSection() {

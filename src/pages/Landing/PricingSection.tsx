@@ -1,6 +1,6 @@
 import { CheckCircle, Star, Zap, Building2, HelpCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { AnimatedElement } from "../../components/AnimatedElement";
+import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import {
   Tooltip,
   TooltipContent,

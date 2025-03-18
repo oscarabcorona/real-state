@@ -15,7 +15,7 @@ import { Home, Building2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { AnimatedElement } from "../../components/AnimatedElement";
+import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
