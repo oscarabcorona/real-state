@@ -1,44 +1,14 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
-import { Search } from "lucide-react";
-import { useCallback, useEffect, useTransition } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import { useOptimistic } from "../../hooks/useOptimisticAction";
 import { supabase } from "../../lib/supabase";
+import { fetchDashboardData } from "../../services/dashboardService";
 import { useAuthStore } from "../../store/authStore";
+import { DashboardData } from "../../types/dashboard.types";
 import { PropertiesSections } from "./PropertiesSection";
-import { QuickActions } from "./QuickActions";
 import { RecentDocuments } from "./RecentDocuments";
 import { RecentPayments } from "./RecentPayments";
 import { StatsOverview } from "./StatsOverview";
 import { UpcomingViewings } from "./UpcomingViewings";
-import { fetchDashboardData } from "../../services/dashboardService";
-import { DashboardData } from "../../types/dashboard.types";
-
-export function EmptyDashboard() {
-  return (
-    <Card>
-      <CardContent className="p-6 text-center">
-        <Search className="mx-auto h-12 w-12 text-muted-foreground" />
-        <CardTitle className="mt-4">Find Your Next Home</CardTitle>
-        <CardDescription className="mt-2">
-          Browse available properties and schedule viewings.
-        </CardDescription>
-        <Button className="mt-4" asChild>
-          <Link to="/dashboard/marketplace">
-            <Search className="h-4 w-4 mr-2" />
-            Browse Properties
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
 
 const INITIAL_STATE: DashboardData = {
   properties: [],
@@ -58,20 +28,21 @@ const INITIAL_STATE: DashboardData = {
 
 export function DashboardTenant() {
   const { user } = useAuthStore();
-  const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(true);
   const [optimisticData, setOptimisticData] = useOptimistic(INITIAL_STATE);
 
   const fetchDashboard = useCallback(async () => {
     if (!user?.id) return;
+    setLoading(true);
     try {
       const data = await fetchDashboardData(user.id);
-      startTransition(() => {
-        setOptimisticData(data);
-      });
+      setOptimisticData(data);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [user?.id, startTransition, setOptimisticData]);
+  }, [user?.id, setOptimisticData]);
 
   const subscribeToNotifications = useCallback(() => {
     if (!user?.id) return;
@@ -87,9 +58,7 @@ export function DashboardTenant() {
           filter: `user_id=eq.${user.id}`,
         },
         () => {
-          startTransition(() => {
-            fetchDashboard();
-          });
+          fetchDashboard();
         }
       )
       .subscribe();
@@ -97,7 +66,7 @@ export function DashboardTenant() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [user?.id, fetchDashboard, startTransition]);
+  }, [user?.id, fetchDashboard]);
 
   useEffect(() => {
     if (user) {
@@ -109,29 +78,27 @@ export function DashboardTenant() {
     }
   }, [user, fetchDashboard, subscribeToNotifications]);
 
-  if (!optimisticData.properties.length) {
-    return <EmptyDashboard />;
-  }
-
   return (
     <div className="space-y-6">
-      <StatsOverview stats={optimisticData.stats} isLoading={isPending} />
+      <StatsOverview stats={optimisticData.stats} isLoading={loading} />
       <PropertiesSections
         properties={optimisticData.properties}
-        isLoading={isPending}
+        isLoading={loading}
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <RecentPayments
           payments={optimisticData.payments}
-          isLoading={isPending}
+          isLoading={loading}
         />
         <RecentDocuments
           documents={optimisticData.documents}
-          isLoading={isPending}
+          isLoading={loading}
         />
       </div>
-      <UpcomingViewings appointments={optimisticData.appointments} />
-      <QuickActions />
+      <UpcomingViewings
+        appointments={optimisticData.appointments}
+        isLoading={loading}
+      />
     </div>
   );
 }

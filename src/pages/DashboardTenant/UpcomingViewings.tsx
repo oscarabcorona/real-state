@@ -11,12 +11,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function UpcomingViewings({
   appointments,
+  isLoading = false,
 }: {
   appointments: Appointment[];
+  isLoading?: boolean;
 }) {
+  // Render skeletons when loading
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle>Upcoming Viewings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center space-x-2 py-2">
+              <Skeleton className="h-6 w-6" />
+              <Skeleton className="h-4 w-40" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -75,7 +97,7 @@ export function UpcomingViewings({
                 </div>
                 <span
                   className={`shrink-0 px-2.5 py-0.5 text-xs font-medium rounded-full ${getStatusClass(
-                    appointment.status
+                    appointment.status ?? "pending"
                   )}`}
                 >
                   {appointment.status}

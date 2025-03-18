@@ -1,7 +1,6 @@
-import { Bath, Bed, Building2, MapPin, User } from "lucide-react";
-import { Link } from "react-router-dom";
-import type { Property } from "../../types/dashboard.types";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,8 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Bath, Bed, Building2, MapPin, Search, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import type { Property } from "../../types/dashboard.types";
 
 function PropertyCardSkeleton() {
   return (
@@ -42,13 +43,63 @@ function PropertyCardSkeleton() {
   );
 }
 
+function EmptyProperties() {
+  return (
+    <Card>
+      <CardContent className="p-6 text-center">
+        <Search className="mx-auto h-12 w-12 text-muted-foreground" />
+        <CardTitle className="mt-4">Find Your Next Home</CardTitle>
+        <CardDescription className="mt-2">
+          Browse available properties and schedule viewings.
+        </CardDescription>
+        <Button className="mt-4" asChild>
+          <Link to="/dashboard/marketplace">
+            <Search className="h-4 w-4 mr-2" />
+            Browse Properties
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function PropertiesSections({
   properties,
   isLoading = false,
 }: {
-  properties: Property[];
+  properties: Property[] | undefined;
   isLoading?: boolean;
 }) {
+  // Show skeletons when loading
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Your Properties</CardTitle>
+            <CardDescription>Manage your rented properties</CardDescription>
+          </div>
+          <Link
+            to="/dashboard/marketplace"
+            className="text-sm text-primary hover:text-primary/80 font-medium"
+          >
+            View All
+          </Link>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <PropertyCardSkeleton key={i} />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  // When not loading, show empty state when there is no data
+  if (!properties?.length) {
+    return <EmptyProperties />;
+  }
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -104,7 +155,7 @@ export function PropertiesSections({
                     <CardContent className="p-4 pt-0">
                       <div className="flex items-center justify-between">
                         <div className="text-lg font-bold text-primary">
-                          ${property.price.toLocaleString()}
+                          ${(property.price ?? 0).toLocaleString()}
                           <span className="text-sm font-normal text-muted-foreground">
                             /month
                           </span>

@@ -1,606 +1,498 @@
-React v19
-December 05, 2024 by The React Team
+React 19 Upgrade Guide
+April 25, 2024 by Ricky Hanlon
+
+The improvements added to React 19 require some breaking changes, but we’ve worked to make the upgrade as smooth as possible, and we don’t expect the changes to impact most apps.
 
 Nota
-React 19 is now stable!
-Additions since this post was originally shared with the React 19 RC in April:
+React 18.3 has also been published
+To help make the upgrade to React 19 easier, we’ve published a react@18.3 release that is identical to 18.2 but adds warnings for deprecated APIs and other changes that are needed for React 19.
 
-Pre-warming for suspended trees: see Improvements to Suspense.
-React DOM static APIs: see New React DOM Static APIs.
-The date for this post has been updated to reflect the stable release date.
+We recommend upgrading to React 18.3 first to help identify any issues before upgrading to React 19.
 
-React v19 is now available on npm!
+For a list of changes in 18.3 see the Release Notes.
 
-In our React 19 Upgrade Guide, we shared step-by-step instructions for upgrading your app to React 19. In this post, we’ll give an overview of the new features in React 19, and how you can adopt them.
+In this post, we will guide you through the steps for upgrading to React 19:
 
-What’s new in React 19
-Improvements in React 19
-How to upgrade
-For a list of breaking changes, see the Upgrade Guide.
+Installing
+Codemods
+Breaking changes
+New deprecations
+Notable changes
+TypeScript changes
+Changelog
+If you’d like to help us test React 19, follow the steps in this upgrade guide and report any issues you encounter. For a list of new features added to React 19, see the React 19 release post.
 
-What’s new in React 19
-Actions
-A common use case in React apps is to perform a data mutation and then update state in response. For example, when a user submits a form to change their name, you will make an API request, and then handle the response. In the past, you would need to handle pending states, errors, optimistic updates, and sequential requests manually.
+Installing
+Nota
+New JSX Transform is now required
+We introduced a new JSX transform in 2020 to improve bundle size and use JSX without importing React. In React 19, we’re adding additional improvements like using ref as a prop and JSX speed improvements that require the new transform.
 
-For example, you could handle the pending and error state in useState:
+If the new transform is not enabled, you will see this warning:
 
-// Before Actions
-function UpdateName({}) {
-const [name, setName] = useState("");
-const [error, setError] = useState(null);
-const [isPending, setIsPending] = useState(false);
+Console
+Your app (or one of its dependencies) is using an outdated JSX transform. Update to the modern JSX transform for faster performance: https://react.dev/link/new-jsx-transform
+We expect most apps will not be affected since the transform is enabled in most environments already. For manual instructions on how to upgrade, please see the announcement post.
 
-const handleSubmit = async () => {
-setIsPending(true);
-const error = await updateName(name);
-setIsPending(false);
-if (error) {
-setError(error);
-return;
-}
-redirect("/path");
-};
+To install the latest version of React and React DOM:
 
-return (
-<div>
-<input value={name} onChange={(event) => setName(event.target.value)} />
-<button onClick={handleSubmit} disabled={isPending}>
-Update
-</button>
-{error && <p>{error}</p>}
-</div>
-);
-}
-In React 19, we’re adding support for using async functions in transitions to handle pending states, errors, forms, and optimistic updates automatically.
+npm install --save-exact react@^19.0.0 react-dom@^19.0.0
+Or, if you’re using Yarn:
 
-For example, you can use useTransition to handle the pending state for you:
+yarn add --exact react@^19.0.0 react-dom@^19.0.0
+If you’re using TypeScript, you also need to update the types.
 
-// Using pending state from Actions
-function UpdateName({}) {
-const [name, setName] = useState("");
-const [error, setError] = useState(null);
-const [isPending, startTransition] = useTransition();
+npm install --save-exact @types/react@^19.0.0 @types/react-dom@^19.0.0
+Or, if you’re using Yarn:
 
-const handleSubmit = () => {
-startTransition(async () => {
-const error = await updateName(name);
-if (error) {
-setError(error);
-return;
-}
-redirect("/path");
-})
-};
+yarn add --exact @types/react@^19.0.0 @types/react-dom@^19.0.0
+We’re also including a codemod for the most common replacements. See TypeScript changes below.
 
-return (
-<div>
-<input value={name} onChange={(event) => setName(event.target.value)} />
-<button onClick={handleSubmit} disabled={isPending}>
-Update
-</button>
-{error && <p>{error}</p>}
-</div>
-);
-}
-The async transition will immediately set the isPending state to true, make the async request(s), and switch isPending to false after any transitions. This allows you to keep the current UI responsive and interactive while the data is changing.
+Codemods
+To help with the upgrade, we’ve worked with the team at codemod.com to publish codemods that will automatically update your code to many of the new APIs and patterns in React 19.
+
+All codemods are available in the react-codemod repo and the Codemod team have joined in helping maintain the codemods. To run these codemods, we recommend using the codemod command instead of the react-codemod because it runs faster, handles more complex code migrations, and provides better support for TypeScript.
 
 Nota
-By convention, functions that use async transitions are called “Actions”.
-Actions automatically manage submitting data for you:
+Run all React 19 codemods
+Run all codemods listed in this guide with the React 19 codemod recipe:
 
-Pending state: Actions provide a pending state that starts at the beginning of a request and automatically resets when the final state update is committed.
-Optimistic updates: Actions support the new useOptimistic hook so you can show users instant feedback while the requests are submitting.
-Error handling: Actions provide error handling so you can display Error Boundaries when a request fails, and revert optimistic updates to their original value automatically.
-Forms: <form> elements now support passing functions to the action and formAction props. Passing functions to the action props use Actions by default and reset the form automatically after submission.
-Building on top of Actions, React 19 introduces useOptimistic to manage optimistic updates, and a new hook React.useActionState to handle common cases for Actions. In react-dom we’re adding <form> Actions to manage forms automatically and useFormStatus to support the common cases for Actions in forms.
+npx codemod@latest react/19/migration-recipe
+This will run the following codemods from react-codemod:
 
-In React 19, the above example can be simplified to:
+replace-reactdom-render
+replace-string-ref
+replace-act-import
+replace-use-form-state
+prop-types-typescript
+This does not include the TypeScript changes. See TypeScript changes below.
 
-// Using <form> Actions and useActionState
-function ChangeName({ name, setName }) {
-const [error, submitAction, isPending] = useActionState(
-async (previousState, formData) => {
-const error = await updateName(formData.get("name"));
-if (error) {
-return error;
-}
-redirect("/path");
-return null;
+Changes that include a codemod include the command below.
+
+For a list of all available codemods, see the react-codemod repo.
+
+Breaking changes
+Errors in render are not re-thrown
+In previous versions of React, errors thrown during render were caught and rethrown. In DEV, we would also log to console.error, resulting in duplicate error logs.
+
+In React 19, we’ve improved how errors are handled to reduce duplication by not re-throwing:
+
+Uncaught Errors: Errors that are not caught by an Error Boundary are reported to window.reportError.
+Caught Errors: Errors that are caught by an Error Boundary are reported to console.error.
+This change should not impact most apps, but if your production error reporting relies on errors being re-thrown, you may need to update your error handling. To support this, we’ve added new methods to createRoot and hydrateRoot for custom error handling:
+
+const root = createRoot(container, {
+onUncaughtError: (error, errorInfo) => {
+// ... log error report
 },
-null,
-);
-
-return (
-<form action={submitAction}>
-<input type="text" name="name" />
-<button type="submit" disabled={isPending}>Update</button>
-{error && <p>{error}</p>}
-</form>
-);
+onCaughtError: (error, errorInfo) => {
+// ... log error report
 }
-In the next section, we’ll break down each of the new Action features in React 19.
+});
+For more info, see the docs for createRoot and hydrateRoot.
 
-New hook: useActionState
-To make the common cases easier for Actions, we’ve added a new hook called useActionState:
+Removed deprecated React APIs
+Removed: propTypes and defaultProps for functions
+PropTypes were deprecated in April 2017 (v15.5.0).
 
-const [error, submitAction, isPending] = useActionState(
-async (previousState, newName) => {
-const error = await updateName(newName);
-if (error) {
-// You can return any result of the action.
-// Here, we return only the error.
-return error;
+In React 19, we’re removing the propType checks from the React package, and using them will be silently ignored. If you’re using propTypes, we recommend migrating to TypeScript or another type-checking solution.
+
+We’re also removing defaultProps from function components in place of ES6 default parameters. Class components will continue to support defaultProps since there is no ES6 alternative.
+
+// Before
+import PropTypes from 'prop-types';
+
+function Heading({text}) {
+return <h1>{text}</h1>;
 }
-
-    // handle success
-    return null;
-
-},
-null,
-);
-useActionState accepts a function (the “Action”), and returns a wrapped Action to call. This works because Actions compose. When the wrapped Action is called, useActionState will return the last result of the Action as data, and the pending state of the Action as pending.
-
+Heading.propTypes = {
+text: PropTypes.string,
+};
+Heading.defaultProps = {
+text: 'Hello, world!',
+};
+// After
+interface Props {
+text?: string;
+}
+function Heading({text = 'Hello, world!'}: Props) {
+return <h1>{text}</h1>;
+}
 Nota
-React.useActionState was previously called ReactDOM.useFormState in the Canary releases, but we’ve renamed it and deprecated useFormState.
+Codemod propTypes to TypeScript with:
 
-See #28491 for more info.
+npx codemod@latest react/prop-types-typescript
+Removed: Legacy Context using contextTypes and getChildContext
+Legacy Context was deprecated in October 2018 (v16.6.0).
 
-For more information, see the docs for useActionState.
+Legacy Context was only available in class components using the APIs contextTypes and getChildContext, and was replaced with contextType due to subtle bugs that were easy to miss. In React 19, we’re removing Legacy Context to make React slightly smaller and faster.
 
-React DOM: <form> Actions
-Actions are also integrated with React 19’s new <form> features for react-dom. We’ve added support for passing functions as the action and formAction props of <form>, <input>, and <button> elements to automatically submit forms with Actions:
+If you’re still using Legacy Context in class components, you’ll need to migrate to the new contextType API:
 
-<form action={actionFunction}>
-When a <form> Action succeeds, React will automatically reset the form for uncontrolled components. If you need to reset the <form> manually, you can call the new requestFormReset React DOM API.
+// Before
+import PropTypes from 'prop-types';
 
-For more information, see the react-dom docs for <form>, <input>, and <button>.
-
-React DOM: New hook: useFormStatus
-In design systems, it’s common to write design components that need access to information about the <form> they’re in, without drilling props down to the component. This can be done via Context, but to make the common case easier, we’ve added a new hook useFormStatus:
-
-import {useFormStatus} from 'react-dom';
-
-function DesignButton() {
-const {pending} = useFormStatus();
-return <button type="submit" disabled={pending} />
-}
-useFormStatus reads the status of the parent <form> as if the form was a Context provider.
-
-For more information, see the react-dom docs for useFormStatus.
-
-New hook: useOptimistic
-Another common UI pattern when performing a data mutation is to show the final state optimistically while the async request is underway. In React 19, we’re adding a new hook called useOptimistic to make this easier:
-
-function ChangeName({currentName, onUpdateName}) {
-const [optimisticName, setOptimisticName] = useOptimistic(currentName);
-
-const submitAction = async formData => {
-const newName = formData.get("name");
-setOptimisticName(newName);
-const updatedName = await updateName(newName);
-onUpdateName(updatedName);
+class Parent extends React.Component {
+static childContextTypes = {
+foo: PropTypes.string.isRequired,
 };
 
+getChildContext() {
+return { foo: 'bar' };
+}
+
+render() {
+return <Child />;
+}
+}
+
+class Child extends React.Component {
+static contextTypes = {
+foo: PropTypes.string.isRequired,
+};
+
+render() {
+return <div>{this.context.foo}</div>;
+}
+}
+// After
+const FooContext = React.createContext();
+
+class Parent extends React.Component {
+render() {
 return (
-<form action={submitAction}>
-<p>Your name is: {optimisticName}</p>
-<p>
-<label>Change Name:</label>
-<input
-type="text"
-name="name"
-disabled={currentName !== optimisticName}
-/>
-</p>
-</form>
+<FooContext value='bar'>
+<Child />
+</FooContext>
 );
 }
-The useOptimistic hook will immediately render the optimisticName while the updateName request is in progress. When the update finishes or errors, React will automatically switch back to the currentName value.
-
-For more information, see the docs for useOptimistic.
-
-New API: use
-In React 19 we’re introducing a new API to read resources in render: use.
-
-For example, you can read a promise with use, and React will Suspend until the promise resolves:
-
-import {use} from 'react';
-
-function Comments({commentsPromise}) {
-// `use` will suspend until the promise resolves.
-const comments = use(commentsPromise);
-return comments.map(comment => <p key={comment.id}>{comment}</p>);
 }
 
-function Page({commentsPromise}) {
-// When `use` suspends in Comments,
-// this Suspense boundary will be shown.
-return (
-<Suspense fallback={<div>Loading...</div>}>
-<Comments commentsPromise={commentsPromise} />
-</Suspense>
-)
+class Child extends React.Component {
+static contextType = FooContext;
+
+render() {
+return <div>{this.context}</div>;
+}
+}
+Removed: string refs
+String refs were deprecated in March, 2018 (v16.3.0).
+
+Class components supported string refs before being replaced by ref callbacks due to multiple downsides. In React 19, we’re removing string refs to make React simpler and easier to understand.
+
+If you’re still using string refs in class components, you’ll need to migrate to ref callbacks:
+
+// Before
+class MyComponent extends React.Component {
+componentDidMount() {
+this.refs.input.focus();
+}
+
+render() {
+return <input ref='input' />;
+}
+}
+// After
+class MyComponent extends React.Component {
+componentDidMount() {
+this.input.focus();
+}
+
+render() {
+return <input ref={input => this.input = input} />;
+}
 }
 Nota
-use does not support promises created in render.
-If you try to pass a promise created in render to use, React will warn:
+Codemod string refs with ref callbacks:
+
+npx codemod@latest react/19/replace-string-ref
+Removed: Module pattern factories
+Module pattern factories were deprecated in August 2019 (v16.9.0).
+
+This pattern was rarely used and supporting it causes React to be slightly larger and slower than necessary. In React 19, we’re removing support for module pattern factories, and you’ll need to migrate to regular functions:
+
+// Before
+function FactoryComponent() {
+return { render() { return <div />; } }
+}
+// After
+function FactoryComponent() {
+return <div />;
+}
+Removed: React.createFactory
+createFactory was deprecated in February 2020 (v16.13.0).
+
+Using createFactory was common before broad support for JSX, but it’s rarely used today and can be replaced with JSX. In React 19, we’re removing createFactory and you’ll need to migrate to JSX:
+
+// Before
+import { createFactory } from 'react';
+
+const button = createFactory('button');
+// After
+const button = <button />;
+Removed: react-test-renderer/shallow
+In React 18, we updated react-test-renderer/shallow to re-export react-shallow-renderer. In React 19, we’re removing react-test-render/shallow to prefer installing the package directly:
+
+npm install react-shallow-renderer --save-dev
+
+- import ShallowRenderer from 'react-test-renderer/shallow';
+
+* import ShallowRenderer from 'react-shallow-renderer';
+  Nota
+  Please reconsider shallow rendering
+  Shallow rendering depends on React internals and can block you from future upgrades. We recommend migrating your tests to @testing-library/react or @testing-library/react-native.
+
+Removed deprecated React DOM APIs
+Removed: react-dom/test-utils
+We’ve moved act from react-dom/test-utils to the react package:
 
 Console
-A component was suspended by an uncached promise. Creating promises inside a Client Component or hook is not yet supported, except via a Suspense-compatible library or framework.
-To fix, you need to pass a promise from a suspense powered library or framework that supports caching for promises. In the future we plan to ship features to make it easier to cache promises in render.
+ReactDOMTestUtils.act is deprecated in favor of React.act. Import act from react instead of react-dom/test-utils. See https://react.dev/warnings/react-dom-test-utils for more info.
+To fix this warning, you can import act from react:
 
-You can also read context with use, allowing you to read Context conditionally such as after early returns:
+- import {act} from 'react-dom/test-utils'
 
-import {use} from 'react';
-import ThemeContext from './ThemeContext'
+* import {act} from 'react';
+  All other test-utils functions have been removed. These utilities were uncommon, and made it too easy to depend on low level implementation details of your components and React. In React 19, these functions will error when called and their exports will be removed in a future version.
 
-function Heading({children}) {
-if (children == null) {
-return null;
-}
-
-// This would not work with useContext
-// because of the early return.
-const theme = use(ThemeContext);
-return (
-<h1 style={{color: theme.color}}>
-{children}
-</h1>
-);
-}
-The use API can only be called in render, similar to hooks. Unlike hooks, use can be called conditionally. In the future we plan to support more ways to consume resources in render with use.
-
-For more information, see the docs for use.
-
-New React DOM Static APIs
-We’ve added two new APIs to react-dom/static for static site generation:
-
-prerender
-prerenderToNodeStream
-These new APIs improve on renderToString by waiting for data to load for static HTML generation. They are designed to work with streaming environments like Node.js Streams and Web Streams. For example, in a Web Stream environment, you can prerender a React tree to static HTML with prerender:
-
-import { prerender } from 'react-dom/static';
-
-async function handler(request) {
-const {prelude} = await prerender(<App />, {
-bootstrapScripts: ['/main.js']
-});
-return new Response(prelude, {
-headers: { 'content-type': 'text/html' },
-});
-}
-Prerender APIs will wait for all data to load before returning the static HTML stream. Streams can be converted to strings, or sent with a streaming response. They do not support streaming content as it loads, which is supported by the existing React DOM server rendering APIs.
-
-For more information, see React DOM Static APIs.
-
-React Server Components
-Server Components
-Server Components are a new option that allows rendering components ahead of time, before bundling, in an environment separate from your client application or SSR server. This separate environment is the “server” in React Server Components. Server Components can run once at build time on your CI server, or they can be run for each request using a web server.
-
-React 19 includes all of the React Server Components features included from the Canary channel. This means libraries that ship with Server Components can now target React 19 as a peer dependency with a react-server export condition for use in frameworks that support the Full-stack React Architecture.
+See the warning page for alternatives.
 
 Nota
-How do I build support for Server Components?
-While React Server Components in React 19 are stable and will not break between minor versions, the underlying APIs used to implement a React Server Components bundler or framework do not follow semver and may break between minors in React 19.x.
+Codemod ReactDOMTestUtils.act to React.act:
 
-To support React Server Components as a bundler or framework, we recommend pinning to a specific React version, or using the Canary release. We will continue working with bundlers and frameworks to stabilize the APIs used to implement React Server Components in the future.
+npx codemod@latest react/19/replace-act-import
+Removed: ReactDOM.render
+ReactDOM.render was deprecated in March 2022 (v18.0.0). In React 19, we’re removing ReactDOM.render and you’ll need to migrate to using ReactDOM.createRoot:
 
-For more, see the docs for React Server Components.
+// Before
+import {render} from 'react-dom';
+render(<App />, document.getElementById('root'));
 
-Server Actions
-Server Actions allow Client Components to call async functions executed on the server.
+// After
+import {createRoot} from 'react-dom/client';
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
+Nota
+Codemod ReactDOM.render to ReactDOMClient.createRoot:
 
-When a Server Action is defined with the "use server" directive, your framework will automatically create a reference to the server function, and pass that reference to the Client Component. When that function is called on the client, React will send a request to the server to execute the function, and return the result.
+npx codemod@latest react/19/replace-reactdom-render
+Removed: ReactDOM.hydrate
+ReactDOM.hydrate was deprecated in March 2022 (v18.0.0). In React 19, we’re removing ReactDOM.hydrate you’ll need to migrate to using ReactDOM.hydrateRoot,
+
+// Before
+import {hydrate} from 'react-dom';
+hydrate(<App />, document.getElementById('root'));
+
+// After
+import {hydrateRoot} from 'react-dom/client';
+hydrateRoot(document.getElementById('root'), <App />);
+Nota
+Codemod ReactDOM.hydrate to ReactDOMClient.hydrateRoot:
+
+npx codemod@latest react/19/replace-reactdom-render
+Removed: unmountComponentAtNode
+ReactDOM.unmountComponentAtNode was deprecated in March 2022 (v18.0.0). In React 19, you’ll need to migrate to using root.unmount().
+
+// Before
+unmountComponentAtNode(document.getElementById('root'));
+
+// After
+root.unmount();
+For more see root.unmount() for createRoot and hydrateRoot.
 
 Nota
-There is no directive for Server Components.
-A common misunderstanding is that Server Components are denoted by "use server", but there is no directive for Server Components. The "use server" directive is used for Server Actions.
+Codemod unmountComponentAtNode to root.unmount:
 
-For more info, see the docs for Directives.
+npx codemod@latest react/19/replace-reactdom-render
+Removed: ReactDOM.findDOMNode
+ReactDOM.findDOMNode was deprecated in October 2018 (v16.6.0).
 
-Server Actions can be created in Server Components and passed as props to Client Components, or they can be imported and used in Client Components.
+We’re removing findDOMNode because it was a legacy escape hatch that was slow to execute, fragile to refactoring, only returned the first child, and broke abstraction levels (see more here). You can replace ReactDOM.findDOMNode with DOM refs:
 
-For more, see the docs for React Server Actions.
+// Before
+import {findDOMNode} from 'react-dom';
 
-Improvements in React 19
-ref as a prop
-Starting in React 19, you can now access ref as a prop for function components:
+function AutoselectingInput() {
+useEffect(() => {
+const input = findDOMNode(this);
+input.select()
+}, []);
 
-function MyInput({placeholder, ref}) {
-return <input placeholder={placeholder} ref={ref} />
+return <input defaultValue="Hello" />;
 }
+// After
+function AutoselectingInput() {
+const ref = useRef(null);
+useEffect(() => {
+ref.current.select();
+}, []);
 
-//...
-<MyInput ref={ref} />
-New function components will no longer need forwardRef, and we will be publishing a codemod to automatically update your components to use the new ref prop. In future versions we will deprecate and remove forwardRef.
+return <input ref={ref} defaultValue="Hello" />
+}
+New deprecations
+Deprecated: element.ref
+React 19 supports ref as a prop, so we’re deprecating the element.ref in place of element.props.ref.
 
-Nota
-refs passed to classes are not passed as props since they reference the component instance.
-
-Diffs for hydration errors
-We also improved error reporting for hydration errors in react-dom. For example, instead of logging multiple errors in DEV without any information about the mismatch:
+Accessing element.ref will warn:
 
 Console
-Warning: Text content did not match. Server: “Server” Client: “Client”
-at span
-at App
-Warning: An error occurred during hydration. The server HTML was replaced with client content in <div>.
-Warning: Text content did not match. Server: “Server” Client: “Client”
-at span
-at App
-Warning: An error occurred during hydration. The server HTML was replaced with client content in <div>.
-Uncaught Error: Text content does not match server-rendered HTML.
-at checkForUnmatchedText
-…
-We now log a single message with a diff of the mismatch:
+Accessing element.ref is no longer supported. ref is now a regular prop. It will be removed from the JSX Element type in a future release.
+Deprecated: react-test-renderer
+We are deprecating react-test-renderer because it implements its own renderer environment that doesn’t match the environment users use, promotes testing implementation details, and relies on introspection of React’s internals.
 
-Console
-Uncaught Error: Hydration failed because the server rendered HTML didn’t match the client. As a result this tree will be regenerated on the client. This can happen if an SSR-ed Client Component used:
+The test renderer was created before there were more viable testing strategies available like React Testing Library, and we now recommend using a modern testing library instead.
 
-- A server/client branch if (typeof window !== 'undefined').
-- Variable input such as Date.now() or Math.random() which changes each time it’s called.
-- Date formatting in a user’s locale which doesn’t match the server.
-- External changing data without sending a snapshot of it along with the HTML.
-- Invalid HTML tag nesting.
+In React 19, react-test-renderer logs a deprecation warning, and has switched to concurrent rendering. We recommend migrating your tests to @testing-library/react or @testing-library/react-native for a modern and well supported testing experience.
 
-It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+Notable changes
+StrictMode changes
+React 19 includes several fixes and improvements to Strict Mode.
 
-https://react.dev/link/hydration-mismatch
+When double rendering in Strict Mode in development, useMemo and useCallback will reuse the memoized results from the first render during the second render. Components that are already Strict Mode compatible should not notice a difference in behavior.
 
-  <App>
-    <span>
-+    Client
--    Server
+As with all Strict Mode behaviors, these features are designed to proactively surface bugs in your components during development so you can fix them before they are shipped to production. For example, during development, Strict Mode will double-invoke ref callback functions on initial mount, to simulate what happens when a mounted component is replaced by a Suspense fallback.
 
-at throwOnHydrationMismatch
-…
-<Context> as a provider
-In React 19, you can render <Context> as a provider instead of <Context.Provider>:
+Improvements to Suspense
+In React 19, when a component suspends, React will immediately commit the fallback of the nearest Suspense boundary without waiting for the entire sibling tree to render. After the fallback commits, React schedules another render for the suspended siblings to “pre-warm” lazy requests in the rest of the tree:
 
-const ThemeContext = createContext('');
+Diagram showing a tree of three components, one parent labeled Accordion and two children labeled Panel. Both Panel components contain isActive with value false.
+Previously, when a component suspended, the suspended siblings were rendered and then the fallback was committed.
 
-function App({children}) {
-return (
-<ThemeContext value="dark">
-{children}
-</ThemeContext>
-);  
-}
-New Context providers can use <Context> and we will be publishing a codemod to convert existing providers. In future versions we will deprecate <Context.Provider>.
+The same diagram as the previous, with the isActive of the first child Panel component highlighted indicating a click with the isActive value set to true. The second Panel component still contains value false.
+In React 19, when a component suspends, the fallback is committed and then the suspended siblings are rendered.
 
-Cleanup functions for refs
-We now support returning a cleanup function from ref callbacks:
+This change means Suspense fallbacks display faster, while still warming lazy requests in the suspended tree.
 
-<input
-ref={(ref) => {
-// ref created
+UMD builds removed
+UMD was widely used in the past as a convenient way to load React without a build step. Now, there are modern alternatives for loading modules as scripts in HTML documents. Starting with React 19, React will no longer produce UMD builds to reduce the complexity of its testing and release process.
 
-    // NEW: return a cleanup function to reset
-    // the ref when element is removed from DOM.
-    return () => {
-      // ref cleanup
-    };
+To load React 19 with a script tag, we recommend using an ESM-based CDN such as esm.sh.
 
-}}
-/>
-When the component unmounts, React will call the cleanup function returned from the ref callback. This works for DOM refs, refs to class components, and useImperativeHandle.
+<script type="module">
+  import React from "https://esm.sh/react@19/?dev"
+  import ReactDOMClient from "https://esm.sh/react-dom@19/client?dev"
+  ...
+</script>
+
+Libraries depending on React internals may block upgrades
+This release includes changes to React internals that may impact libraries that ignore our pleas to not use internals like SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED. These changes are necessary to land improvements in React 19, and will not break libraries that follow our guidelines.
+
+Based on our Versioning Policy, these updates are not listed as breaking changes, and we are not including docs for how to upgrade them. The recommendation is to remove any code that depends on internals.
+
+To reflect the impact of using internals, we have renamed the SECRET_INTERNALS suffix to:
+
+\_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
+
+In the future we will more aggressively block accessing internals from React to discourage usage and ensure users are not blocked from upgrading.
+
+TypeScript changes
+Removed deprecated TypeScript types
+We’ve cleaned up the TypeScript types based on the removed APIs in React 19. Some of the removed have types been moved to more relevant packages, and others are no longer needed to describe React’s behavior.
 
 Nota
-Previously, React would call ref functions with null when unmounting the component. If your ref returns a cleanup function, React will now skip this step.
+We’ve published types-react-codemod to migrate most type related breaking changes:
 
-In future versions, we will deprecate calling refs with null when unmounting components.
+npx types-react-codemod@latest preset-19 ./path-to-app
+If you have a lot of unsound access to element.props, you can run this additional codemod:
 
-Due to the introduction of ref cleanup functions, returning anything else from a ref callback will now be rejected by TypeScript. The fix is usually to stop using implicit returns, for example:
+npx types-react-codemod@latest react-element-default-any-props ./path-to-your-react-ts-files
+Check out types-react-codemod for a list of supported replacements. If you feel a codemod is missing, it can be tracked in the list of missing React 19 codemods.
+
+ref cleanups required
+This change is included in the react-19 codemod preset as no-implicit-ref-callback-return .
+
+Due to the introduction of ref cleanup functions, returning anything else from a ref callback will now be rejected by TypeScript. The fix is usually to stop using implicit returns:
 
 - <div ref={current => (instance = current)} />
 
 * <div ref={current => {instance = current}} />
-  The original code returned the instance of the HTMLDivElement and TypeScript wouldn’t know if this was supposed to be a cleanup function or if you didn’t want to return a cleanup function.
+  The original code returned the instance of the HTMLDivElement and TypeScript wouldn’t know if this was supposed to be a cleanup function or not.
 
-You can codemod this pattern with no-implicit-ref-callback-return.
+useRef requires an argument
+This change is included in the react-19 codemod preset as refobject-defaults.
 
-useDeferredValue initial value
-We’ve added an initialValue option to useDeferredValue:
+A long-time complaint of how TypeScript and React work has been useRef. We’ve changed the types so that useRef now requires an argument. This significantly simplifies its type signature. It’ll now behave more like createContext.
 
-function Search({deferredValue}) {
-// On initial render the value is ''.
-// Then a re-render is scheduled with the deferredValue.
-const value = useDeferredValue(deferredValue, '');
+// @ts-expect-error: Expected 1 argument but saw none
+useRef();
+// Passes
+useRef(undefined);
+// @ts-expect-error: Expected 1 argument but saw none
+createContext();
+// Passes
+createContext(undefined);
+This now also means that all refs are mutable. You’ll no longer hit the issue where you can’t mutate a ref because you initialised it with null:
 
-return (
-<Results query={value} />
-);
-}
-When initialValue is provided, useDeferredValue will return it as value for the initial render of the component, and schedules a re-render in the background with the deferredValue returned.
+const ref = useRef<number>(null);
 
-For more, see useDeferredValue.
+// Cannot assign to 'current' because it is a read-only property
+ref.current = 1;
+MutableRef is now deprecated in favor of a single RefObject type which useRef will always return:
 
-Support for Document Metadata
-In HTML, document metadata tags like <title>, <link>, and <meta> are reserved for placement in the <head> section of the document. In React, the component that decides what metadata is appropriate for the app may be very far from the place where you render the <head> or React does not render the <head> at all. In the past, these elements would need to be inserted manually in an effect, or by libraries like react-helmet, and required careful handling when server rendering a React application.
-
-In React 19, we’re adding support for rendering document metadata tags in components natively:
-
-function BlogPost({post}) {
-return (
-<article>
-<h1>{post.title}</h1>
-<title>{post.title}</title>
-<meta name="author" content="Josh" />
-<link rel="author" href="https://twitter.com/joshcstory/" />
-<meta name="keywords" content={post.keywords} />
-<p>
-Eee equals em-see-squared...
-</p>
-</article>
-);
-}
-When React renders this component, it will see the <title> <link> and <meta> tags, and automatically hoist them to the <head> section of document. By supporting these metadata tags natively, we’re able to ensure they work with client-only apps, streaming SSR, and Server Components.
-
-Nota
-You may still want a Metadata library
-For simple use cases, rendering Document Metadata as tags may be suitable, but libraries can offer more powerful features like overriding generic metadata with specific metadata based on the current route. These features make it easier for frameworks and libraries like react-helmet to support metadata tags, rather than replace them.
-
-For more info, see the docs for <title>, <link>, and <meta>.
-
-Support for stylesheets
-Stylesheets, both externally linked (<link rel="stylesheet" href="...">) and inline (<style>...</style>), require careful positioning in the DOM due to style precedence rules. Building a stylesheet capability that allows for composability within components is hard, so users often end up either loading all of their styles far from the components that may depend on them, or they use a style library which encapsulates this complexity.
-
-In React 19, we’re addressing this complexity and providing even deeper integration into Concurrent Rendering on the Client and Streaming Rendering on the Server with built in support for stylesheets. If you tell React the precedence of your stylesheet it will manage the insertion order of the stylesheet in the DOM and ensure that the stylesheet (if external) is loaded before revealing content that depends on those style rules.
-
-function ComponentOne() {
-return (
-<Suspense fallback="loading...">
-<link rel="stylesheet" href="foo" precedence="default" />
-<link rel="stylesheet" href="bar" precedence="high" />
-<article class="foo-class bar-class">
-{...}
-</article>
-</Suspense>
-)
+interface RefObject<T> {
+current: T
 }
 
-function ComponentTwo() {
-return (
-<div>
-<p>{...}</p>
-<link rel="stylesheet" href="baz" precedence="default" /> <-- will be inserted between foo & bar
-</div>
-)
-}
-During Server Side Rendering React will include the stylesheet in the <head>, which ensures that the browser will not paint until it has loaded. If the stylesheet is discovered late after we’ve already started streaming, React will ensure that the stylesheet is inserted into the <head> on the client before revealing the content of a Suspense boundary that depends on that stylesheet.
+declare function useRef<T>: RefObject<T>
+useRef still has a convenience overload for useRef<T>(null) that automatically returns RefObject<T | null>. To ease migration due to the required argument for useRef, a convenience overload for useRef(undefined) was added that automatically returns RefObject<T | undefined>.
 
-During Client Side Rendering React will wait for newly rendered stylesheets to load before committing the render. If you render this component from multiple places within your application React will only include the stylesheet once in the document:
+Check out [RFC] Make all refs mutable for prior discussions about this change.
 
-function App() {
-return <>
-<ComponentOne />
-...
-<ComponentOne /> // won't lead to a duplicate stylesheet link in the DOM
-</>
-}
-For users accustomed to loading stylesheets manually this is an opportunity to locate those stylesheets alongside the components that depend on them allowing for better local reasoning and an easier time ensuring you only load the stylesheets that you actually depend on.
+Changes to the ReactElement TypeScript type
+This change is included in the react-element-default-any-props codemod.
 
-Style libraries and style integrations with bundlers can also adopt this new capability so even if you don’t directly render your own stylesheets, you can still benefit as your tools are upgraded to use this feature.
+The props of React elements now default to unknown instead of any if the element is typed as ReactElement. This does not affect you if you pass a type argument to ReactElement:
 
-For more details, read the docs for <link> and <style>.
+type Example2 = ReactElement<{ id: string }>["props"];
+// ^? { id: string }
+But if you relied on the default, you now have to handle unknown:
 
-Support for async scripts
-In HTML normal scripts (<script src="...">) and deferred scripts (<script defer="" src="...">) load in document order which makes rendering these kinds of scripts deep within your component tree challenging. Async scripts (<script async="" src="...">) however will load in arbitrary order.
+type Example = ReactElement["props"];
+// ^? Before, was 'any', now 'unknown'
+You should only need it if you have a lot of legacy code relying on unsound access of element props. Element introspection only exists as an escape hatch, and you should make it explicit that your props access is unsound via an explicit any.
 
-In React 19 we’ve included better support for async scripts by allowing you to render them anywhere in your component tree, inside the components that actually depend on the script, without having to manage relocating and deduplicating script instances.
+The JSX namespace in TypeScript
+This change is included in the react-19 codemod preset as scoped-jsx
 
-function MyComponent() {
-return (
-<div>
-<script async={true} src="..." />
-Hello World
-</div>
-)
-}
+A long-time request is to remove the global JSX namespace from our types in favor of React.JSX. This helps prevent pollution of global types which prevents conflicts between different UI libraries that leverage JSX.
 
-function App() {
+You’ll now need to wrap module augmentation of the JSX namespace in `declare module ”…”:
 
-  <html>
-    <body>
-      <MyComponent>
-      ...
-      <MyComponent> // won't lead to duplicate script in the DOM
-    </body>
-  </html>
-}
-In all rendering environments, async scripts will be deduplicated so that React will only load and execute the script once even if it is rendered by multiple different components.
+// global.d.ts
 
-In Server Side Rendering, async scripts will be included in the <head> and prioritized behind more critical resources that block paint such as stylesheets, fonts, and image preloads.
+- declare module "react" {
+  namespace JSX {
+  interface IntrinsicElements {
+  "my-element": {
+  myElementProps: string;
+  };
+  }
+  }
+- }
+  The exact module specifier depends on the JSX runtime you specified in the compilerOptions of your tsconfig.json:
 
-For more details, read the docs for <script>.
+For "jsx": "react-jsx" it would be react/jsx-runtime.
+For "jsx": "react-jsxdev" it would be react/jsx-dev-runtime.
+For "jsx": "react" and "jsx": "preserve" it would be react.
+Better useReducer typings
+useReducer now has improved type inference thanks to @mfp22.
 
-Support for preloading resources
-During initial document load and on client side updates, telling the Browser about resources that it will likely need to load as early as possible can have a dramatic effect on page performance.
+However, this required a breaking change where useReducer doesn’t accept the full reducer type as a type parameter but instead either needs none (and rely on contextual typing) or needs both the state and action type.
 
-React 19 includes a number of new APIs for loading and preloading Browser resources to make it as easy as possible to build great experiences that aren’t held back by inefficient resource loading.
+The new best practice is not to pass type arguments to useReducer.
 
-import { prefetchDNS, preconnect, preload, preinit } from 'react-dom'
-function MyComponent() {
-preinit('https://.../path/to/some/script.js', {as: 'script' }) // loads and executes this script eagerly
-preload('https://.../path/to/font.woff', { as: 'font' }) // preloads this font
-preload('https://.../path/to/stylesheet.css', { as: 'style' }) // preloads this stylesheet
-prefetchDNS('https://...') // when you may not actually request anything from this host
-preconnect('https://...') // when you will request something but aren't sure what
-}
+- useReducer<React.Reducer<State, Action>>(reducer)
 
-<!-- the above would result in the following DOM/HTML -->
-<html>
-  <head>
-    <!-- links/scripts are prioritized by their utility to early loading, not call order -->
-    <link rel="prefetch-dns" href="https://...">
-    <link rel="preconnect" href="https://...">
-    <link rel="preload" as="font" href="https://.../path/to/font.woff">
-    <link rel="preload" as="style" href="https://.../path/to/stylesheet.css">
-    <script async="" src="https://.../path/to/some/script.js"></script>
-  </head>
-  <body>
-    ...
-  </body>
-</html>
-These APIs can be used to optimize initial page loads by moving discovery of additional resources like fonts out of stylesheet loading. They can also make client updates faster by prefetching a list of resources used by an anticipated navigation and then eagerly preloading those resources on click or even on hover.
+* useReducer(reducer)
+  This may not work in edge cases where you can explicitly type the state and action, by passing in the Action in a tuple:
 
-For more details see Resource Preloading APIs.
+- useReducer<React.Reducer<State, Action>>(reducer)
 
-Compatibility with third-party scripts and extensions
-We’ve improved hydration to account for third-party scripts and browser extensions.
+* useReducer<State, [Action]>(reducer)
+  If you define the reducer inline, we encourage to annotate the function parameters instead:
 
-When hydrating, if an element that renders on the client doesn’t match the element found in the HTML from the server, React will force a client re-render to fix up the content. Previously, if an element was inserted by third-party scripts or browser extensions, it would trigger a mismatch error and client render.
+- useReducer<React.Reducer<State, Action>>((state, action) => state)
 
-In React 19, unexpected tags in the <head> and <body> will be skipped over, avoiding the mismatch errors. If React needs to re-render the entire document due to an unrelated hydration mismatch, it will leave in place stylesheets inserted by third-party scripts and browser extensions.
+* useReducer((state: State, action: Action) => state)
+  This is also what you’d also have to do if you move the reducer outside of the useReducer call:
 
-Better error reporting
-We improved error handling in React 19 to remove duplication and provide options for handling caught and uncaught errors. For example, when there’s an error in render caught by an Error Boundary, previously React would throw the error twice (once for the original error, then again after failing to automatically recover), and then call console.error with info about where the error occurred.
-
-This resulted in three errors for every caught error:
-
-Console
-Uncaught Error: hit
-at Throws
-at renderWithHooks
-…
-Uncaught Error: hit <-- Duplicate
-at Throws
-at renderWithHooks
-…
-The above error occurred in the Throws component:
-at Throws
-at ErrorBoundary
-at App
-
-React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
-In React 19, we log a single error with all the error information included:
-
-Console
-Error: hit
-at Throws
-at renderWithHooks
-…
-
-The above error occurred in the Throws component:
-at Throws
-at ErrorBoundary
-at App
-
-React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
-at ErrorBoundary
-at App
-Additionally, we’ve added two new root options to complement onRecoverableError:
-
-onCaughtError: called when React catches an error in an Error Boundary.
-onUncaughtError: called when an error is thrown and not caught by an Error Boundary.
-onRecoverableError: called when an error is thrown and automatically recovered.
-For more info and examples, see the docs for createRoot and hydrateRoot.
-
-Support for Custom Elements
-React 19 adds full support for custom elements and passes all tests on Custom Elements Everywhere.
-
-In past versions, using Custom Elements in React has been difficult because React treated unrecognized props as attributes rather than properties. In React 19, we’ve added support for properties that works on the client and during SSR with the following strategy:
-
-Server Side Rendering: props passed to a custom element will render as attributes if their type is a primitive value like string, number, or the value is true. Props with non-primitive types like object, symbol, function, or value false will be omitted.
-Client Side Rendering: props that match a property on the Custom Element instance will be assigned as properties, otherwise they will be assigned as attributes.
-Thanks to Joey Arhar for driving the design and implementation of Custom Element support in React.
+const reducer = (state: State, action: Action) => state;
