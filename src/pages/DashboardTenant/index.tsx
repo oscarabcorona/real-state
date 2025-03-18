@@ -251,10 +251,8 @@ export function DashboardTenant() {
       <StatsOverview stats={stats} isLoading={loading} />
       <PropertiesSections properties={properties} isLoading={loading} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Recent Payments */}
-        <RecentPayments payments={payments} />
-        {/* Recent Documents */}
-        <RecentDocuments documents={documents} />
+        <RecentPayments payments={payments} isLoading={loading} />
+        <RecentDocuments documents={documents} isLoading={loading} />
       </div>
       {/* Upcoming Viewings */}
       <UpcomingViewings appointments={appointments} />

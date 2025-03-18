@@ -30,6 +30,8 @@
   --chart-3: var(197 37% 24%);
   --chart-4: var(43 74% 66%);
   --chart-5: var(27 87% 67%);
+  --warning: 45 100% 50%; /* amber-500 */
+  --warning-foreground: 0 0% 100%; /* white */
 }
 
 .dark {
@@ -57,6 +59,8 @@
   --chart-3: hsl(30 80% 55%);
   --chart-4: hsl(280 65% 60%);
   --chart-5: hsl(340 75% 55%);
+  --warning: 45 100% 50%; /* amber-500 */
+  --warning-foreground: 0 0% 100%; /* white */
 }
 
 :root {
@@ -126,6 +130,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --warning: oklch(0.76 0 0.2); /* Yellow-400 */
+  --warning-foreground: oklch(0.2 0 0.8); /* Yellow-950 */
 }
 
 @theme inline {

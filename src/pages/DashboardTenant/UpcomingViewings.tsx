@@ -3,6 +3,14 @@ import { Calendar, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getStatusClass } from "./utils";
 import { Appointment } from "./types";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export function UpcomingViewings({
   appointments,
@@ -10,83 +18,73 @@ export function UpcomingViewings({
   appointments: Appointment[];
 }) {
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Upcoming Viewings
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Schedule and manage your property visits
-            </p>
-          </div>
-          <Link
-            to="/dashboard/appointments"
-            className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors duration-200"
-          >
-            View All
-          </Link>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <div>
+          <CardTitle>Upcoming Viewings</CardTitle>
+          <CardDescription>
+            Schedule and manage your property visits
+          </CardDescription>
         </div>
-      </div>
-      <div className="divide-y divide-gray-100">
+        <Button variant="outline" asChild>
+          <Link to="/dashboard/appointments">View All</Link>
+        </Button>
+      </CardHeader>
+      <CardContent className="divide-y divide-border">
         {appointments.length === 0 ? (
-          <div className="p-8 text-center">
-            <Calendar className="mx-auto h-12 w-12 text-gray-300" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No upcoming viewings
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Schedule a viewing to get started.
-            </p>
-            <div className="mt-6">
-              <Link
-                to="/dashboard/appointments/new"
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Schedule Viewing
-              </Link>
+          <div className="flex min-h-[400px] flex-col items-center justify-center space-y-4 text-center">
+            <div className="bg-muted/50 flex h-16 w-16 items-center justify-center rounded-full">
+              <Calendar className="h-8 w-8 text-muted-foreground/70" />
             </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold tracking-tight">
+                No upcoming viewings
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Schedule a viewing to get started
+              </p>
+            </div>
+            <Button asChild>
+              <Link to="/dashboard/appointments/new">Schedule Viewing</Link>
+            </Button>
           </div>
         ) : (
-          appointments.map((appointment) => (
-            <div
-              key={appointment.id}
-              className="p-4 hover:bg-gray-50 transition-colors duration-200 group cursor-pointer"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center flex-1 min-w-0">
-                  <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors duration-200">
-                    <Clock className="h-5 w-5 text-indigo-600" />
-                  </div>
-                  <div className="ml-4 flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate group-hover:text-indigo-600 transition-colors duration-200">
-                      {appointment.properties.name}
-                    </p>
-                    <div className="mt-1 flex items-center text-xs text-gray-500 space-x-2">
-                      <Calendar className="h-4 w-4" />
-                      <time dateTime={appointment.preferred_date}>
-                        {format(
-                          new Date(appointment.preferred_date),
-                          "MMM d, yyyy"
-                        )}{" "}
-                        at {appointment.preferred_time}
-                      </time>
-                    </div>
+          <div className="space-y-4">
+            {appointments.map((appointment) => (
+              <div
+                key={appointment.id}
+                className="flex items-center gap-4 py-4 group hover:bg-muted/50 rounded-lg px-4 transition-colors"
+              >
+                <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg group-hover:bg-primary/20 transition-colors">
+                  <Clock className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1 space-y-1 min-w-0">
+                  <p className="font-medium truncate group-hover:text-primary transition-colors">
+                    {appointment.properties.name}
+                  </p>
+                  <div className="flex items-center text-sm text-muted-foreground gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <time dateTime={appointment.preferred_date}>
+                      {format(
+                        new Date(appointment.preferred_date),
+                        "MMM d, yyyy"
+                      )}{" "}
+                      at {appointment.preferred_time}
+                    </time>
                   </div>
                 </div>
                 <span
-                  className={`ml-4 px-2.5 py-0.5 inline-flex text-xs leading-5 font-medium rounded-full whitespace-nowrap ${getStatusClass(
+                  className={`shrink-0 px-2.5 py-0.5 text-xs font-medium rounded-full ${getStatusClass(
                     appointment.status
                   )}`}
                 >
                   {appointment.status}
                 </span>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
