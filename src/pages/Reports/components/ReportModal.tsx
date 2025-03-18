@@ -7,7 +7,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -46,12 +45,6 @@ export function ReportModal({
   onDownload,
 }: ReportModalProps) {
   if (!report) return null;
-
-  // Calculate credit score percentage for the progress bar
-  const creditScorePercent = Math.min(
-    Math.max(((report.credit_score - 300) / (850 - 300)) * 100, 0),
-    100
-  );
 
   // Calculate debt-to-income ratio category
   const getDtiCategory = (dti: number) => {
@@ -196,7 +189,7 @@ export function ReportModal({
                   </CardHeader>
 
                   <CardContent className="p-6 bg-white">
-                    <CreditReport report={report} />
+                    <CreditReport report={report} variant="compact" />
                   </CardContent>
                 </Card>
               </div>
@@ -268,89 +261,9 @@ export function ReportModal({
                 Credit Analysis
               </h2>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Score Visualization */}
-                <Card className="lg:col-span-1">
-                  <CardContent className="pt-6">
-                    <div className="text-center">
-                      <div
-                        className={`text-5xl font-bold ${
-                          report.credit_score >= 740
-                            ? "text-green-600"
-                            : report.credit_score >= 670
-                            ? "text-blue-600"
-                            : report.credit_score >= 580
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {report.credit_score}
-                      </div>
-                      <div className="mt-2 text-sm text-muted-foreground">
-                        Credit Score
-                      </div>
-
-                      <div className="mt-6">
-                        <div className="flex justify-between mb-1 text-xs">
-                          <span>Poor</span>
-                          <span>Fair</span>
-                          <span>Good</span>
-                          <span>Exc</span>
-                        </div>
-                        <Progress value={creditScorePercent} className="h-2" />
-                        <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                          <span>300</span>
-                          <span>850</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 px-3 py-2 bg-muted rounded-md inline-block">
-                        <span className="text-sm font-medium">
-                          Rating: {report.analysis.credit.rating.toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Credit Factors */}
-                <Card className="lg:col-span-2">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-medium">
-                        Key Credit Factors
-                      </h3>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="h-4 w-4 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            These factors have the most significant impact on
-                            the applicant's credit score.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {report.analysis.credit.factors.map((factor, index) => (
-                        <div
-                          key={index}
-                          className="flex items-start p-3 bg-muted/40 rounded-md"
-                        >
-                          <div className="h-6 w-6 rounded-full bg-green-100 text-green-800 flex items-center justify-center text-xs mr-3 mt-0.5">
-                            {index + 1}
-                          </div>
-                          <div>
-                            <p className="text-sm">{factor}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              <Card className="p-6">
+                <CreditReport report={report} variant="expanded" />
+              </Card>
             </div>
 
             <Separator className="my-8" />

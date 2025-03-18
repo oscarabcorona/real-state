@@ -5,6 +5,7 @@ import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
 import { Documents } from "./pages/Documents";
 import { Reports } from "./pages/Reports";
+import { ReportDetails } from "./pages/Reports/ReportDetails";
 import { Notifications } from "./pages/Notifications";
 import { Settings } from "./pages/Settings";
 import { Payments } from "./pages/Payments";
@@ -80,6 +81,7 @@ function App() {
             />
             <Route path="documents" element={<Documents />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="reports/:id" element={<ReportDetails />} />
             <Route
               path="appointments"
               element={

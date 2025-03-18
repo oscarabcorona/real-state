@@ -5,15 +5,11 @@ import type { Report } from "@/pages/Reports/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReportCard } from "./components/ReportCard";
 import { EmptyState } from "./components/EmptyState";
-import { ReportModal } from "./components/ReportModal";
-import { downloadReport } from "./utils";
 
 export function Reports() {
   const { user } = useAuthStore();
   const [reports, setReports] = useState<Report[]>([]);
-  const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showReportModal, setShowReportModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -76,11 +72,6 @@ export function Reports() {
     }
   };
 
-  const handleViewReport = (report: Report) => {
-    setSelectedReport(report);
-    setShowReportModal(true);
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -102,23 +93,12 @@ export function Reports() {
           ) : (
             <div className="space-y-4">
               {reports.map((report) => (
-                <ReportCard
-                  key={report.id}
-                  report={report}
-                  onViewReport={handleViewReport}
-                />
+                <ReportCard key={report.id} report={report} />
               ))}
             </div>
           )}
         </CardContent>
       </Card>
-
-      <ReportModal
-        report={selectedReport}
-        open={showReportModal}
-        onOpenChange={setShowReportModal}
-        onDownload={downloadReport}
-      />
     </div>
   );
 }

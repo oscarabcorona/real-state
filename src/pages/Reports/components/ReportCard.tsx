@@ -1,5 +1,5 @@
 import { Building2, CreditCard, DollarSign, Eye, Shield } from "lucide-react";
-// Use the same absolute import path as the main component
+import { Link } from "react-router-dom"; // Add this import
 import type { Report } from "@/pages/Reports/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +12,6 @@ import {
 
 interface ReportCardProps {
   report: Report;
-  onViewReport: (report: Report) => void;
 }
 
 // Helper functions
@@ -34,7 +33,7 @@ const getScoreColor = (score: number) => {
   return "text-red-600";
 };
 
-export function ReportCard({ report, onViewReport }: ReportCardProps) {
+export function ReportCard({ report }: ReportCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-6">
@@ -58,13 +57,11 @@ export function ReportCard({ report, onViewReport }: ReportCardProps) {
             </span>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  onClick={() => onViewReport(report)}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Report
+                <Button asChild variant="outline" size="sm">
+                  <Link to={`/dashboard/reports/${report.id}`}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Report
+                  </Link>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>View detailed report information</TooltipContent>
