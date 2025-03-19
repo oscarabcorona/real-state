@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { useAuthStore } from "../../store/authStore";
-import { Payment } from "./types";
-import { PaymentStats } from "./components/PaymentStats";
-import { PaymentFilters } from "./components/PaymentFilters";
-import { PaymentsTable } from "./components/PaymentsTable";
-import { PaymentModal } from "./components/PaymentModal";
+import { useOptimistic } from "../../hooks/useOptimisticAction";
 import {
+  downloadInvoice,
   fetchTenantPayments,
   processPayment,
-  downloadInvoice,
 } from "../../services/tenantPaymentService";
-import { useOptimistic } from "../../hooks/useOptimisticAction";
+import { useAuthStore } from "../../store/authStore";
+import { PaymentFilters } from "./components/PaymentFilters";
+import { PaymentModal } from "./components/PaymentModal";
+import { PaymentsTable } from "./components/PaymentsTable";
+import { PaymentStats } from "./components/PaymentStats";
+import { Payment } from "./types";
 
 export function PaymentTenant() {
   const { user } = useAuthStore();
@@ -18,6 +18,7 @@ export function PaymentTenant() {
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     status: "",
     paymentMethod: "",
@@ -37,6 +38,27 @@ export function PaymentTenant() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, filters]);
+
+  useEffect(() => {
+    // Connect filter button to accordion trigger and toggle showFilters state
+    const filterButton = document.getElementById("filter-trigger");
+    const accordionTrigger = document.getElementById(
+      "filter-accordion-trigger"
+    );
+
+    if (filterButton && accordionTrigger) {
+      const handleClick = () => {
+        (accordionTrigger as HTMLButtonElement).click();
+        setShowFilters(!showFilters);
+      };
+
+      filterButton.addEventListener("click", handleClick);
+
+      return () => {
+        filterButton.removeEventListener("click", handleClick);
+      };
+    }
+  }, [showFilters]);
 
   const fetchPaymentsData = async () => {
     try {
@@ -102,11 +124,15 @@ export function PaymentTenant() {
   return (
     <div className="space-y-6">
       <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-6 py-4">
           <PaymentFilters filters={filters} onFilterChange={setFilters} />
         </div>
 
-        <div className="p-6">
+        <div
+          className={`p-6 pt-0 transition-all duration-300 ease-in-out ${
+            showFilters ? "mt-2" : "mt-0"
+          }`}
+        >
           <PaymentStats
             totalPaid={stats.totalPaid}
             pending={stats.pending}
@@ -122,13 +148,12 @@ export function PaymentTenant() {
         </div>
       </div>
 
-      {showPaymentModal && selectedPayment && (
-        <PaymentModal
-          payment={selectedPayment}
-          onClose={() => setShowPaymentModal(false)}
-          onProcessPayment={handleProcessPayment}
-        />
-      )}
+      <PaymentModal
+        payment={selectedPayment!}
+        open={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onProcessPayment={handleProcessPayment}
+      />
     </div>
   );
 }

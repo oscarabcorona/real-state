@@ -11,14 +11,14 @@ import { Payment } from "../types";
 
 type PaymentModalProps = {
   payment: Payment;
-  open: boolean;
+  open?: boolean; // Make open optional
   onClose: () => void;
   onProcessPayment: (method: "credit_card" | "ach" | "cash") => void;
 };
 
 export function PaymentModal({
   payment,
-  open,
+  open = false, // Provide default value
   onClose,
   onProcessPayment,
 }: PaymentModalProps) {
