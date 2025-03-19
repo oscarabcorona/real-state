@@ -38,3 +38,30 @@ export interface Property {
     };
   }[];
 }
+
+export interface PropertyFormData {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  description: string;
+  tenant_id: string;
+  property_type: "house" | "apartment" | "condo" | "townhouse";
+  price: number;
+  bedrooms: number;
+  bathrooms: number;
+  square_feet: number;
+  amenities: string[];
+  available_date: string;
+  pet_policy: string;
+  lease_terms: string;
+  published: boolean;
+  images: string[];
+  syndication: {
+    zillow: boolean;
+    trulia: boolean;
+    realtor: boolean;
+    hotpads: boolean;
+  };
+}
