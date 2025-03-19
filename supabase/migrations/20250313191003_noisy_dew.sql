@@ -93,6 +93,7 @@ CREATE POLICY "Tenants can manage their own documents"
 DO $$
 DECLARE
   tenant_record_id uuid;
+  property_exists boolean;
 BEGIN
   -- Get or create tenant record for the user
   INSERT INTO tenants (id, user_id, name, status)
@@ -115,11 +116,34 @@ BEGIN
     WHERE user_id = (SELECT id FROM users WHERE email = '1@gmail.com');
   END IF;
 
+  -- Verify we have a valid tenant ID
+  IF tenant_record_id IS NULL THEN
+    RAISE NOTICE 'No tenant found or created for user with email 1@gmail.com';
+    RETURN; -- Exit the function without trying to create the lease
+  ELSE
+    RAISE NOTICE 'Found tenant ID: %', tenant_record_id;
+  END IF;
+
+  -- Verify the property exists
+  SELECT EXISTS(
+    SELECT 1 FROM properties 
+    WHERE id = '5fc5f670-c6df-43fa-ab90-4721b1793547'
+  ) INTO property_exists;
+
+  IF NOT property_exists THEN
+    RAISE NOTICE 'Property with ID 5fc5f670-c6df-43fa-ab90-4721b1793547 does not exist';
+    RETURN; -- Exit the function
+  END IF;
+
   -- Create the lease record
+  RAISE NOTICE 'Creating lease for property: 5fc5f670-c6df-43fa-ab90-4721b1793547, tenant: %', tenant_record_id;
+  
   INSERT INTO property_leases (property_id, tenant_id)
   VALUES (
     '5fc5f670-c6df-43fa-ab90-4721b1793547',
     tenant_record_id
   )
   ON CONFLICT (property_id, tenant_id, start_date) DO NOTHING;
+  
+  RAISE NOTICE 'Lease creation completed';
 END $$;
