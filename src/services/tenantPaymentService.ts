@@ -38,9 +38,15 @@ function normalizePaymentMethod(method: string | null): "credit_card" | "ach" | 
   }
 }
 
-export async function fetchTenantPayments(userId: string, filters: PaymentFilters): Promise<{
+export async function fetchTenantPayments(
+  userId: string, 
+  filters: PaymentFilters,
+  page: number = 1,
+  pageSize: number = 10
+): Promise<{
   payments: Payment[];
   stats: PaymentStats;
+  totalPages: number;
 }> {
   try {
     const { data: accessData, error: accessError } = await supabase
@@ -55,11 +61,13 @@ export async function fetchTenantPayments(userId: string, filters: PaymentFilter
     if (propertyIds.length === 0) {
       return {
         payments: [],
-        stats: { totalPaid: 0, pending: 0, failed: 0 }
+        stats: { totalPaid: 0, pending: 0, failed: 0 },
+        totalPages: 0
       };
     }
 
-    let query = supabase
+    // First, build the base query without pagination to get total count
+    let baseQuery = supabase
       .from("payments")
       .select(
         `
@@ -70,15 +78,17 @@ export async function fetchTenantPayments(userId: string, filters: PaymentFilter
               email
             )
           )
-        `
+        `,
+        { count: 'exact' }
       )
       .in("property_id", propertyIds);
 
+    // Apply filters
     if (filters.status) {
-      query = query.eq("status", filters.status);
+      baseQuery = baseQuery.eq("status", filters.status);
     }
     if (filters.paymentMethod) {
-      query = query.eq("payment_method", filters.paymentMethod);
+      baseQuery = baseQuery.eq("payment_method", filters.paymentMethod);
     }
     if (filters.dateRange) {
       const now = new Date();
@@ -96,19 +106,32 @@ export async function fetchTenantPayments(userId: string, filters: PaymentFilter
           break;
       }
 
-      query = query.gte("created_at", startDate.toISOString());
+      baseQuery = baseQuery.gte("created_at", startDate.toISOString());
     }
     if (filters.minAmount) {
-      query = query.gte("amount", parseFloat(filters.minAmount));
+      baseQuery = baseQuery.gte("amount", parseFloat(filters.minAmount));
     }
     if (filters.maxAmount) {
-      query = query.lte("amount", parseFloat(filters.maxAmount));
+      baseQuery = baseQuery.lte("amount", parseFloat(filters.maxAmount));
     }
 
-    const { data: paymentsData, error: paymentsError } = await query.order(
-      "created_at",
-      { ascending: false }
-    );
+    // Create a copy of the query for getting the total count
+    const countQuery = baseQuery;
+    const { count, error: countError } = await countQuery;
+    
+    if (countError) throw countError;
+    
+    // Calculate total pages
+    const totalCount = count || 0;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    
+    // Get paginated data
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize - 1;
+    
+    const { data: paymentsData, error: paymentsError } = await baseQuery
+      .order("created_at", { ascending: false })
+      .range(start, end);
 
     if (paymentsError) throw paymentsError;
 
@@ -134,21 +157,26 @@ export async function fetchTenantPayments(userId: string, filters: PaymentFilter
       properties: payment.properties
     })) as Payment[];
 
-    // Calculate stats
+    // Get all payments for calculating stats (we need all payments, not just the paginated ones)
+    const { data: allPayments, error: allPaymentsError } = await baseQuery;
+    
+    if (allPaymentsError) throw allPaymentsError;
+    
+    // Calculate stats based on all payments matching the filters
     const total =
-      normalizedPayments.reduce(
+      (allPayments || []).reduce(
         (sum, payment) =>
           payment.status === "completed" ? sum + payment.amount : sum,
         0
       ) || 0;
     const pending =
-      normalizedPayments.reduce(
+      (allPayments || []).reduce(
         (sum, payment) =>
           payment.status === "pending" ? sum + payment.amount : sum,
         0
       ) || 0;
     const failed =
-      normalizedPayments.reduce(
+      (allPayments || []).reduce(
         (sum, payment) =>
           payment.status === "failed" ? sum + payment.amount : sum,
         0
@@ -162,7 +190,8 @@ export async function fetchTenantPayments(userId: string, filters: PaymentFilter
 
     return {
       payments: normalizedPayments,
-      stats
+      stats,
+      totalPages
     };
   } catch (error) {
     console.error("Error fetching tenant payments:", error);

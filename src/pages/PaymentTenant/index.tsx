@@ -19,6 +19,9 @@ export function PaymentTenant() {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState({
     status: "",
     paymentMethod: "",
@@ -37,7 +40,7 @@ export function PaymentTenant() {
       fetchPaymentsData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, filters]);
+  }, [user, filters, currentPage, pageSize]);
 
   useEffect(() => {
     // Connect filter button to accordion trigger and toggle showFilters state
@@ -60,6 +63,11 @@ export function PaymentTenant() {
     }
   }, [showFilters]);
 
+  useEffect(() => {
+    // Reset to page 1 when filters change
+    setCurrentPage(1);
+  }, [filters]);
+
   const fetchPaymentsData = async () => {
     try {
       setLoading(true);
@@ -68,15 +76,29 @@ export function PaymentTenant() {
         return;
       }
 
-      const result = await fetchTenantPayments(user.id, filters);
+      const result = await fetchTenantPayments(
+        user.id,
+        filters,
+        currentPage,
+        pageSize
+      );
 
       setPayments(result.payments);
       setStats(result.stats);
+      setTotalPages(result.totalPages || 1);
     } catch (error) {
       console.error("Error fetching payments:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const handlePayment = (payment: Payment) => {
@@ -121,6 +143,11 @@ export function PaymentTenant() {
     }
   };
 
+  const handlePageSizeChange = (value: number) => {
+    setPageSize(value);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white shadow rounded-lg">
@@ -144,6 +171,11 @@ export function PaymentTenant() {
             loading={loading}
             onPaymentClick={handlePayment}
             onDownloadInvoice={handleDownloadInvoice}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            pageSize={pageSize}
+            onPageSizeChange={handlePageSizeChange}
           />
         </div>
       </div>

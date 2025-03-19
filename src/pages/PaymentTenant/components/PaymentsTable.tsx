@@ -23,12 +23,33 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Payment } from "../types";
 import { Card } from "@/components/ui/card";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type PaymentsTableProps = {
   payments: Payment[];
   loading: boolean;
   onPaymentClick: (payment: Payment) => void;
   onDownloadInvoice: (payment: Payment) => void;
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
 };
 
 export function PaymentsTable({
@@ -36,6 +57,11 @@ export function PaymentsTable({
   loading,
   onPaymentClick,
   onDownloadInvoice,
+  currentPage,
+  totalPages,
+  onPageChange,
+  pageSize,
+  onPageSizeChange,
 }: PaymentsTableProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -61,6 +87,131 @@ export function PaymentsTable({
       default:
         return "default";
     }
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1 && payments.length <= 5) return null;
+
+    const pages = [];
+    const maxPagesToShow = 5;
+
+    // Always show first page, last page, and pages around current page
+    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+    // Adjust if we're near the end
+    if (endPage - startPage + 1 < maxPagesToShow) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+
+    // Add pages to array
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return (
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 items-center">
+        {/* Left column - Items per page */}
+        <div className="flex items-center space-x-2 justify-start mb-4 sm:mb-0">
+          <span className="text-sm text-muted-foreground">Items per page:</span>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => onPageSizeChange(parseInt(value, 10))}
+          >
+            <SelectTrigger className="h-8 w-16">
+              <SelectValue placeholder={pageSize.toString()} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Center column - Pagination */}
+        <div className="flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+
+              {startPage > 1 && (
+                <>
+                  <PaginationItem>
+                    <PaginationLink
+                      onClick={() => onPageChange(1)}
+                      isActive={currentPage === 1}
+                    >
+                      1
+                    </PaginationLink>
+                  </PaginationItem>
+                  {startPage > 2 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+                </>
+              )}
+
+              {pages.map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => onPageChange(page)}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+
+              {endPage < totalPages && (
+                <>
+                  {endPage < totalPages - 1 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+                  <PaginationItem>
+                    <PaginationLink
+                      onClick={() => onPageChange(totalPages)}
+                      isActive={currentPage === totalPages}
+                    >
+                      {totalPages}
+                    </PaginationLink>
+                  </PaginationItem>
+                </>
+              )}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    onPageChange(Math.min(totalPages, currentPage + 1))
+                  }
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+
+        {/* Right column - Empty (for balance) */}
+        <div className="hidden sm:block"></div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -249,6 +400,8 @@ export function PaymentsTable({
           </TableBody>
         </Table>
       </div>
+
+      {renderPagination()}
     </>
   );
 }
