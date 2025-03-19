@@ -1,4 +1,11 @@
-import { CheckCircle, Star, Zap, Building2, HelpCircle } from "lucide-react";
+import {
+  CheckCircle,
+  Star,
+  Zap,
+  Building2,
+  HelpCircle,
+  ChevronRight,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import {
@@ -77,54 +84,73 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
   return (
     <AnimatedElement animation="slideUp" delay={delay}>
       <div
-        className={`group relative bg-gradient-to-b from-background to-gray-50/50 dark:to-gray-900/50 rounded-2xl overflow-hidden
+        className={`group relative rounded-3xl overflow-hidden border transition-all duration-500
           ${
             plan.popular
-              ? "lg:scale-105 shadow-2xl shadow-indigo-500/20 ring-2 ring-indigo-500"
-              : "shadow-xl hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1"
-          } transition-all duration-300`}
+              ? "border-primary bg-card/80 backdrop-blur-sm lg:scale-105 lg:-translate-y-2 shadow-xl shadow-primary/20"
+              : "border-muted/40 bg-card/50 hover:border-primary/30 hover:shadow-lg hover:-translate-y-1"
+          }`}
       >
+        {/* Highlight for popular plan */}
         {plan.popular && (
-          <div className="absolute -top-px inset-x-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+          <>
+            <div className="absolute -top-px inset-x-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
+            <div className="absolute -top-px inset-x-0 h-24 bg-gradient-to-b from-primary/20 to-transparent" />
+            <div className="absolute -bottom-px inset-x-0 h-24 bg-gradient-to-t from-primary/10 to-transparent" />
+          </>
         )}
+
+        {/* Popular badge */}
         {plan.popular && (
-          <div className="absolute top-4 left-0 right-0 flex justify-center">
-            <span className="px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg transform -translate-y-px">
+          <div className="absolute top-6 right-6">
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary text-white shadow-lg">
               Most Popular
             </span>
           </div>
         )}
 
-        <div className="p-8 pt-16">
-          <div className="flex items-center gap-3 mb-6">
-            <div
-              className={`p-2 rounded-lg ${
-                plan.popular
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-primary/10 text-primary dark:bg-primary/20"
-              }`}
-            >
-              <Icon className="h-6 w-6" />
+        {/* Card content area */}
+        <div className="p-8 pt-14">
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div
+                className={`p-3 rounded-xl ${
+                  plan.popular
+                    ? "bg-primary text-white shadow-lg"
+                    : "bg-primary/10 text-primary"
+                }`}
+              >
+                <Icon className="h-6 w-6" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">
+                {plan.name}
+              </h3>
             </div>
-            <h3 className="text-2xl font-bold text-foreground">{plan.name}</h3>
+            <p className="text-muted-foreground mt-2">{plan.description}</p>
           </div>
 
+          {/* Price display */}
           <div className="flex items-baseline mb-6">
             {typeof plan.price === "string" && (
               <>
-                <span className="text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500">
+                <span
+                  className={`text-5xl font-extrabold tracking-tight ${
+                    plan.popular ? "text-primary" : "text-foreground"
+                  }`}
+                >
                   {plan.price}
                 </span>
                 {plan.price !== "Custom" && (
-                  <span className="ml-2 text-gray-500 text-lg">/month</span>
+                  <span className="ml-2 text-muted-foreground text-lg">
+                    /month
+                  </span>
                 )}
               </>
             )}
           </div>
 
-          <p className="text-gray-600 mb-8">{plan.description}</p>
-
-          <ul className="space-y-4 mb-8">
+          {/* Features list */}
+          <ul className="space-y-4 mb-10">
             {plan.features.map((feature) => (
               <li
                 key={feature}
@@ -132,14 +158,14 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
               >
                 <CheckCircle
                   className={`h-5 w-5 mt-0.5 ${
-                    plan.popular ? "text-indigo-500" : "text-green-500"
+                    plan.popular ? "text-primary" : "text-green-500"
                   } flex-shrink-0`}
                 />
                 <span className="text-muted-foreground group-hover/feature:text-foreground transition-colors">
                   {feature}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="inline-block ml-1.5 h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
+                      <HelpCircle className="inline-block ml-1.5 h-4 w-4 text-muted-foreground/70 hover:text-muted-foreground cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="w-64">
@@ -153,17 +179,19 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
           </ul>
         </div>
 
-        <div className="p-8 bg-gradient-to-b from-transparent to-gray-50 dark:to-gray-900/50">
+        {/* Call to action */}
+        <div className="p-8 pt-0">
           <Link
             to={plan.buttonLink}
-            className={`block w-full text-center px-6 py-3.5 text-sm font-semibold rounded-lg
+            className={`flex items-center justify-center w-full py-4 px-6 rounded-xl text-base font-medium transition-all duration-300 shadow-sm
               ${
                 plan.popular
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600"
-                  : "bg-background dark:bg-background/90 text-foreground ring-1 ring-border hover:ring-primary/20 hover:bg-accent/50 dark:hover:bg-accent/20"
-              } transition-all duration-200 shadow-sm`}
+                  ? "bg-primary text-white hover:bg-primary/90 hover:shadow-md hover:shadow-primary/20"
+                  : "bg-card text-foreground border border-muted hover:border-primary/30 hover:bg-primary/5"
+              }`}
           >
             {plan.buttonText}
+            <ChevronRight className="ml-2 h-4 w-4" />
           </Link>
         </div>
       </div>
@@ -173,9 +201,14 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-50 dark:from-gray-900/50 to-background" />
-      <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-r from-transparent to-indigo-50/30 dark:to-indigo-950/30" />
+    <section id="pricing" className="relative py-28 overflow-hidden">
+      {/* Enhanced background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-50/80 dark:from-gray-900/30 to-background" />
+      <div className="absolute inset-0 bg-grid-gray-100/50 dark:bg-grid-gray-800/30 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_80%)]" />
+
+      {/* Decorative elements */}
+      <div className="absolute top-40 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-20 left-0 w-72 h-72 bg-secondary/5 rounded-full blur-3xl" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedElement animation="slideUp">
@@ -186,7 +219,7 @@ export function PricingSection() {
                 FLEXIBLE PRICING
               </span>
             </div>
-            <h2 className="mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            <h2 className="mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
               Scale Your Property{" "}
               <span className="text-primary">Management</span>
             </h2>
@@ -197,7 +230,7 @@ export function PricingSection() {
           </div>
         </AnimatedElement>
 
-        <div className="grid grid-cols-1 gap-y-8 gap-x-6 lg:grid-cols-3 lg:gap-x-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
             <PricingCard
               key={plan.name}

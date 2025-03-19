@@ -1,9 +1,10 @@
 import { animate, inView, spring } from "motion";
-import { Star, Award, ChartBar, Building } from "lucide-react";
+import { Star, Award, ChartBar, Building, Quote } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import { AnimatedNumber } from "../../components/animated/AnimatedNumber";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 const testimonials = [
   {
@@ -59,11 +60,15 @@ function TestimonialCard({
 
     const element = cardRef.current;
     element.addEventListener("mouseenter", () => {
-      animate(element, { y: -5 }, { duration: 0.2, easing: spring() });
+      animate(
+        element,
+        { y: -5, scale: 1.01 },
+        { duration: 0.2, easing: spring() }
+      );
     });
 
     element.addEventListener("mouseleave", () => {
-      animate(element, { y: 0 }, { duration: 0.2, easing: spring() });
+      animate(element, { y: 0, scale: 1 }, { duration: 0.2, easing: spring() });
     });
   }, []);
 
@@ -71,16 +76,26 @@ function TestimonialCard({
     <AnimatedElement animation="slideUp" delay={delay}>
       <div
         ref={cardRef}
-        className="relative h-full bg-card dark:bg-card/80 p-8 rounded-2xl shadow-lg transition-shadow hover:shadow-xl"
+        className="relative h-full bg-card dark:bg-card/80 p-8 rounded-2xl shadow-lg transition-all duration-300 border border-transparent hover:border-primary/10 group"
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/0 dark:from-primary/10 dark:to-transparent rounded-2xl" />
+        {/* Gradient background effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent dark:from-primary/10 dark:to-transparent rounded-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Quote icon */}
+        <div className="absolute -top-3 -right-3 h-12 w-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+          <Quote className="h-6 w-6 text-primary rotate-180" />
+        </div>
+
         <div className="relative">
           <div className="flex items-center gap-4 mb-6">
-            <img
-              className="h-14 w-14 rounded-full object-cover ring-4 ring-primary/10"
-              src={image}
-              alt={name}
-            />
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/50 to-secondary/50 blur-sm group-hover:blur-md transition-all duration-300" />
+              <img
+                className="relative h-16 w-16 rounded-full object-cover border-2 border-white dark:border-gray-800"
+                src={image}
+                alt={name}
+              />
+            </div>
             <div>
               <h4 className="text-lg font-semibold text-foreground">{name}</h4>
               <p className="text-sm text-primary">
@@ -88,15 +103,20 @@ function TestimonialCard({
               </p>
             </div>
           </div>
+
           <div className="flex gap-1 mb-4">
             {Array(5)
               .fill(null)
               .map((_, i) => (
-                <Star key={i} className="h-5 w-5 text-amber-400 fill-current" />
+                <Star
+                  key={i}
+                  className="h-4 w-4 text-amber-400 fill-amber-400"
+                />
               ))}
           </div>
-          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-            {quote}
+
+          <p className="text-muted-foreground leading-relaxed italic">
+            "{quote}"
           </p>
         </div>
       </div>
@@ -121,7 +141,7 @@ export function SocialProof() {
         animate(
           card.querySelector(".shine-effect")!,
           {
-            background: `radial-gradient(600px circle at ${x}px ${y}px, rgba(var(--primary-rgb), 0.05), transparent 70%)`,
+            background: `radial-gradient(600px circle at ${x}px ${y}px, rgba(var(--primary-rgb), 0.07), transparent 70%)`,
           },
           { duration: 0 }
         );
@@ -149,31 +169,37 @@ export function SocialProof() {
   }, []);
 
   return (
-    <div className="relative bg-gradient-to-b from-gray-50 dark:from-gray-900/50 to-background py-24 overflow-hidden">
-      {/* Background Grid Pattern */}
-      <div className="absolute inset-0 bg-grid-gray-100/50 dark:bg-grid-gray-800/50 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_70%)]" />
+    <div className="relative py-28 overflow-hidden">
+      {/* Enhanced background with overlapping gradients */}
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-50/80 dark:from-gray-900/30 to-background" />
+      <div className="absolute inset-0 bg-grid-gray-100/50 dark:bg-grid-gray-800/30 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_80%)]" />
+
+      {/* Decorative elements */}
+      <div className="absolute top-1/4 right-1/5 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/3 left-1/5 w-72 h-72 bg-secondary/5 rounded-full blur-3xl" />
 
       {/* Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
+        {/* Header Section */}
         <AnimatedElement animation="slideUp">
           <div className="text-center">
-            <span className="inline-flex items-center text-sm font-semibold text-primary gap-2">
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary gap-2">
               <Award className="h-4 w-4" /> TRUSTED BY INDUSTRY LEADERS
             </span>
-            <h2 className="mt-2 text-3xl font-extrabold text-foreground sm:text-4xl">
+            <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl">
               Join 2,000+ Property Managers Who Trust Our Solution
             </h2>
-            <p className="mt-4 text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
               Empowering property management across 50+ countries with
-              innovative AI solutions
+              innovative AI solutions that deliver measurable results
             </p>
           </div>
         </AnimatedElement>
 
-        {/* Stats Section with Improved Design */}
+        {/* Stats Section with Enhanced Design */}
         <div
           ref={statsRef}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 my-24"
         >
           {[
             {
@@ -203,22 +229,25 @@ export function SocialProof() {
               animation="slideUp"
               delay={0.2 * (index + 1)}
             >
-              <div className="stat-card group relative flex flex-col items-center p-6 bg-card dark:bg-card/80 rounded-2xl">
+              <div className="stat-card group relative flex flex-col items-center p-8 bg-card dark:bg-card/80 rounded-2xl border border-muted/20 hover:border-primary/20 transition-colors">
                 <div className="shine-effect pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition duration-300 group-hover:opacity-100" />
+
                 <div
                   className={cn(
-                    "mb-4 rounded-xl p-2.5 ring-2 ring-inset ring-gray-100",
+                    "mb-5 rounded-xl p-3 shadow-lg ring-2 ring-white/10",
                     "bg-gradient-to-br",
                     stat.gradient
                   )}
                 >
-                  <stat.icon className="h-6 w-6 text-white" />
+                  <stat.icon className="h-7 w-7 text-white" />
                 </div>
+
                 <AnimatedNumber
                   value={stat.value}
                   suffix={stat.suffix}
                   className="text-4xl font-bold text-foreground"
                 />
+
                 <p className="mt-2 text-muted-foreground font-medium">
                   {stat.label}
                 </p>
@@ -227,16 +256,46 @@ export function SocialProof() {
           ))}
         </div>
 
-        {/* Testimonials Section - Updated to use TestimonialCard */}
-        <div className="mt-20 grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {testimonials.map((testimonial, index) => (
-            <TestimonialCard
-              key={testimonial.name}
-              {...testimonial}
-              delay={0.2 * (index + 1)}
-            />
-          ))}
+        {/* Enhanced Testimonials Section */}
+        <div>
+          <div className="text-center mb-14">
+            <h3 className="text-2xl font-bold text-foreground sm:text-3xl">
+              What Our Clients Say
+            </h3>
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+              Hear from property managers and owners who have transformed their
+              operations with our platform
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            {testimonials.map((testimonial, index) => (
+              <TestimonialCard
+                key={testimonial.name}
+                {...testimonial}
+                delay={0.2 * (index + 1)}
+              />
+            ))}
+          </div>
         </div>
+
+        {/* CTA Section */}
+        <AnimatedElement animation="fadeIn" delay={0.5}>
+          <div className="mt-20 text-center bg-gradient-to-br from-primary/10 to-transparent p-10 rounded-2xl border border-primary/10">
+            <h3 className="text-2xl font-bold text-foreground">
+              Ready to transform your property management?
+            </h3>
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+              Join thousands of property managers who trust our platform
+            </p>
+            <Link
+              className="mt-6 inline-block px-8 py-3 bg-primary text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+              to="/login"
+            >
+              Start Free Trial
+            </Link>
+          </div>
+        </AnimatedElement>
       </div>
     </div>
   );

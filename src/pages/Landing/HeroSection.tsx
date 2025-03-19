@@ -5,6 +5,7 @@ import {
   BrainCircuit,
   ChevronDown,
   ChevronRight,
+  Play,
   PlayCircle,
   Rocket,
 } from "lucide-react";
@@ -57,146 +58,162 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32 w-full max-w-7xl">
-        <div className="lg:grid lg:grid-cols-12 lg:gap-12">
-          <div className="lg:col-span-6 relative z-10">
-            {/* Main content with improved typography */}
-            <AnimatedElement animation="slideUp" delay={0.2}>
-              <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-6 border border-white/20">
-                <BrainCircuit className="size-4 text-indigo-200" />
-                <span className="text-white/90 font-medium text-sm">
-                  AI-Powered Property Management
+      {/* Content - Centered Layout */}
+      <div className="relative mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 w-full max-w-7xl">
+        <div className="flex flex-col items-center text-center">
+          {/* Centered main content */}
+          <AnimatedElement animation="slideUp" delay={0.2}>
+            <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-6 border border-white/20">
+              <BrainCircuit className="size-4 text-indigo-200" />
+              <span className="text-white/90 font-medium text-sm">
+                AI-Powered Property Management
+              </span>
+            </div>
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl max-w-4xl mx-auto">
+              <span className="block text-white">
+                <AnimatedText text="Smart Property" delay={0.5} />
+              </span>
+              <AnimatedText
+                text="Management, Simplified"
+                delay={0.8}
+                className="text-accent text-3xl sm:text-4xl md:text-5xl"
+              />
+            </h1>
+          </AnimatedElement>
+
+          {/* Centered subtitle */}
+          <AnimatedElement animation="slideUp" delay={1}>
+            <p className="mt-6 text-xl leading-relaxed text-indigo-100 max-w-2xl mx-auto">
+              Experience the future of property management. Our AI-driven
+              platform reduces costs by 40%, automates daily tasks, and provides
+              real-time insights for better decision-making.
+            </p>
+          </AnimatedElement>
+
+          {/* Enhanced CTA Section */}
+          <AnimatedElement animation="slideUp" delay={1.2}>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <Button
+                size="lg"
+                className="group bg-white hover:bg-white/90 text-primary font-medium px-6 py-6 h-auto transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+                asChild
+              >
+                <Link to="/login">
+                  <span>Start Free Trial</span>
+                  <Rocket className="ml-2 transition-transform group-hover:translate-x-1" />
+                </Link>
+              </Button>
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="group border-white/30 bg-white/5 backdrop-blur-sm text-white hover:bg-white/15 hover:border-white/50 px-6 py-6 h-auto transition-all duration-300"
+                  >
+                    <PlayCircle className="mr-2" />
+                    <span>Watch Demo</span>
+                    <ChevronRight className="ml-2 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-4xl p-1 bg-background/95 backdrop-blur-md">
+                  <div className="aspect-video rounded-md overflow-hidden">
+                    <iframe
+                      className="w-full h-full"
+                      src="https://www.youtube.com/embed/your-video-id"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </AnimatedElement>
+
+          {/* Enhanced Stats with better design */}
+          <AnimatedElement animation="fadeIn" delay={1.4}>
+            <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+              <div className="flex flex-col items-center p-4 bg-white/10 dark:bg-white/5 rounded-xl backdrop-blur-sm border border-white/20 hover:border-white/40 transition-colors">
+                <AnimatedNumber
+                  value={98}
+                  suffix="%"
+                  className="text-3xl font-bold text-white dark:text-white/90"
+                />
+                <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
+                  Client Satisfaction
                 </span>
               </div>
-              <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl">
-                <span className="block text-white">
-                  <AnimatedText text="Smart Property" delay={0.5} />
-                </span>
-                <AnimatedText
-                  text="Management, Simplified"
-                  delay={0.8}
-                  className="text-accent text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl"
+
+              <div className="flex flex-col items-center p-4 bg-white/10 dark:bg-white/5 rounded-xl backdrop-blur-sm border border-white/20 hover:border-white/40 transition-colors">
+                <AnimatedNumber
+                  value={75000}
+                  suffix="+"
+                  className="text-3xl font-bold text-white dark:text-white/90"
                 />
-              </h1>
-            </AnimatedElement>
+                <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
+                  Units Managed
+                </span>
+              </div>
 
-            {/* Subtitle section - replacing the feature list */}
-            <AnimatedElement animation="slideUp" delay={1}>
-              <p className="mt-4 text-xl leading-relaxed text-indigo-100 max-w-2xl">
-                Experience the future of property management. Our AI-driven
-                platform reduces costs by 40%, automates daily tasks, and
-                provides real-time insights for better decision-making.
-              </p>
-            </AnimatedElement>
+              <div className="flex flex-col items-center p-4 bg-white/10 dark:bg-white/5 rounded-xl backdrop-blur-sm border border-white/20 hover:border-white/40 transition-colors">
+                <AnimatedNumber
+                  value={40}
+                  suffix="%"
+                  className="text-3xl font-bold text-white dark:text-white/90"
+                />
+                <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
+                  Cost Reduction
+                </span>
+              </div>
+            </div>
+          </AnimatedElement>
 
-            {/* Enhanced CTA Section */}
-            <AnimatedElement animation="slideUp" delay={1.2}>
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Button
-                  size="lg"
-                  className="group bg-white hover:bg-white/90 text-primary font-medium px-6 py-6 h-auto transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02]"
-                  asChild
-                >
-                  <Link to="/login">
-                    <span>Start Free Trial</span>
-                    <Rocket className="ml-2 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
+          {/* Video Demo Section - Featured prominently below content */}
+          <AnimatedElement animation="scale" delay={1.6}>
+            <div className="mt-16 w-full max-w-4xl mx-auto">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="relative rounded-xl overflow-hidden cursor-pointer group">
+                    {/* Dark overlay with play button */}
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/30 transition-colors">
+                      <div className="size-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/40 group-hover:scale-110 transition-transform">
+                        <Play className="size-10 text-white fill-white ml-1" />
+                      </div>
+                    </div>
 
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="group border-white/30 bg-white/5 backdrop-blur-sm text-white hover:bg-white/15 hover:border-white/50 px-6 py-6 h-auto transition-all duration-300"
-                    >
-                      <PlayCircle className="mr-2" />
-                      <span>Watch Demo</span>
-                      <ChevronRight className="ml-2 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-3xl p-1 bg-background/95 backdrop-blur-md">
-                    <div className="aspect-video rounded-md overflow-hidden">
-                      <iframe
-                        className="w-full h-full"
-                        src="https://www.youtube.com/embed/your-video-id"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
+                    {/* Video thumbnail */}
+                    <div className="aspect-video w-full bg-primary/20 overflow-hidden">
+                      <img
+                        src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1470&q=80"
+                        alt="Property management demo"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                     </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </AnimatedElement>
 
-            {/* Enhanced Stats with better design */}
-            <div className="mt-14 grid grid-cols-3 gap-4 max-w-2xl">
-              <AnimatedElement animation="scale" delay={1.4}>
-                <div className="flex flex-col items-center p-4 bg-white/10 dark:bg-white/5 rounded-xl backdrop-blur-sm border border-white/20 hover:border-white/40 transition-colors">
-                  <AnimatedNumber
-                    value={98}
-                    suffix="%"
-                    className="text-3xl font-bold text-white dark:text-white/90"
-                  />
-                  <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
-                    Client Satisfaction
-                  </span>
-                </div>
-              </AnimatedElement>
-
-              <AnimatedElement animation="scale" delay={1.6}>
-                <div className="flex flex-col items-center p-4 bg-white/10 dark:bg-white/5 rounded-xl backdrop-blur-sm border border-white/20 hover:border-white/40 transition-colors">
-                  <AnimatedNumber
-                    value={75000}
-                    suffix="+"
-                    className="text-3xl font-bold text-white dark:text-white/90"
-                  />
-                  <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
-                    Units Managed
-                  </span>
-                </div>
-              </AnimatedElement>
-
-              <AnimatedElement animation="scale" delay={1.8}>
-                <div className="flex flex-col items-center p-4 bg-white/10 dark:bg-white/5 rounded-xl backdrop-blur-sm border border-white/20 hover:border-white/40 transition-colors">
-                  <AnimatedNumber
-                    value={40}
-                    suffix="%"
-                    className="text-3xl font-bold text-white dark:text-white/90"
-                  />
-                  <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
-                    Cost Reduction
-                  </span>
-                </div>
-              </AnimatedElement>
+                    {/* Caption */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                      <p className="text-white font-medium">
+                        See how our AI transforms property management
+                      </p>
+                    </div>
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-4xl p-1 bg-background/95 backdrop-blur-md">
+                  <div className="aspect-video rounded-md overflow-hidden">
+                    <iframe
+                      className="w-full h-full"
+                      src="https://www.youtube.com/embed/your-video-id"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          </div>
-
-          {/* Right side preview/mockup */}
-          <div className="hidden lg:block lg:col-span-6 lg:flex lg:items-center">
-            <AnimatedElement animation="slideUp" delay={0.5}>
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-2xl blur-xl" />
-                <div className="relative bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-3 shadow-2xl">
-                  <img
-                    src="/mockup.png"
-                    alt="App preview"
-                    className="rounded-xl"
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://placehold.co/800x600/primary/white?text=Property+Management+App";
-                    }}
-                  />
-                  <div className="absolute -bottom-6 -right-6 size-24 bg-white/20 rounded-full blur-2xl"></div>
-                  <div className="absolute -top-6 -left-6 size-24 bg-white/20 rounded-full blur-2xl"></div>
-                </div>
-              </div>
-            </AnimatedElement>
-          </div>
+          </AnimatedElement>
         </div>
       </div>
 
-      {/* Scroll indicator - fixed the animation type */}
+      {/* Scroll indicator */}
       {scrollIndicator && (
         <AnimatedElement animation="fadeIn" delay={2}>
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center text-white/70 cursor-pointer">

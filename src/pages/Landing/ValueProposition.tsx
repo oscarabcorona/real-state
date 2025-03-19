@@ -95,28 +95,32 @@ const allFeatures = {
 export function ValueProposition() {
   return (
     <div className="py-24 relative overflow-hidden" id="features">
-      {/* Background with gradient mesh */}
+      {/* Background with improved visual effect */}
       <div className="absolute inset-0 bg-grid-gray-100/50 dark:bg-grid-gray-800/50 bg-[size:30px_30px] [mask-image:radial-gradient(white,transparent_70%)]" />
       <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white to-white/50 dark:from-background/50 dark:via-background dark:to-background/50" />
+
+      {/* Decorative elements */}
+      <div className="absolute top-1/4 right-0 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 left-0 w-72 h-72 bg-secondary/5 rounded-full blur-3xl"></div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedElement animation="slideUp">
           <div className="text-center">
-            <h2 className="inline-flex items-center rounded-lg bg-gradient-to-r from-primary/80 to-primary px-3 py-1 text-sm font-medium text-primary-foreground ring-1 ring-inset ring-primary/20">
+            <h2 className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/80 to-primary px-4 py-1.5 text-sm font-medium text-primary-foreground ring-1 ring-inset ring-primary/20">
               Powerful Features
             </h2>
-            <p className="mt-6 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+            <p className="mt-8 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
               Transform Your Property Management
             </p>
-            <p className="mt-4 max-w-2xl mx-auto text-xl text-muted-foreground">
+            <p className="mt-6 max-w-2xl mx-auto text-xl text-muted-foreground">
               Leverage cutting-edge AI technology to streamline operations,
               increase ROI, and deliver exceptional experiences.
             </p>
           </div>
         </AnimatedElement>
 
-        <div className="mt-20">
-          <dl className="grid gap-8 md:grid-cols-3">
+        <div className="mt-24">
+          <dl className="grid gap-10 md:grid-cols-3">
             {features.map((feature, index) => (
               <AnimatedElement
                 key={feature.title}
@@ -125,28 +129,34 @@ export function ValueProposition() {
               >
                 <Dialog>
                   <DialogTrigger asChild>
-                    <div className="group relative bg-card dark:bg-card/80 p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer">
-                      <dt>
+                    <div className="group relative bg-card/50 backdrop-blur-sm dark:bg-card/30 p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-2 cursor-pointer border border-muted/40 hover:border-primary/30">
+                      {/* Hover effect glow */}
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur"></div>
+
+                      <div className="relative">
                         <div
-                          className={`absolute flex items-center justify-center h-14 w-14 rounded-xl bg-gradient-to-r ${feature.color} text-white -top-7 group-hover:scale-110 transition-transform`}
+                          className={`flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-r ${feature.color} text-white mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg`}
                         >
-                          <feature.icon className="h-7 w-7" />
+                          <feature.icon className="h-8 w-8" />
                         </div>
-                        <p className="ml-16 text-lg font-semibold">
+
+                        <p className="text-xl font-bold mb-3 text-foreground">
                           {feature.title}
                         </p>
-                      </dt>
-                      <dd className="mt-2 ml-16 text-muted-foreground">
-                        {feature.description}
-                      </dd>
-                      <div className="mt-4 ml-16 flex items-center text-primary">
-                        <span className="text-sm font-medium">Learn more</span>
-                        <ChevronRightIcon className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+
+                        <dd className="text-muted-foreground leading-relaxed">
+                          {feature.description}
+                        </dd>
+
+                        <div className="mt-6 flex items-center text-primary">
+                          <span className="font-medium">Learn more</span>
+                          <ChevronRightIcon className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-2" />
+                        </div>
                       </div>
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-2xl">
-                    <div className="aspect-video rounded-lg overflow-hidden">
+                  <DialogContent className="sm:max-w-3xl p-0 overflow-hidden bg-background/95 backdrop-blur-md border-muted">
+                    <div className="aspect-video rounded-t-lg overflow-hidden">
                       <video
                         autoPlay
                         loop
@@ -157,11 +167,17 @@ export function ValueProposition() {
                         <source src={feature.preview} type="video/mp4" />
                       </video>
                     </div>
-                    <div className="p-6">
-                      <h3 className="text-lg font-semibold">{feature.title}</h3>
-                      <p className="mt-2 text-muted-foreground">
+                    <div className="p-8">
+                      <h3 className="text-2xl font-bold text-foreground">
+                        {feature.title}
+                      </h3>
+                      <p className="mt-3 text-muted-foreground text-lg">
                         {feature.description}
                       </p>
+                      <Button className="mt-6" size="lg">
+                        Get Started
+                        <ChevronRightIcon className="ml-2 h-4 w-4" />
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -171,39 +187,44 @@ export function ValueProposition() {
         </div>
 
         <AnimatedElement animation="slideUp" delay={0.8}>
-          <div className="mt-20 text-center">
+          <div className="mt-24 text-center">
             <Dialog>
               <DialogTrigger asChild>
-                <Button size="lg" variant="outline">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary/30 bg-transparent hover:bg-primary/5 px-8 py-6 h-auto text-base rounded-full"
+                >
                   Explore All Features
                   <ChevronRightIcon className="ml-2 h-4 w-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto bg-background dark:bg-background/95 backdrop-blur-sm">
-                <div className="p-6">
-                  <h2 className="text-2xl font-semibold mb-8 text-foreground">
+              <DialogContent className="sm:max-w-5xl max-h-[85vh] overflow-y-auto bg-background/98 dark:bg-background/95 backdrop-blur-md border-muted/50">
+                <div className="p-8">
+                  <h2 className="text-3xl font-bold mb-10 text-foreground">
                     All Features
                   </h2>
-                  <div className="grid gap-8 md:grid-cols-2">
+                  <div className="grid gap-10 md:grid-cols-2">
                     {Object.entries(allFeatures).map(([category, items]) => (
                       <div key={category} className="space-y-6">
-                        <h3 className="text-lg font-medium capitalize text-foreground">
+                        <h3 className="text-xl font-semibold capitalize text-foreground flex items-center">
+                          <div className="h-1.5 w-6 rounded-full bg-primary mr-3"></div>
                           {category}
                         </h3>
-                        <div className="space-y-4">
+                        <div className="space-y-5">
                           {items.map((item) => (
                             <div
                               key={item.title}
-                              className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 dark:hover:bg-muted/20 transition-colors"
+                              className="flex items-start gap-4 p-4 rounded-xl hover:bg-muted/70 dark:hover:bg-muted/20 transition-colors border border-transparent hover:border-muted"
                             >
-                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 text-primary">
-                                <item.icon className="h-5 w-5" />
+                              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 text-primary">
+                                <item.icon className="h-6 w-6" />
                               </div>
                               <div>
-                                <h4 className="text-sm font-medium text-foreground">
+                                <h4 className="text-base font-semibold text-foreground">
                                   {item.title}
                                 </h4>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-muted-foreground mt-1">
                                   {item.description}
                                 </p>
                               </div>
