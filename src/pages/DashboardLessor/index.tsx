@@ -9,6 +9,13 @@ import {
   LessorDashboardData,
   fetchLessorDashboardData,
 } from "../../services/lessorDashboardService";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../../components/ui/tabs";
+import { AnimatedElement } from "@/components/animated/AnimatedElement";
 
 export function DashboardLessor() {
   const { user } = useAuthStore();
@@ -62,26 +69,53 @@ export function DashboardLessor() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Stats Overview */}
-      <StatsOverview stats={stats} loading={false} />
+    <div className="w-full px-2 sm:px-4">
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="mb-4 bg-card w-full sm:w-auto p-1 rounded-lg shadow-sm border">
+          <TabsTrigger
+            value="overview"
+            className="text-sm font-medium px-6 py-2.5 data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md transition-all"
+          >
+            Overview
+          </TabsTrigger>
+          <TabsTrigger
+            value="activity"
+            className="text-sm font-medium px-6 py-2.5 data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md transition-all"
+          >
+            Recent Activity
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Revenue Chart */}
-      <RevenueChart revenueChart={revenueChart} />
+        <TabsContent value="overview" className="space-y-4">
+          <AnimatedElement animation="fadeIn" duration={0.5}>
+            {/* Stats Overview */}
+            <StatsOverview stats={stats} loading={false} />
+          </AnimatedElement>
 
-      {/* Properties Overview */}
-      <PropertiesOverview properties={properties} loading={false} />
+          <AnimatedElement animation="fadeIn" duration={0.5} delay={0.2}>
+            {/* Revenue Chart */}
+            <RevenueChart revenueChart={revenueChart} loading={false} />
+          </AnimatedElement>
 
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RecentActivity payments={payments} loading={false} />
-      </div>
+          <AnimatedElement animation="fadeIn" duration={0.5} delay={0.3}>
+            {/* Properties Overview */}
+            <PropertiesOverview properties={properties} loading={false} />
+          </AnimatedElement>
+        </TabsContent>
+
+        <TabsContent value="activity">
+          <AnimatedElement animation="fadeIn" duration={0.5}>
+            {/* Recent Activity */}
+            <RecentActivity payments={payments} loading={false} />
+          </AnimatedElement>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

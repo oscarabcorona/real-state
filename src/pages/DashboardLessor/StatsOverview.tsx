@@ -1,116 +1,144 @@
 import { DollarSign, Percent, Shield, Users } from "lucide-react";
 import { Stats } from "./types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AnimatedNumber } from "@/components/animated/AnimatedNumber";
+import { StaggeredList } from "@/components/animated/StaggeredList";
 
-export function StatsOverviewSkeleton() {
+function StatsCardSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="bg-card overflow-hidden shadow rounded-lg">
-          <div className="p-5">
-            <div className="flex items-center">
-              <Skeleton className="h-6 w-6 rounded-full" />
-              <div className="ml-5 w-0 flex-1">
-                <Skeleton className="h-4 w-24 mb-2" />
-                <Skeleton className="h-6 w-16" />
-              </div>
-            </div>
-          </div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Skeleton className="h-4 w-[100px]" />
+        <Skeleton className="h-4 w-4" />
+      </CardHeader>
+      <CardContent className="mt-[-12px]">
+        <div className="flex items-baseline justify-between">
+          <Skeleton className="h-8 w-[60px]" />
         </div>
-      ))}
-    </div>
+        <Skeleton className="h-3 w-[120px] mt-1" />
+      </CardContent>
+    </Card>
   );
 }
 
-import { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-interface StatsCardProps {
-  icon: LucideIcon;
-  iconClassName?: string;
-  label: string;
-  value: string | number;
-}
-
-export function StatsCard({
-  icon: Icon,
-  iconClassName,
-  label,
-  value,
-}: StatsCardProps) {
-  return (
-    <div className="bg-card overflow-hidden shadow rounded-lg">
-      <div className="p-5">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <Icon className={cn("h-6 w-6", iconClassName)} />
-          </div>
-          <div className="ml-5 w-0 flex-1">
-            <dl>
-              <dt className="text-sm font-medium text-muted-foreground truncate">
-                {label}
-              </dt>
-              <dd className="text-lg font-medium text-foreground">{value}</dd>
-            </dl>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface StatsOverviewProps {
+export function StatsOverview({
+  stats,
+  loading = false,
+}: {
   stats?: Stats;
   loading: boolean;
-}
-
-export function StatsOverview({ stats, loading }: StatsOverviewProps) {
+}) {
   if (loading) {
-    return <StatsOverviewSkeleton />;
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
+          <StatsCardSkeleton key={i} />
+        ))}
+      </div>
+    );
   }
 
   if (!stats) {
     return (
-      <div className="rounded-lg border border-dashed p-8 text-center">
-        <h3 className="text-lg font-medium text-muted-foreground">
-          No statistics available
-        </h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Statistics will appear here once data is available.
-        </p>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="col-span-full">
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">
+              No statistics available
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-      <StatsCard
-        icon={DollarSign}
-        iconClassName="text-green-500"
-        label="Total Revenue"
-        value={`$${stats.totalRevenue.toLocaleString()}`}
-      />
+    <StaggeredList
+      animation="slideUp"
+      className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+      staggerDelay={0.08}
+    >
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+          <DollarSign className="h-4 w-4 text-emerald-500" />
+        </CardHeader>
+        <CardContent className="mt-[-12px]">
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-bold">
+              $
+              <AnimatedNumber
+                value={stats?.totalRevenue ?? 0}
+                duration={1200}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">From all properties</p>
+        </CardContent>
+      </Card>
 
-      <StatsCard
-        icon={Percent}
-        iconClassName="text-indigo-500"
-        label="Occupancy Rate"
-        value={`${stats.occupancyRate.toFixed(1)}%`}
-      />
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Occupancy Rate</CardTitle>
+          <Percent className="h-4 w-4 text-indigo-500" />
+        </CardHeader>
+        <CardContent className="mt-[-12px]">
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-bold">
+              <AnimatedNumber
+                value={parseFloat(stats?.occupancyRate.toFixed(1) ?? "0")}
+                duration={1200}
+                suffix="%"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Average across all properties
+          </p>
+        </CardContent>
+      </Card>
 
-      <StatsCard
-        icon={Users}
-        iconClassName="text-blue-500"
-        label="Total Tenants"
-        value={stats.tenantsCount}
-      />
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Tenants</CardTitle>
+          <Users className="h-4 w-4 text-blue-500" />
+        </CardHeader>
+        <CardContent className="mt-[-12px]">
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-bold">
+              <AnimatedNumber
+                value={stats?.tenantsCount ?? 0}
+                duration={1000}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Active rental agreements
+          </p>
+        </CardContent>
+      </Card>
 
-      <StatsCard
-        icon={Shield}
-        iconClassName="text-purple-500"
-        label="Compliance Rate"
-        value={`${stats.complianceRate.toFixed(1)}%`}
-      />
-    </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Compliance Rate</CardTitle>
+          <Shield className="h-4 w-4 text-violet-500" />
+        </CardHeader>
+        <CardContent className="mt-[-12px]">
+          <div className="flex items-baseline justify-between">
+            <div className="text-2xl font-bold">
+              <AnimatedNumber
+                value={parseFloat(stats?.complianceRate.toFixed(1) ?? "0")}
+                duration={1200}
+                suffix="%"
+              />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Properties meeting regulations
+          </p>
+        </CardContent>
+      </Card>
+    </StaggeredList>
   );
 }

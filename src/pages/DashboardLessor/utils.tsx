@@ -3,21 +3,33 @@ import { CheckCircle, Clock, XCircle } from "lucide-react";
 export const getStatusIcon = (status: string) => {
   switch (status) {
     case "completed":
-      return <CheckCircle className="h-5 w-5 text-green-500" />;
+      return (
+        <div className="p-1.5 bg-green-100 rounded-full">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+        </div>
+      );
     case "failed":
-      return <XCircle className="h-5 w-5 text-red-500" />;
+      return (
+        <div className="p-1.5 bg-red-100 rounded-full">
+          <XCircle className="h-4 w-4 text-red-600" />
+        </div>
+      );
     default:
-      return <Clock className="h-5 w-5 text-yellow-500" />;
+      return (
+        <div className="p-1.5 bg-amber-100 rounded-full">
+          <Clock className="h-4 w-4 text-amber-600" />
+        </div>
+      );
   }
 };
 
 export const getStatusClass = (status: string) => {
   switch (status) {
     case "completed":
-      return "bg-green-100 text-green-800";
+      return "bg-green-100 text-green-800 border border-green-200";
     case "failed":
-      return "bg-red-100 text-red-800";
+      return "bg-red-100 text-red-800 border border-red-200";
     default:
-      return "bg-yellow-100 text-yellow-800";
+      return "bg-amber-100 text-amber-800 border border-amber-200";
   }
 };
