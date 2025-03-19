@@ -1,6 +1,5 @@
 import { ChevronDown, Filter, Upload } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { DocumentRequirements } from "./components/DocumentRequirements";
 import { DocumentFilters } from "./components/DocumentFilters";
@@ -8,6 +7,7 @@ import { DocumentList } from "./components/DocumentList";
 import { UploadModal } from "./components/UploadModal";
 import { PreviewModal } from "./components/PreviewModal";
 import type { Document, Property } from "./types";
+import * as documentService from "../../services/documentService";
 
 export function Documents() {
   const { user } = useAuthStore();
@@ -50,7 +50,7 @@ export function Documents() {
   }, [user]);
 
   useEffect(() => {
-    filterDocuments();
+    applyFilters();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documents, filters]);
 
@@ -61,39 +61,28 @@ export function Documents() {
   }, [showUploadModal]);
 
   const fetchProperties = async () => {
+    if (!user) return;
     try {
-      const { data: accessData } = await supabase
-        .from("tenant_property_access")
-        .select("property_id")
-        .eq("tenant_user_id", user?.id);
-
-      if (accessData && accessData.length > 0) {
-        const propertyIds = accessData.map((a) => a.property_id);
-        const { data } = await supabase
-          .from("properties")
-          .select("id, name")
-          .in("id", propertyIds);
-        setProperties(data || []);
-      }
+      const propertiesData = await documentService.fetchTenantProperties(
+        user.id
+      );
+      setProperties(propertiesData);
     } catch (error) {
-      console.error("Error fetching documents:", error);
+      console.error("Error fetching properties:", error);
     }
   };
 
-  const validateFile = (file: File) => {
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error("Only PDF and Word documents are allowed");
-    }
-
-    if (file.size > maxSize) {
-      throw new Error("File size must be less than 10MB");
+  const fetchDocuments = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const docs = await documentService.fetchUserDocuments(user.id);
+      setDocuments(docs);
+      setFilteredDocuments(docs);
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -102,18 +91,15 @@ export function Documents() {
     setUploadSuccess(false);
     const file = e.target.files?.[0];
     if (file) {
-      try {
-        validateFile(file);
-        setUploadForm((prev) => ({ ...prev, file }));
-        if (!uploadForm.title) {
-          setUploadForm((prev) => ({
-            ...prev,
-            file,
-            title: file.name.split(".")[0],
-          }));
-        }
-      } catch (error) {
-        setUploadError(error instanceof Error ? error.message : "Invalid file");
+      const validation = documentService.validateDocumentFile(file);
+      if (validation.valid) {
+        setUploadForm((prev) => ({
+          ...prev,
+          file,
+          title: !prev.title ? file.name.split(".")[0] : prev.title,
+        }));
+      } else {
+        setUploadError(validation.error || "Invalid file");
         setUploadForm((prev) => ({ ...prev, file: null }));
         e.target.value = "";
       }
@@ -130,12 +116,7 @@ export function Documents() {
     setUploadProgress(0);
 
     try {
-      const fileExt = uploadForm.file.name.split(".").pop()?.toLowerCase();
-      const fileName = `${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(7)}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
-
+      // Setup progress animation
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 90) {
@@ -146,30 +127,18 @@ export function Documents() {
         });
       }, 200);
 
-      const { error: uploadError } = await supabase.storage
-        .from("tenant_documents")
-        .upload(filePath, uploadForm.file);
+      await documentService.uploadDocument(
+        {
+          userId: user.id,
+          title: uploadForm.title,
+          type: uploadForm.type,
+          file: uploadForm.file,
+          propertyId: uploadForm.property_id || undefined,
+        },
+        (progress) => setUploadProgress(progress)
+      );
 
       clearInterval(progressInterval);
-
-      if (uploadError) throw uploadError;
-
-      setUploadProgress(100);
-
-      const { error: dbError } = await supabase.from("documents").insert([
-        {
-          user_id: user.id,
-          type: uploadForm.type,
-          title: uploadForm.title || uploadForm.file.name.split(".")[0],
-          file_path: filePath,
-          status: "pending",
-          verified: false,
-          property_id: uploadForm.property_id || null,
-        },
-      ]);
-
-      if (dbError) throw dbError;
-
       setUploadSuccess(true);
       await fetchDocuments();
 
@@ -200,65 +169,8 @@ export function Documents() {
     setUploadProgress(0);
   };
 
-  const fetchDocuments = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("documents")
-        .select(
-          `
-          *,
-          property:property_id (
-            name
-          )
-        `
-        )
-        .eq("user_id", user?.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setDocuments(data || []);
-      setFilteredDocuments(data || []);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filterDocuments = () => {
-    let filtered = [...documents];
-
-    if (filters.type) {
-      filtered = filtered.filter((doc) => doc.type === filters.type);
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter((doc) => doc.status === filters.status);
-    }
-
-    if (filters.dateRange) {
-      const now = new Date();
-      const past = new Date();
-      switch (filters.dateRange) {
-        case "7days":
-          past.setDate(now.getDate() - 7);
-          break;
-        case "30days":
-          past.setDate(now.getDate() - 30);
-          break;
-        case "90days":
-          past.setDate(now.getDate() - 90);
-          break;
-      }
-      filtered = filtered.filter((doc) => new Date(doc.created_at) >= past);
-    }
-
-    if (filters.verified) {
-      filtered = filtered.filter((doc) =>
-        filters.verified === "verified" ? doc.verified : !doc.verified
-      );
-    }
-
+  const applyFilters = () => {
+    const filtered = documentService.filterDocuments(documents, filters);
     setFilteredDocuments(filtered);
   };
 
@@ -266,20 +178,8 @@ export function Documents() {
     if (!confirm("Are you sure you want to delete this document?")) return;
 
     try {
-      const { error: storageError } = await supabase.storage
-        .from("tenant_documents")
-        .remove([filePath]);
-
-      if (storageError) throw storageError;
-
-      const { error: dbError } = await supabase
-        .from("documents")
-        .delete()
-        .eq("id", id);
-
-      if (dbError) throw dbError;
-
-      fetchDocuments();
+      await documentService.deleteDocument(id, filePath);
+      await fetchDocuments();
     } catch (error) {
       console.error("Error deleting document:", error);
       alert("Failed to delete document");
@@ -288,12 +188,9 @@ export function Documents() {
 
   const handleDownload = async (filePath: string, fileName: string) => {
     try {
-      const { data, error } = await supabase.storage
-        .from("tenant_documents")
-        .download(filePath);
+      const data = await documentService.downloadDocument(filePath);
 
-      if (error) throw error;
-
+      // Create download link
       const url = window.URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
@@ -316,17 +213,7 @@ export function Documents() {
   const handleVerifyDocument = async (document: Document) => {
     setProcessingDocument(true);
     try {
-      const { error } = await supabase
-        .from("documents")
-        .update({
-          status: "signed",
-          verified: true,
-          verification_date: new Date().toISOString(),
-          notes: verificationNote || "Document verified",
-        })
-        .eq("id", document.id);
-
-      if (error) throw error;
+      await documentService.verifyDocument(document.id, verificationNote);
       await fetchDocuments();
       setShowPreviewModal(false);
       setVerificationNote("");
@@ -346,17 +233,7 @@ export function Documents() {
 
     setProcessingDocument(true);
     try {
-      const { error } = await supabase
-        .from("documents")
-        .update({
-          status: "rejected",
-          verified: false,
-          rejection_reason: rejectionReason,
-          notes: `Rejected: ${rejectionReason}`,
-        })
-        .eq("id", document.id);
-
-      if (error) throw error;
+      await documentService.rejectDocument(document.id, rejectionReason);
       await fetchDocuments();
       setShowPreviewModal(false);
       setRejectionReason("");
@@ -438,7 +315,9 @@ export function Documents() {
       {showUploadModal && (
         <UploadModal
           uploadForm={uploadForm}
-          onFormChange={setUploadForm}
+          onFormChange={(partialForm) =>
+            setUploadForm((prev) => ({ ...prev, ...partialForm }))
+          }
           onSubmit={handleUpload}
           onClose={() => setShowUploadModal(false)}
           uploading={uploading}

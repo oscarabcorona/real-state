@@ -35,3 +35,11 @@ export interface DocumentRequirement {
   required: boolean;
   icon: React.ReactNode;
 }
+
+// Add the missing DocumentFilters interface
+export interface DocumentFilters {
+  type: string;
+  status: string;
+  dateRange: string;
+  verified: string;
+}
