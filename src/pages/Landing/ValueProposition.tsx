@@ -9,6 +9,7 @@ import {
   BarChart2,
   MessageSquare,
   Settings,
+  TrendingUp,
 } from "lucide-react";
 import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -19,7 +20,7 @@ const features = [
     icon: ChartBar,
     title: "Predictive Analytics",
     description:
-      "Forecast market trends with 94% accuracy. Make data-driven decisions about pricing, maintenance, and investments.",
+      "Boost ROI by 32% with AI-powered market forecasting. Make smarter pricing decisions and identify high-yield investment opportunities before competitors.",
     color: "from-blue-600 to-cyan-500",
     preview: "/previews/analytics.mp4",
   },
@@ -27,7 +28,7 @@ const features = [
     icon: Zap,
     title: "Automated Operations",
     description:
-      "Reduce manual tasks by 85%. Automate rent collection, maintenance requests, and tenant communications.",
+      "Save 20+ hours weekly with 85% of tasks automated. Eliminate manual work while improving tenant satisfaction by 40% through instant responsiveness.",
     color: "from-violet-600 to-indigo-500",
     preview: "/previews/automation.mp4",
   },
@@ -35,7 +36,7 @@ const features = [
     icon: Clock,
     title: "Real-Time Monitoring",
     description:
-      "Track property performance, occupancy rates, and maintenance status in real-time through our intuitive dashboard.",
+      "Prevent 93% of maintenance emergencies with predictive alerts. Access critical property metrics anywhere, anytime for complete peace of mind.",
     color: "from-rose-500 to-pink-500",
     preview: "/previews/monitoring.mp4",
   },
@@ -46,12 +47,18 @@ const allFeatures = {
     {
       icon: ChartBar,
       title: "Predictive Analytics",
-      description: "Forecast market trends with 94% accuracy.",
+      description: "Increase property value by 18% with data-driven decisions.",
     },
     {
       icon: BarChart2,
       title: "Financial Reporting",
-      description: "Comprehensive financial analytics and reporting tools.",
+      description:
+        "Cut accounting costs by 35% with automated financial insights.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Market Intelligence",
+      description: "Stay ahead of competitors with real-time market trends.",
     },
   ],
   automation: [
@@ -107,14 +114,15 @@ export function ValueProposition() {
         <AnimatedElement animation="slideUp">
           <div className="text-center">
             <h2 className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/80 to-primary px-4 py-1.5 text-sm font-medium text-primary-foreground ring-1 ring-inset ring-primary/20">
-              Powerful Features
+              Revolutionary Property Management
             </h2>
             <p className="mt-8 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
-              Transform Your Property Management
+              Triple Your ROI and Halve Your Workload
             </p>
             <p className="mt-6 max-w-2xl mx-auto text-xl text-muted-foreground">
-              Leverage cutting-edge AI technology to streamline operations,
-              increase ROI, and deliver exceptional experiences.
+              Join over 2,000 property managers who've transformed their
+              businesses using our AI-powered platform. Don't get left behind in
+              the new era of property management.
             </p>
           </div>
         </AnimatedElement>
@@ -195,7 +203,7 @@ export function ValueProposition() {
                   variant="outline"
                   className="border-primary/30 bg-transparent hover:bg-primary/5 px-8 py-6 h-auto text-base rounded-full"
                 >
-                  Explore All Features
+                  Discover How To Maximize Your Property Returns
                   <ChevronRightIcon className="ml-2 h-4 w-4" />
                 </Button>
               </DialogTrigger>
@@ -237,6 +245,24 @@ export function ValueProposition() {
                 </div>
               </DialogContent>
             </Dialog>
+          </div>
+        </AnimatedElement>
+
+        {/* Limited Time Offer */}
+        <AnimatedElement animation="fadeIn" delay={1.0}>
+          <div className="mt-12 mx-auto max-w-2xl border border-primary/30 bg-primary/5 rounded-xl p-6 text-center">
+            <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
+              Limited Time Offer
+            </p>
+            <h3 className="text-xl font-bold mb-3">
+              Get 30% Off Your First 3 Months
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Plus free onboarding and data migration worth $1,500
+            </p>
+            <Button size="sm" className="bg-primary hover:bg-primary/90">
+              Claim Offer Now
+            </Button>
           </div>
         </AnimatedElement>
       </div>

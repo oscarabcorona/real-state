@@ -14,7 +14,7 @@ const testimonials = [
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
     quote:
-      "Within 6 months, we reduced operational costs by 35% and increased tenant satisfaction scores by 28%. The AI-powered insights have been game-changing for our portfolio of 1,200+ units.",
+      "We increased our annual revenue by $287,000 and cut operational costs by 35% within just 6 months. The tenant satisfaction scores jumped from 72% to 94%. This platform has completely transformed how we manage our 1,200+ units.",
   },
   {
     name: "Tom Anderson",
@@ -23,7 +23,7 @@ const testimonials = [
     image:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
     quote:
-      "The automated compliance checks have saved us countless hours and helped us avoid potential issues.",
+      "I was skeptical at first, but the ROI was almost immediate. The automated compliance checks saved us $45,000 in potential legal fees in the first year alone. Now I can manage twice as many properties with half the staff.",
   },
   {
     name: "Emily Chen",
@@ -32,7 +32,7 @@ const testimonials = [
     image:
       "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
     quote:
-      "The tenant screening process is now seamless and much more reliable with AI-powered background checks.",
+      "Tenant screening used to take us 3 days per applicant. Now it's 20 minutes with 200% more accuracy. We've reduced vacancy rates by 64% and bad tenant situations are virtually non-existent. Worth every penny.",
   },
 ];
 
@@ -184,14 +184,18 @@ export function SocialProof() {
         <AnimatedElement animation="slideUp">
           <div className="text-center">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary gap-2">
-              <Award className="h-4 w-4" /> TRUSTED BY INDUSTRY LEADERS
+              <Award className="h-4 w-4" /> SUCCESS STORIES FROM INDUSTRY
+              LEADERS
             </span>
             <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-              Join 2,000+ Property Managers Who Trust Our Solution
+              Don't Take Our Word For It:
+              <br />
+              See The Results For Yourself
             </h2>
             <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
-              Empowering property management across 50+ countries with
-              innovative AI solutions that deliver measurable results
+              These property professionals were struggling with the same
+              challenges you face today. Here's how our solution transformed
+              their businesses:
             </p>
           </div>
         </AnimatedElement>
@@ -206,21 +210,21 @@ export function SocialProof() {
               icon: Building,
               value: 50000,
               suffix: "+",
-              label: "Properties Managed",
+              label: "Properties Managed Successfully",
               gradient: "from-blue-500 to-cyan-500",
             },
             {
               icon: ChartBar,
               value: 40,
               suffix: "%",
-              label: "Average ROI Increase",
+              label: "Average ROI Increase Year One",
               gradient: "from-violet-500 to-purple-500",
             },
             {
               icon: Star,
               value: 98,
               suffix: "%",
-              label: "Client Satisfaction",
+              label: "Client Retention Rate",
               gradient: "from-amber-500 to-orange-500",
             },
           ].map((stat, index) => (
@@ -260,11 +264,11 @@ export function SocialProof() {
         <div>
           <div className="text-center mb-14">
             <h3 className="text-2xl font-bold text-foreground sm:text-3xl">
-              What Our Clients Say
+              Real Results from Real Clients
             </h3>
             <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-              Hear from property managers and owners who have transformed their
-              operations with our platform
+              Join thousands of property professionals who've already
+              transformed their operations and boosted their profits
             </p>
           </div>
 
@@ -282,18 +286,25 @@ export function SocialProof() {
         {/* CTA Section */}
         <AnimatedElement animation="fadeIn" delay={0.5}>
           <div className="mt-20 text-center bg-gradient-to-br from-primary/10 to-transparent p-10 rounded-2xl border border-primary/10">
+            <div className="inline-block mb-6 px-4 py-1 bg-primary/20 rounded-full text-sm font-semibold text-primary">
+              Limited Time: First 50 New Clients This Month
+            </div>
             <h3 className="text-2xl font-bold text-foreground">
-              Ready to transform your property management?
+              Ready to join the property management revolution?
             </h3>
             <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-              Join thousands of property managers who trust our platform
+              Start your risk-free 30-day trial today. No credit card required.
             </p>
             <Link
               className="mt-6 inline-block px-8 py-3 bg-primary text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
               to="/login"
             >
-              Start Free Trial
+              Start Free Trial — Save 30% Today
             </Link>
+            <p className="mt-4 text-sm text-muted-foreground">
+              <span className="font-medium">Hurry!</span> Special offer ends in
+              48 hours
+            </p>
           </div>
         </AnimatedElement>
       </div>

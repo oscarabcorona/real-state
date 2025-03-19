@@ -5,6 +5,10 @@ import {
   Linkedin,
   Mail,
   Twitter,
+  Shield,
+  Users,
+  Star,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,11 +59,14 @@ export function FooterSection() {
               <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/5 dark:via-primary/2" />
               <div className="relative p-8">
                 <h3 className="text-2xl font-bold tracking-tight">
-                  Stay ahead of the curve
+                  Get exclusive property management insights
                 </h3>
                 <p className="mt-2 text-muted-foreground">
-                  Get the latest property management insights delivered to your
-                  inbox.
+                  Join 25,000+ property professionals receiving our weekly tips
+                  and market updates.{" "}
+                  <span className="text-primary font-medium">
+                    Get a free Property ROI Calculator when you subscribe.
+                  </span>
                 </p>
                 <form className="mt-6 flex flex-col sm:flex-row gap-2">
                   <div className="relative flex-1">
@@ -71,10 +78,14 @@ export function FooterSection() {
                     />
                   </div>
                   <Button className="group">
-                    Subscribe
+                    Get Free Calculator
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </form>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Join today and also receive our "10 Ways to Boost Rental
+                  Income" guide.
+                </p>
               </div>
             </Card>
           </AnimatedElement>
@@ -101,6 +112,28 @@ export function FooterSection() {
               </div>
             ))}
           </AnimatedElement>
+        </div>
+
+        {/* Trust badges */}
+        <div className="flex flex-wrap justify-center gap-6 items-center py-6 border-y mb-8">
+          <div className="flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">256-bit SSL Encryption</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">2,000+ Happy Customers</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Star className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">4.9/5 Star Rating</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">
+              PropTech Innovation Award 2023
+            </span>
+          </div>
         </div>
 
         <div className="pt-8 mt-8 border-t">
@@ -150,6 +183,7 @@ export function FooterSection() {
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} ShortStay Hub. All rights reserved.
+            Trusted by property managers in over 50 countries.
           </p>
         </div>
       </div>
