@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Plus, Filter } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { Property, Tenant } from "./types";
 import { PropertyCard } from "./components/PropertyCard";
@@ -16,6 +15,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import {
+  fetchProperties,
+  fetchTenants,
+  deleteProperty,
+  togglePropertyPublishStatus,
+} from "@/services/propertyService";
 
 export function Properties() {
   const { user } = useAuthStore();
@@ -23,195 +28,38 @@ export function Properties() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [selectedTenant, setSelectedTenant] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
-  const [formData, setFormData] = useState({
-    tenant_id: "",
-    name: "",
-    address: "",
-    city: "",
-    state: "",
-    zip_code: "",
-    description: "",
-    price: "",
-    bedrooms: "",
-    bathrooms: "",
-    square_feet: "",
-    property_type: "house",
-    amenities: [] as string[],
-    images: [] as string[],
-    available_date: "",
-    pet_policy: "",
-    lease_terms: "",
-    published: false,
-    syndication: {
-      zillow: false,
-      trulia: false,
-      realtor: false,
-      hotpads: false,
-    },
-  });
-
-  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     if (user) {
-      fetchTenants();
-      fetchProperties();
+      loadTenants();
+      loadProperties();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, selectedTenant]);
 
-  const fetchTenants = async () => {
+  const loadTenants = async () => {
     try {
-      const { data, error } = await supabase
-        .from("tenants")
-        .select("*")
-        .eq("status", "active")
-        .order("name");
-
-      if (error) throw error;
-      setTenants(data || []);
+      const data = await fetchTenants();
+      setTenants(data);
     } catch (error) {
-      console.error("Error fetching tenants:", error);
+      console.error("Error loading tenants:", error);
     }
   };
 
-  const fetchProperties = async () => {
-    try {
-      let query = supabase
-        .from("properties")
-        .select(
-          `
-          *,
-          property_leases (
-            tenant:tenant_id (
-              name
-            )
-          )
-        `
-        )
-        .eq("user_id", user?.id);
-
-      if (selectedTenant && selectedTenant !== "all") {
-        query = query.eq("property_leases.tenant_id", selectedTenant);
-      }
-
-      const { data, error } = await query.order("created_at", {
-        ascending: false,
-      });
-
-      if (error) throw error;
-      setProperties(data || []);
-    } catch (error) {
-      console.error("Error fetching properties:", error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const loadProperties = async () => {
+    if (!user?.id) return;
 
     try {
-      const propertyData = {
-        ...formData,
-        price: parseFloat(formData.price),
-        bedrooms: parseInt(formData.bedrooms),
-        bathrooms: parseFloat(formData.bathrooms),
-        square_feet: parseInt(formData.square_feet),
-      };
-
-      if (editingProperty) {
-        const { error } = await supabase
-          .from("properties")
-          .update({
-            ...propertyData,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", editingProperty.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from("properties").insert([
-          {
-            ...propertyData,
-            user_id: user?.id,
-            compliance_status: "pending",
-          },
-        ]);
-
-        if (error) throw error;
-      }
-
-      setIsModalOpen(false);
-      resetForm();
-      fetchProperties();
+      const data = await fetchProperties(user.id, selectedTenant);
+      setProperties(data);
     } catch (error) {
-      console.error("Error saving property:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error loading properties:", error);
     }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      tenant_id: "",
-      name: "",
-      address: "",
-      city: "",
-      state: "",
-      zip_code: "",
-      description: "",
-      price: "",
-      bedrooms: "",
-      bathrooms: "",
-      square_feet: "",
-      property_type: "house",
-      amenities: [],
-      images: [],
-      available_date: "",
-      pet_policy: "",
-      lease_terms: "",
-      published: false,
-      syndication: {
-        zillow: false,
-        trulia: false,
-        realtor: false,
-        hotpads: false,
-      },
-    });
-    setEditingProperty(null);
-    setActiveTab("details");
   };
 
   const handleEdit = (property: Property) => {
     setEditingProperty(property);
-    setFormData({
-      tenant_id: property.property_leases?.[0]?.tenant?.name || "",
-      name: property.name,
-      address: property.address,
-      city: property.city,
-      state: property.state,
-      zip_code: property.zip_code,
-      description: property.description || "",
-      price: property.price?.toString() || "",
-      bedrooms: property.bedrooms?.toString() || "",
-      bathrooms: property.bathrooms?.toString() || "",
-      square_feet: property.square_feet?.toString() || "",
-      property_type: property.property_type || "house",
-      amenities: property.amenities || [],
-      images: property.images || [],
-      available_date: property.available_date || "",
-      pet_policy: property.pet_policy || "",
-      lease_terms: property.lease_terms || "",
-      published: property.published || false,
-      syndication: property.syndication || {
-        zillow: false,
-        trulia: false,
-        realtor: false,
-        hotpads: false,
-      },
-    });
     setIsModalOpen(true);
   };
 
@@ -219,10 +67,8 @@ export function Properties() {
     if (!confirm("Are you sure you want to delete this property?")) return;
 
     try {
-      const { error } = await supabase.from("properties").delete().eq("id", id);
-
-      if (error) throw error;
-      fetchProperties();
+      await deleteProperty(id);
+      loadProperties();
     } catch (error) {
       console.error("Error deleting property:", error);
     }
@@ -230,19 +76,16 @@ export function Properties() {
 
   const handlePublish = async (property: Property) => {
     try {
-      const { error } = await supabase
-        .from("properties")
-        .update({
-          published: !property.published,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", property.id);
-
-      if (error) throw error;
-      fetchProperties();
+      await togglePropertyPublishStatus(property);
+      loadProperties();
     } catch (error) {
-      console.error("Error publishing property:", error);
+      console.error("Error updating property publish status:", error);
     }
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingProperty(null);
   };
 
   return (
@@ -293,19 +136,11 @@ export function Properties() {
       {isModalOpen && (
         <PropertyModal
           isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            resetForm();
-          }}
-          loading={loading}
+          onClose={handleModalClose}
+          userId={user?.id || ""}
           editingProperty={editingProperty}
-          formData={formData}
-          setFormData={setFormData}
           tenants={tenants}
-          onSubmit={handleSubmit}
-          resetForm={resetForm}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          onSuccess={loadProperties}
         />
       )}
     </div>

@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
 import { Payment, PaymentFilters, Property } from "@/pages/Payments/types";
+import { normalizePaymentMethod, handleServiceError } from "./utilityService";
 
 interface PaymentStats {
   totalCollected: number;
@@ -25,8 +26,7 @@ export async function fetchUserProperties(userId: string): Promise<Property[]> {
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error("Error fetching properties:", error);
-    throw error;
+    return handleServiceError(error, "fetchUserProperties");
   }
 }
 
@@ -57,31 +57,7 @@ export async function fetchUserPayments(userId: string): Promise<Payment[]> {
       status: payment.status || "pending"
     })) as Payment[];
   } catch (error) {
-    console.error("Error fetching payments:", error);
-    throw error;
-  }
-}
-
-// Helper function to normalize payment methods
-function normalizePaymentMethod(method: string): "credit_card" | "ach" | "cash" {
-  switch(method?.toLowerCase()) {
-    case "credit_card":
-    case "credit card":
-    case "card":
-      return "credit_card";
-    case "ach":
-    case "bank":
-    case "direct deposit":
-    case "bank transfer":
-      return "ach";
-    case "cash":
-    case "money":
-    case "check":
-      return "cash";
-    default:
-      // Default to credit_card if unknown
-      console.warn(`Unknown payment method: ${method}, defaulting to credit_card`);
-      return "credit_card";
+    return handleServiceError(error, "fetchUserPayments");
   }
 }
 

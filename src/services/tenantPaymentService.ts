@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
 import { Payment, PaymentDetails } from "@/pages/PaymentTenant/types";
+import { normalizePaymentMethod, fetchTenantPropertyIds, handleServiceError } from "./utilityService";
 
 interface PaymentFilters {
   status: string;
@@ -15,29 +16,6 @@ interface PaymentStats {
   failed: number;
 }
 
-// Helper function to normalize payment methods
-function normalizePaymentMethod(method: string | null): "credit_card" | "ach" | "cash" {
-  switch(method?.toLowerCase()) {
-    case "credit_card":
-    case "credit card":
-    case "card":
-      return "credit_card";
-    case "ach":
-    case "bank":
-    case "direct deposit":
-    case "bank transfer":
-      return "ach";
-    case "cash":
-    case "money":
-    case "check":
-      return "cash";
-    default:
-      // Default to credit_card if unknown
-      console.warn(`Unknown payment method: ${method}, defaulting to credit_card`);
-      return "credit_card";
-  }
-}
-
 export async function fetchTenantPayments(
   userId: string, 
   filters: PaymentFilters,
@@ -49,14 +27,7 @@ export async function fetchTenantPayments(
   totalPages: number;
 }> {
   try {
-    const { data: accessData, error: accessError } = await supabase
-      .from("tenant_property_access")
-      .select("property_id")
-      .eq("tenant_user_id", userId);
-
-    if (accessError) throw accessError;
-
-    const propertyIds = accessData?.map((a) => a.property_id) || [];
+    const propertyIds = await fetchTenantPropertyIds(userId);
 
     if (propertyIds.length === 0) {
       return {
@@ -194,8 +165,7 @@ export async function fetchTenantPayments(
       totalPages
     };
   } catch (error) {
-    console.error("Error fetching tenant payments:", error);
-    throw error;
+    return handleServiceError(error, "fetchTenantPayments");
   }
 }
 

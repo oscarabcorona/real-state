@@ -1,15 +1,13 @@
 import { DashboardData } from "@/types/dashboard.types";
 import { supabase } from "../lib/supabase";
+import { fetchTenantPropertyIds } from "./utilityService";
 
 export async function fetchDashboardData(
   userId: string
 ): Promise<DashboardData> {
-  const { data: accessData } = await supabase
-    .from("tenant_property_access")
-    .select("property_id")
-    .eq("tenant_user_id", userId);
+  const propertyIds = await fetchTenantPropertyIds(userId);
 
-  if (!accessData?.length) {
+  if (propertyIds.length === 0) {
     return {
       properties: [],
       payments: [],
@@ -26,8 +24,6 @@ export async function fetchDashboardData(
       },
     };
   }
-
-  const propertyIds = accessData.map((a) => a.property_id);
 
   // Fetch all data in parallel
   const [propertiesData, paymentsData, documentsData, appointmentsData] =

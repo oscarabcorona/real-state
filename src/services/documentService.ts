@@ -63,27 +63,8 @@ export async function fetchUserDocuments(userId: string): Promise<Document[]> {
  * Fetch properties that a tenant has access to
  */
 export async function fetchTenantProperties(userId: string) {
-  try {
-    const { data: accessData } = await supabase
-      .from("tenant_property_access")
-      .select("property_id")
-      .eq("tenant_user_id", userId);
-
-    if (accessData && accessData.length > 0) {
-      const propertyIds = accessData.map((a) => a.property_id);
-      const { data, error } = await supabase
-        .from("properties")
-        .select("id, name")
-        .in("id", propertyIds);
-        
-      if (error) throw error;
-      return data || [];
-    }
-    return [];
-  } catch (error) {
-    console.error("Error fetching tenant properties:", error);
-    throw error;
-  }
+  // Use the utility service function instead
+  return await import("./utilityService").then(util => util.fetchTenantProperties(userId));
 }
 
 /**
