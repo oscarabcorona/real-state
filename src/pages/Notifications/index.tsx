@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { Notification } from "./types";
 import { NotificationsList } from "./components/NotificationsList";
+import {
+  fetchUserNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  subscribeToNotifications,
+} from "../../services/notificationService";
 
 export function Notifications() {
   const { user } = useAuthStore();
@@ -12,85 +17,62 @@ export function Notifications() {
 
   useEffect(() => {
     if (user) {
-      fetchNotifications();
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+          const data = await fetchUserNotifications(user.id);
+          setNotifications(data);
+          setUnreadCount(data.filter((n) => !n.read).length);
+        } catch (error) {
+          console.error("Error in component fetching notifications:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchData();
+
       // Subscribe to realtime notifications
-      const subscription = supabase
-        .channel("notifications")
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "notifications",
-            filter: `user_id=eq.${user.id}`,
-          },
-          (payload) => {
-            setNotifications((prev) => [payload.new as Notification, ...prev]);
-            if (!(payload.new as Notification).read) {
-              setUnreadCount((prev) => prev + 1);
-            }
+      const subscription = subscribeToNotifications(
+        user.id,
+        (newNotification) => {
+          setNotifications((prev) => [newNotification, ...prev]);
+          if (!newNotification.read) {
+            setUnreadCount((prev) => prev + 1);
           }
-        )
-        .subscribe();
+        }
+      );
 
       return () => {
         subscription.unsubscribe();
       };
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const fetchNotifications = async () => {
+  const handleMarkAsRead = async (id: string) => {
     try {
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user?.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      setNotifications(data || []);
-      setUnreadCount(data?.filter((n) => !n.read).length || 0);
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const markAsRead = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("id", id);
-
-      if (error) throw error;
-
+      await markNotificationAsRead(id);
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, read: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
-      console.error("Error marking notification as read:", error);
+      console.error("Error in component marking notification as read:", error);
     }
   };
 
-  const markAllAsRead = async () => {
+  const handleMarkAllAsRead = async () => {
+    if (!user) return;
+
     try {
-      const { error } = await supabase
-        .from("notifications")
-        .update({ read: true })
-        .eq("user_id", user?.id)
-        .eq("read", false);
-
-      if (error) throw error;
-
+      await markAllNotificationsAsRead(user.id);
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (error) {
-      console.error("Error marking all notifications as read:", error);
+      console.error(
+        "Error in component marking all notifications as read:",
+        error
+      );
     }
   };
 
@@ -119,7 +101,7 @@ export function Notifications() {
             </div>
             {unreadCount > 0 && (
               <button
-                onClick={markAllAsRead}
+                onClick={handleMarkAllAsRead}
                 className="text-sm text-indigo-600 hover:text-indigo-900"
               >
                 Mark all as read
@@ -130,7 +112,7 @@ export function Notifications() {
 
         <NotificationsList
           notifications={notifications}
-          onMarkAsRead={markAsRead}
+          onMarkAsRead={handleMarkAsRead}
         />
       </div>
     </div>
