@@ -1,16 +1,8 @@
-import { format } from "date-fns";
-import {
-  Bell,
-  Calendar,
-  CheckCircle,
-  CreditCard,
-  FileText,
-  X,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import { Notification } from "./types";
+import { NotificationsList } from "./components/NotificationsList";
 
 export function Notifications() {
   const { user } = useAuthStore();
@@ -102,46 +94,6 @@ export function Notifications() {
     }
   };
 
-  const getNotificationIcon = (type: string) => {
-    switch (type) {
-      case "appointment_scheduled":
-      case "appointment_confirmed":
-      case "appointment_cancelled":
-      case "appointment_rescheduled":
-        return <Calendar className="h-6 w-6 text-indigo-500" />;
-      case "document_verified":
-      case "document_rejected":
-        return <FileText className="h-6 w-6 text-blue-500" />;
-      case "payment_received":
-      case "payment_due":
-        return <CreditCard className="h-6 w-6 text-green-500" />;
-      case "report_ready":
-        return <CheckCircle className="h-6 w-6 text-purple-500" />;
-      default:
-        return <Bell className="h-6 w-6 text-gray-400" />;
-    }
-  };
-
-  const getNotificationLink = (notification: Notification) => {
-    switch (notification.type) {
-      case "appointment_scheduled":
-      case "appointment_confirmed":
-      case "appointment_cancelled":
-      case "appointment_rescheduled":
-        return `/dashboard/appointments`;
-      case "document_verified":
-      case "document_rejected":
-        return `/dashboard/documents`;
-      case "payment_received":
-      case "payment_due":
-        return `/dashboard/payments`;
-      case "report_ready":
-        return `/dashboard/reports`;
-      default:
-        return "#";
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -176,64 +128,10 @@ export function Notifications() {
           </div>
         </div>
 
-        <div className="divide-y divide-gray-200">
-          {notifications.length === 0 ? (
-            <div className="p-6 text-center">
-              <Bell className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                No notifications
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                You're all caught up! Check back later for updates.
-              </p>
-            </div>
-          ) : (
-            notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-6 ${!notification.read ? "bg-indigo-50" : ""}`}
-              >
-                <div className="flex items-start">
-                  {getNotificationIcon(notification.type)}
-                  <div className="ml-4 flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-gray-900">
-                        {notification.title}
-                      </p>
-                      <div className="ml-4 flex items-center space-x-4">
-                        <span className="text-sm text-gray-500">
-                          {format(
-                            new Date(notification.created_at),
-                            "MMM d, h:mm a"
-                          )}
-                        </span>
-                        {!notification.read && (
-                          <button
-                            onClick={() => markAsRead(notification.id)}
-                            className="text-gray-400 hover:text-gray-500"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <p className="mt-1 text-sm text-gray-600">
-                      {notification.message}
-                    </p>
-                    <div className="mt-2">
-                      <a
-                        href={getNotificationLink(notification)}
-                        className="text-sm font-medium text-indigo-600 hover:text-indigo-900"
-                      >
-                        View details
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        <NotificationsList
+          notifications={notifications}
+          onMarkAsRead={markAsRead}
+        />
       </div>
     </div>
   );
