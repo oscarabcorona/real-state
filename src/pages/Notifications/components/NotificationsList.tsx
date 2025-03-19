@@ -5,12 +5,15 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { groupNotificationsByDate } from "../utils/notificationHelpers";
+import { AnimatedElement } from "@/components/animated/AnimatedElement";
 
 type NotificationsListProps = {
   notifications: Notification[];
   onMarkAsRead: (id: string) => void;
   className?: string;
   loading?: boolean;
+  grouped?: boolean;
 };
 
 export function NotificationsList({
@@ -18,6 +21,7 @@ export function NotificationsList({
   onMarkAsRead,
   className,
   loading = false,
+  grouped = true,
 }: NotificationsListProps) {
   if (loading) {
     return (
@@ -46,17 +50,56 @@ export function NotificationsList({
     );
   }
 
+  if (!grouped) {
+    return (
+      <Card className={cn("p-1", className)}>
+        <ScrollArea className="h-[calc(100vh-12rem)] md:h-[500px]">
+          {notifications.map((notification, index) => (
+            <div key={notification.id}>
+              <NotificationItem
+                notification={notification}
+                onMarkAsRead={onMarkAsRead}
+              />
+              {index < notifications.length - 1 && (
+                <Separator className="mx-4" />
+              )}
+            </div>
+          ))}
+        </ScrollArea>
+      </Card>
+    );
+  }
+
+  // Grouped notifications
+  const groups = groupNotificationsByDate(notifications);
+
   return (
     <Card className={cn("p-1", className)}>
-      <ScrollArea className="h-[calc(100vh-12rem)] rounded-md">
-        {notifications.map((notification, index) => (
-          <div key={notification.id}>
-            <NotificationItem
-              notification={notification}
-              onMarkAsRead={onMarkAsRead}
-            />
-            {index < notifications.length - 1 && <Separator className="mx-4" />}
-          </div>
+      <ScrollArea className="h-[calc(100vh-12rem)] md:h-[500px]">
+        {groups.map((group, groupIndex) => (
+          <AnimatedElement
+            key={group.label}
+            animation="fadeIn"
+            delay={0.1 * groupIndex}
+          >
+            <div className="sticky top-0 bg-background p-2 z-10">
+              <h3 className="text-sm font-medium text-muted-foreground px-2">
+                {group.label}
+              </h3>
+            </div>
+            {group.notifications.map((notification, index) => (
+              <div key={notification.id}>
+                <NotificationItem
+                  notification={notification}
+                  onMarkAsRead={onMarkAsRead}
+                />
+                {index < group.notifications.length - 1 && (
+                  <Separator className="mx-4" />
+                )}
+              </div>
+            ))}
+            {groupIndex < groups.length - 1 && <Separator className="my-1" />}
+          </AnimatedElement>
         ))}
       </ScrollArea>
     </Card>
