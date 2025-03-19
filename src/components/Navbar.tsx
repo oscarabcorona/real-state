@@ -18,7 +18,14 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 20);
+
+      // Reset to home when at the top of the page
+      if (scrollPosition < 100) {
+        setActiveSection("home");
+        return;
+      }
 
       // Update active section based on scroll position
       const sections = navigation.map((n) => n.href.replace("#", ""));
@@ -95,7 +102,12 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-4">
-          <ModeToggle />
+          <ModeToggle
+            className={cn(
+              "transition-colors",
+              isScrolled ? "text-foreground" : "text-white"
+            )}
+          />
           <div className="hidden md:flex md:gap-2">
             <Button
               variant={isScrolled ? "outline" : "secondary"}
