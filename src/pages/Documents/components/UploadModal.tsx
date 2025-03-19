@@ -1,8 +1,28 @@
 import React from "react";
-import { AlertCircle, CheckCircle, X } from "lucide-react";
+import { AlertCircle, CheckCircle, Info } from "lucide-react";
 import { Document } from "../types";
 import { DOCUMENT_REQUIREMENTS } from "../const";
 import { FileUploadInput } from "../FileUploadInput";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 interface UploadModalProps {
   uploadForm: {
@@ -32,129 +52,141 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   uploadSuccess,
   handleFileChange,
 }) => {
+  // Find the current document requirement for more context
+  const currentRequirement = DOCUMENT_REQUIREMENTS.find(
+    (req) => req.type === uploadForm.type
+  );
+
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Upload Document</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-        <form onSubmit={onSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Document Type
-            </label>
-            <select
-              value={uploadForm.type}
-              onChange={(e) =>
-                onFormChange({
-                  ...uploadForm,
-                  type: e.target.value as Document["type"],
-                })
-              }
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              required
-            >
-              {DOCUMENT_REQUIREMENTS.map((req) => (
-                <option key={req.type} value={req.type}>
-                  {req.label}
-                </option>
-              ))}
-            </select>
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            Upload {currentRequirement?.label || "Document"}
+          </DialogTitle>
+          <DialogDescription>
+            {currentRequirement?.description ||
+              "Upload your document for verification."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={onSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="type" className="text-sm">
+                Document Type
+              </Label>
+              <Select
+                value={uploadForm.type}
+                onValueChange={(value) =>
+                  onFormChange({ type: value as Document["type"] })
+                }
+              >
+                <SelectTrigger id="type" className="w-full">
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DOCUMENT_REQUIREMENTS.map((req) => (
+                    <SelectItem key={req.type} value={req.type}>
+                      {req.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-sm">
+                Document Title
+              </Label>
+              <Input
+                id="title"
+                value={uploadForm.title}
+                onChange={(e) => onFormChange({ title: e.target.value })}
+                placeholder={currentRequirement?.label || "Document title"}
+                className="w-full"
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Title
-            </label>
-            <input
-              type="text"
-              value={uploadForm.title}
-              onChange={(e) =>
-                onFormChange({ ...uploadForm, title: e.target.value })
-              }
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              placeholder="Document title"
+          <Card className="p-4 border-dashed">
+            <FileUploadInput
+              onChange={handleFileChange}
+              disabled={uploading}
+              selectedFile={uploadForm.file}
             />
-          </div>
 
-          <FileUploadInput
-            onChange={handleFileChange}
-            disabled={uploading}
-            selectedFile={uploadForm.file}
-          />
-
-          {uploadError && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-red-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-red-800">
-                    {uploadError}
-                  </p>
+            {!uploadForm.file && !uploading && (
+              <div className="mt-4 flex items-start text-xs text-muted-foreground">
+                <Info className="h-3 w-3 mr-2 mt-0.5" />
+                <div>
+                  <p>Accepted file formats: PDF, DOC, DOCX</p>
+                  <p>Maximum file size: 10MB</p>
                 </div>
               </div>
-            </div>
+            )}
+          </Card>
+
+          {uploadError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{uploadError}</AlertDescription>
+            </Alert>
           )}
 
           {uploadSuccess && (
-            <div className="rounded-md bg-green-50 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-5 w-5 text-green-400" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-green-800">
-                    Document uploaded successfully!
-                  </p>
-                </div>
-              </div>
-            </div>
+            <Alert
+              variant="default"
+              className="bg-green-50 text-green-800 border-green-200"
+            >
+              <CheckCircle className="h-4 w-4" />
+              <AlertDescription>
+                Document uploaded successfully!
+              </AlertDescription>
+            </Alert>
           )}
 
           {(uploading || uploadProgress > 0) && (
             <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Upload progress</span>
-                <span>{uploadProgress}%</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Upload progress</span>
+                <span className="font-medium">{uploadProgress}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
+              <Progress value={uploadProgress} className="h-2" />
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={uploading || !uploadForm.file || uploadSuccess}
-            className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors duration-200"
-          >
-            {uploading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2" />
-                Uploading...
-              </>
-            ) : uploadSuccess ? (
-              <>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Uploaded
-              </>
-            ) : (
-              "Upload Document"
-            )}
-          </button>
+          <div className="flex gap-3 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={uploading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={uploading || !uploadForm.file || uploadSuccess}
+              className="min-w-[120px]"
+            >
+              {uploading ? (
+                <>
+                  <div className="mr-2 size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Uploading...
+                </>
+              ) : uploadSuccess ? (
+                <>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Uploaded
+                </>
+              ) : (
+                "Upload Document"
+              )}
+            </Button>
+          </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

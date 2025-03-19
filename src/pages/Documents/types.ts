@@ -31,3 +31,11 @@ export interface DocumentFilters {
   dateRange: string;
   verified: string;
 }
+
+export interface DocumentRequirement {
+  type: Document["type"];
+  label: string;
+  description: string;
+  required: boolean;
+  icon: React.ReactNode;
+}

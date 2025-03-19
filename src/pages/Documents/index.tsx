@@ -8,6 +8,10 @@ import { UploadModal } from "./components/UploadModal";
 import { PreviewModal } from "./components/PreviewModal";
 import type { Document, Property } from "./types";
 import * as documentService from "../../services/documentService";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function Documents() {
   const { user } = useAuthStore();
@@ -251,65 +255,63 @@ export function Documents() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">Documents</h1>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-                {Object.values(filters).some((v) => v) && (
-                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                    {Object.values(filters).filter((v) => v).length}
-                  </span>
-                )}
-                <ChevronDown
-                  className={`ml-2 h-4 w-4 transition-transform ${
-                    showFilters ? "transform rotate-180" : ""
-                  }`}
-                />
-              </button>
-              <button
-                onClick={() => setShowUploadModal(true)}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Document
-              </button>
-            </div>
+    <div className="container space-y-6 p-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <CardTitle className="text-2xl">Documents</CardTitle>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="gap-2"
+            >
+              <Filter className="h-4 w-4" />
+              Filters
+              {Object.values(filters).some((v) => v) && (
+                <Badge variant="secondary" className="ml-2">
+                  {Object.values(filters).filter((v) => v).length}
+                </Badge>
+              )}
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${
+                  showFilters ? "rotate-180" : ""
+                }`}
+              />
+            </Button>
+            <Button onClick={() => setShowUploadModal(true)} className="gap-2">
+              <Upload className="h-4 w-4" />
+              Upload Document
+            </Button>
           </div>
-        </div>
+        </CardHeader>
 
-        <div className="p-6">
-          {/* Document Requirements */}
-          <DocumentRequirements
-            documents={documents}
-            onUpload={handleSetDocumentType}
-          />
+        <CardContent>
+          <ScrollArea className="h-[calc(100vh-12rem)]">
+            {/* Filters - Moved up to appear below buttons but above Required Documents */}
+            <DocumentFilters
+              filters={filters}
+              onFilterChange={setFilters}
+              visible={showFilters}
+            />
 
-          {/* Filters */}
-          <DocumentFilters
-            filters={filters}
-            onFilterChange={setFilters}
-            visible={showFilters}
-          />
+            {/* Document Requirements */}
+            <DocumentRequirements
+              documents={documents}
+              onUpload={handleSetDocumentType}
+            />
 
-          {/* Document List */}
-          <DocumentList
-            documents={filteredDocuments}
-            loading={loading}
-            onPreview={handlePreview}
-            onDownload={handleDownload}
-            onDelete={handleDelete}
-            onUpload={() => setShowUploadModal(true)}
-          />
-        </div>
-      </div>
+            {/* Document List */}
+            <DocumentList
+              documents={filteredDocuments}
+              loading={loading}
+              onPreview={handlePreview}
+              onDownload={handleDownload}
+              onDelete={handleDelete}
+              onUpload={() => setShowUploadModal(true)}
+            />
+          </ScrollArea>
+        </CardContent>
+      </Card>
 
       {/* Modals */}
       {showUploadModal && (
