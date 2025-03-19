@@ -4,13 +4,13 @@ export interface Property {
   address: string;
   city: string;
   state: string;
-  price: number;
-  images: string[];
-  bedrooms: number;
-  bathrooms: number;
-  square_feet: number;
-  property_type: string;
-  compliance_status: string;
+  price: number | null;
+  images: string[] | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  square_feet: number | null;
+  property_type: string | null;
+  compliance_status: string | null;
   property_leases?: {
     tenant: {
       name: string;
@@ -23,7 +23,7 @@ export interface Payment {
   amount: number;
   status: string;
   payment_method: string;
-  created_at: string;
+  created_at: string | null;
   properties: {
     name: string;
   } | null;
@@ -38,4 +38,9 @@ export interface Stats {
   complianceRate: number;
   upcomingViewings: number;
   documentsToReview: number;
+}
+
+export interface RevenueChartData {
+  labels: string[];
+  data: number[];
 }

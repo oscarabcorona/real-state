@@ -1,20 +1,21 @@
-import { endOfMonth, format, startOfMonth } from "date-fns";
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
-import { ProertiesOverview } from "./PropertiesOverview";
-import { QuickActions } from "./QuickActions";
+import { PropertiesOverview } from "./PropertiesOverview";
 import { RecentActivity } from "./RecentActivity";
 import { RevenueChart } from "./RevenueChart";
 import { StatsOverview } from "./StatsOverview";
-import { Payment, Property } from "./types";
+import { Payment, Property, Stats, RevenueChartData } from "./types";
+import {
+  LessorDashboardData,
+  fetchLessorDashboardData,
+} from "../../services/lessorDashboardService";
 
 export function DashboardLessor() {
   const { user } = useAuthStore();
   const [properties, setProperties] = useState<Property[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<Stats>({
     totalRevenue: 0,
     pendingPayments: 0,
     occupancyRate: 0,
@@ -24,111 +25,33 @@ export function DashboardLessor() {
     upcomingViewings: 0,
     documentsToReview: 0,
   });
-  const [revenueChart, setRevenueChart] = useState({
-    labels: [] as string[],
-    data: [] as number[],
+  const [revenueChart, setRevenueChart] = useState<RevenueChartData>({
+    labels: [],
+    data: [],
   });
 
   useEffect(() => {
     if (user) {
-      fetchDashboardData();
+      loadDashboardData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const fetchDashboardData = async () => {
+  const loadDashboardData = async () => {
+    // TODO: Redirect to login if user is not authenticated
+    if (!user) {
+      return;
+    }
     try {
-      // Fetch properties with tenant info
-      const { data: propertiesData } = await supabase
-        .from("properties")
-        .select(
-          `
-          *,
-          property_leases (
-            tenant:tenants (
-              name
-            )
-          )
-        `
-        )
-        .eq("user_id", user?.id);
+      setLoading(true);
+      const dashboardData: LessorDashboardData = await fetchLessorDashboardData(
+        user.id
+      );
 
-      setProperties(propertiesData || []);
-
-      // Calculate property stats
-      const totalProperties = propertiesData?.length || 0;
-      const occupiedProperties =
-        propertiesData?.filter(
-          (p) => p.property_leases && p.property_leases.length > 0
-        ).length || 0;
-      const compliantProperties =
-        propertiesData?.filter((p) => p.compliance_status === "compliant")
-          .length || 0;
-
-      // Fetch recent payments
-      const { data: paymentsData } = await supabase
-        .from("payments")
-        .select(
-          `
-          *,
-          properties:property_id (name)
-        `
-        )
-        .in("property_id", propertiesData?.map((p) => p.id) || [])
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      setPayments(paymentsData || []);
-
-      // Calculate payment stats
-      const totalRevenue =
-        paymentsData
-          ?.filter((p) => p.status === "completed")
-          .reduce((sum, p) => sum + p.amount, 0) || 0;
-      const pendingAmount =
-        paymentsData
-          ?.filter((p) => p.status === "pending")
-          .reduce((sum, p) => sum + p.amount, 0) || 0;
-
-      // Calculate monthly revenue for chart
-      const start = startOfMonth(new Date());
-      const end = endOfMonth(new Date());
-      const { data: monthlyPayments } = await supabase
-        .from("payments")
-        .select("amount, created_at")
-        .in("property_id", propertiesData?.map((p) => p.id) || [])
-        .eq("status", "completed")
-        .gte("created_at", start.toISOString())
-        .lte("created_at", end.toISOString());
-
-      const dailyRevenue = new Map<string, number>();
-      monthlyPayments?.forEach((payment) => {
-        const date = format(new Date(payment.created_at), "MMM d");
-        dailyRevenue.set(date, (dailyRevenue.get(date) || 0) + payment.amount);
-      });
-
-      setRevenueChart({
-        labels: Array.from(dailyRevenue.keys()),
-        data: Array.from(dailyRevenue.values()),
-      });
-
-      // Update all stats
-      setStats({
-        totalRevenue,
-        pendingPayments: pendingAmount,
-        occupancyRate:
-          totalProperties > 0
-            ? (occupiedProperties / totalProperties) * 100
-            : 0,
-        propertiesCount: totalProperties,
-        tenantsCount: occupiedProperties,
-        complianceRate:
-          totalProperties > 0
-            ? (compliantProperties / totalProperties) * 100
-            : 0,
-        upcomingViewings: 0,
-        documentsToReview: 0,
-      });
+      setProperties(dashboardData.properties);
+      setPayments(dashboardData.payments);
+      setStats(dashboardData.stats);
+      setRevenueChart(dashboardData.revenueChart);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
@@ -147,19 +70,17 @@ export function DashboardLessor() {
   return (
     <div className="space-y-6">
       {/* Stats Overview */}
-      <StatsOverview stats={stats} />
+      <StatsOverview stats={stats} loading={false} />
 
       {/* Revenue Chart */}
       <RevenueChart revenueChart={revenueChart} />
 
       {/* Properties Overview */}
-      <ProertiesOverview properties={properties} />
+      <PropertiesOverview properties={properties} loading={false} />
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RecentActivity payments={payments} />
-        {/* Quick Actions */}
-        <QuickActions />
+        <RecentActivity payments={payments} loading={false} />
       </div>
     </div>
   );
