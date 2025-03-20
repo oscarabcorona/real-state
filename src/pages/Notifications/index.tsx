@@ -11,9 +11,13 @@ import {
 } from "../../services/notificationService";
 import {
   filterNotificationsByType,
+  filterNotificationsByReadStatus,
   sortNotifications,
 } from "./utils/notificationHelpers";
 import { NotificationFilters } from "./components/NotificationFilters";
+import { Toggle } from "@/components/ui/toggle";
+import { Eye, EyeOff } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 export function Notifications() {
   const { user } = useAuthStore();
@@ -25,6 +29,7 @@ export function Notifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
   // Fetch notifications
   useEffect(() => {
@@ -67,13 +72,19 @@ export function Notifications() {
     }
   }, [user, sortOrder]);
 
-  // Apply filters when notifications, filter or sort changes
+  // Apply filters when notifications, filter, sort, or read status changes
   useEffect(() => {
     if (notifications.length) {
-      const filtered = filterNotificationsByType(notifications, activeFilter);
-      setFilteredNotifications(filtered);
+      const typeFiltered = filterNotificationsByType(
+        notifications,
+        activeFilter
+      );
+      const readFiltered = showUnreadOnly
+        ? filterNotificationsByReadStatus(typeFiltered, false)
+        : typeFiltered;
+      setFilteredNotifications(readFiltered);
     }
-  }, [notifications, activeFilter]);
+  }, [notifications, activeFilter, showUnreadOnly]);
 
   const handleFilterChange = (type: string | null) => {
     setActiveFilter(type);
@@ -82,6 +93,10 @@ export function Notifications() {
   const handleSortChange = (order: "newest" | "oldest") => {
     setSortOrder(order);
     setNotifications((prev) => sortNotifications(prev, order));
+  };
+
+  const handleToggleUnreadOnly = () => {
+    setShowUnreadOnly(!showUnreadOnly);
   };
 
   const handleMarkAsRead = async (id: string) => {
@@ -114,13 +129,11 @@ export function Notifications() {
   return (
     <div className="space-y-4">
       <AnimatedElement animation="fadeIn" duration={0.5}>
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-          <div className="px-4 py-4 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+        <Card className="overflow-hidden">
+          <div className="px-4 py-4 sm:px-6 border-b">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="flex items-center">
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  Notifications
-                </h1>
+                <h1 className="text-xl font-semibold">Notifications</h1>
                 {unreadCount > 0 && (
                   <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                     {unreadCount} unread
@@ -128,6 +141,27 @@ export function Notifications() {
                 )}
               </div>
 
+              <div className="flex items-center gap-2 ml-auto">
+                <Toggle
+                  pressed={showUnreadOnly}
+                  onPressedChange={handleToggleUnreadOnly}
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 h-8"
+                >
+                  {showUnreadOnly ? (
+                    <EyeOff className="h-3.5 w-3.5" />
+                  ) : (
+                    <Eye className="h-3.5 w-3.5" />
+                  )}
+                  <span className="text-xs">
+                    {showUnreadOnly ? "Unread only" : "All messages"}
+                  </span>
+                </Toggle>
+              </div>
+            </div>
+
+            <div className="mt-3">
               <NotificationFilters
                 onFilterChange={handleFilterChange}
                 onSortChange={handleSortChange}
@@ -143,7 +177,7 @@ export function Notifications() {
             loading={loading}
             grouped={true}
           />
-        </div>
+        </Card>
       </AnimatedElement>
     </div>
   );

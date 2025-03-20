@@ -13,7 +13,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, Filter, SlidersHorizontal } from "lucide-react";
+import {
+  Bell,
+  Check,
+  ChevronDown,
+  ChevronsUpDown,
+  Filter,
+  SlidersHorizontal,
+} from "lucide-react";
 import { useState } from "react";
 
 const filterOptions = [
@@ -47,15 +54,23 @@ export function NotificationFilters({
   const [activeFilter, setActiveFilter] = useState(filterOptions[0]);
   const [activeSort, setActiveSort] = useState(sortOptions[0]);
 
+  const handleSortChange = (value: string) => {
+    const option =
+      sortOptions.find((opt) => opt.value === value) || sortOptions[0];
+    setActiveSort(option);
+    onSortChange(option.value as "newest" | "oldest");
+    setOpenSort(false);
+  };
+
   return (
     <AnimatedElement
       animation="fadeIn"
       duration={0.3}
       delay={0.1}
-      className="w-full sm:w-auto"
+      className="w-full sm:ml-auto"
     >
-      <div className="flex flex-wrap items-center gap-2 justify-between sm:justify-start">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 justify-between">
+        <div className="flex items-center gap-2 flex-wrap">
           <Popover open={openFilter} onOpenChange={setOpenFilter}>
             <PopoverTrigger asChild>
               <Button
@@ -64,16 +79,16 @@ export function NotificationFilters({
                 aria-expanded={openFilter}
                 className="flex items-center justify-between gap-1 h-8 pl-3 pr-2 text-sm w-[140px] sm:w-auto"
               >
-                <Filter className="h-3.5 w-3.5 mr-1 sm:mr-2" />
+                <Filter className="h-3.5 w-3.5 mr-1" />
                 <span className="truncate">{activeFilter.label}</span>
                 <ChevronsUpDown className="ml-auto h-3.5 w-3.5 opacity-50 shrink-0" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
+            <PopoverContent className="w-[220px] p-0">
               <Command>
                 <CommandList>
                   <CommandEmpty>No filters found.</CommandEmpty>
-                  <CommandGroup>
+                  <CommandGroup heading="Filter By">
                     {filterOptions.map((option) => (
                       <CommandItem
                         key={option.value}
@@ -103,6 +118,7 @@ export function NotificationFilters({
             </PopoverContent>
           </Popover>
 
+          {/* Sort dropdown that works on both mobile and desktop */}
           <Popover open={openSort} onOpenChange={setOpenSort}>
             <PopoverTrigger asChild>
               <Button
@@ -110,24 +126,20 @@ export function NotificationFilters({
                 size="sm"
                 className="flex items-center gap-1 h-8"
               >
-                <SlidersHorizontal className="mr-1 h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Sort</span>
-                <span className="inline sm:hidden">{activeSort.label}</span>
+                <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
+                <span className="text-xs">{activeSort.label}</span>
+                <ChevronDown className="h-3.5 w-3.5 opacity-60 ml-1" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
+            <PopoverContent className="w-[180px] p-0">
               <Command>
                 <CommandList>
-                  <CommandGroup>
+                  <CommandGroup heading="Sort By">
                     {sortOptions.map((option) => (
                       <CommandItem
                         key={option.value}
                         value={option.value}
-                        onSelect={() => {
-                          setActiveSort(option);
-                          onSortChange(option.value as "newest" | "oldest");
-                          setOpenSort(false);
-                        }}
+                        onSelect={() => handleSortChange(option.value)}
                       >
                         <Check
                           className={cn(
@@ -149,12 +161,13 @@ export function NotificationFilters({
 
         {unreadCount > 0 && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="h-8 text-xs ml-auto sm:ml-0"
+            className="h-8 text-xs ml-auto gap-1.5"
             onClick={onMarkAllAsRead}
           >
-            Mark all as read
+            <Bell className="h-3.5 w-3.5" />
+            <span>Mark all as read</span>
           </Button>
         )}
       </div>

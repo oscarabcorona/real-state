@@ -69,6 +69,15 @@ export function filterNotificationsByType(
   );
 }
 
+export function filterNotificationsByReadStatus(
+  notifications: Notification[],
+  isRead: boolean
+): Notification[] {
+  return notifications.filter(notification => 
+    notification.read === isRead
+  );
+}
+
 export function sortNotifications(
   notifications: Notification[], 
   sortOrder: 'newest' | 'oldest' = 'newest'

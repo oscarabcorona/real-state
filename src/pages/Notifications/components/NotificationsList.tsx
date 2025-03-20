@@ -1,12 +1,12 @@
 import { Notification } from "../types";
 import { EmptyState } from "./EmptyState";
 import { NotificationItem } from "./NotificationItem";
-import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { groupNotificationsByDate } from "../utils/notificationHelpers";
 import { AnimatedElement } from "@/components/animated/AnimatedElement";
+import { NotificationSkeleton } from "./NotificationSkeleton";
 
 type NotificationsListProps = {
   notifications: Notification[];
@@ -25,48 +25,39 @@ export function NotificationsList({
 }: NotificationsListProps) {
   if (loading) {
     return (
-      <Card className={cn("p-1", className)}>
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="animate-pulse p-4">
-            <div className="flex items-start gap-4">
-              <div className="bg-muted h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <div className="bg-muted h-4 w-[60%] rounded" />
-                <div className="bg-muted h-3 w-[90%] rounded" />
-                <div className="bg-muted h-3 w-[40%] rounded" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </Card>
+      <div className={cn("p-0", className)}>
+        <div className="pt-2">
+          {[...Array(3)].map((_, i) => (
+            <NotificationSkeleton key={i} delay={i * 0.1} />
+          ))}
+        </div>
+      </div>
     );
   }
 
   if (notifications.length === 0) {
-    return (
-      <Card className={cn("overflow-hidden", className)}>
-        <EmptyState />
-      </Card>
-    );
+    return <EmptyState />;
   }
 
   if (!grouped) {
     return (
-      <Card className={cn("p-1", className)}>
+      <div className={cn("p-0", className)}>
         <ScrollArea className="h-[calc(100vh-12rem)] md:h-[500px]">
-          {notifications.map((notification, index) => (
-            <div key={notification.id}>
-              <NotificationItem
-                notification={notification}
-                onMarkAsRead={onMarkAsRead}
-              />
-              {index < notifications.length - 1 && (
-                <Separator className="mx-4" />
-              )}
-            </div>
-          ))}
+          <div className="py-2">
+            {notifications.map((notification, index) => (
+              <div key={notification.id}>
+                <NotificationItem
+                  notification={notification}
+                  onMarkAsRead={onMarkAsRead}
+                />
+                {index < notifications.length - 1 && (
+                  <Separator className="mx-4" />
+                )}
+              </div>
+            ))}
+          </div>
         </ScrollArea>
-      </Card>
+      </div>
     );
   }
 
@@ -74,34 +65,36 @@ export function NotificationsList({
   const groups = groupNotificationsByDate(notifications);
 
   return (
-    <Card className={cn("p-1", className)}>
+    <div className={cn("p-0", className)}>
       <ScrollArea className="h-[calc(100vh-12rem)] md:h-[500px]">
-        {groups.map((group, groupIndex) => (
-          <AnimatedElement
-            key={group.label}
-            animation="fadeIn"
-            delay={0.1 * groupIndex}
-          >
-            <div className="sticky top-0 bg-background p-2 z-10">
-              <h3 className="text-sm font-medium text-muted-foreground px-2">
-                {group.label}
-              </h3>
-            </div>
-            {group.notifications.map((notification, index) => (
-              <div key={notification.id}>
-                <NotificationItem
-                  notification={notification}
-                  onMarkAsRead={onMarkAsRead}
-                />
-                {index < group.notifications.length - 1 && (
-                  <Separator className="mx-4" />
-                )}
+        <div className="py-2">
+          {groups.map((group, groupIndex) => (
+            <AnimatedElement
+              key={group.label}
+              animation="fadeIn"
+              delay={0.1 * groupIndex}
+            >
+              <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-2">
+                <h3 className="text-sm font-medium text-muted-foreground px-4">
+                  {group.label}
+                </h3>
               </div>
-            ))}
-            {groupIndex < groups.length - 1 && <Separator className="my-1" />}
-          </AnimatedElement>
-        ))}
+              {group.notifications.map((notification, index) => (
+                <div key={notification.id}>
+                  <NotificationItem
+                    notification={notification}
+                    onMarkAsRead={onMarkAsRead}
+                  />
+                  {index < group.notifications.length - 1 && (
+                    <Separator className="mx-4" />
+                  )}
+                </div>
+              ))}
+              {groupIndex < groups.length - 1 && <Separator />}
+            </AnimatedElement>
+          ))}
+        </div>
       </ScrollArea>
-    </Card>
+    </div>
   );
 }
