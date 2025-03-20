@@ -1,4 +1,4 @@
-import { Property } from "../types";
+import { Property, getSyndicationValue } from "../types";
 import { Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import {
   Card,
@@ -23,6 +23,12 @@ export function PropertyCard({
   onDelete,
   onPublish,
 }: PropertyCardProps) {
+  const hasSyndication =
+    getSyndicationValue(property, "zillow") ||
+    getSyndicationValue(property, "trulia") ||
+    getSyndicationValue(property, "realtor") ||
+    getSyndicationValue(property, "hotpads");
+
   return (
     <Card className="overflow-hidden">
       <div className="relative h-48 w-full overflow-hidden">
@@ -37,6 +43,13 @@ export function PropertyCard({
         >
           {property.published ? "Published" : "Draft"}
         </Badge>
+
+        {/* Display syndication status badge if needed */}
+        {hasSyndication && (
+          <Badge variant="secondary" className="absolute top-2 left-2">
+            Syndicated
+          </Badge>
+        )}
       </div>
 
       <CardHeader>

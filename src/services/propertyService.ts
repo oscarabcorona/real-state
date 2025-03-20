@@ -52,33 +52,104 @@ export async function fetchProperties(userId: string, selectedTenant: string = "
 export async function saveProperty(
   userId: string, 
   propertyData: PropertyFormValues, 
-  propertyId?: string
+  propertyId?: string,
+  workspaceId?: string
 ): Promise<void> {
   try {
+    // Extract tenant_id from property data to handle separately
+    const { tenant_id, syndication, ...propertyFields } = propertyData;
+    
+    // Create a data object with properly serialized syndication
+    const dataToSave = {
+      ...propertyFields,
+      // Convert syndication object to JSON format for database - handle null case
+      syndication: syndication ? JSON.stringify(syndication) : null,
+    };
     
     if (propertyId) { 
+      // Update existing property
       const { error } = await supabase
         .from("properties")
         .update({
-          ...propertyData,
+          ...dataToSave,
           updated_at: new Date().toISOString(),
         })
         .eq("id", propertyId);
 
       if (error) throw error;
+      
+      // If tenant_id was specified, update the property_leases table
+      if (tenant_id) {
+        // First check if there's an existing lease for this property
+        const { data: existingLeases } = await supabase
+          .from("property_leases")
+          .select("id")
+          .eq("property_id", propertyId);
+          
+        if (existingLeases && existingLeases.length > 0) {
+          // Update existing lease
+          const { error: leaseError } = await supabase
+            .from("property_leases")
+            .update({
+              tenant_id: tenant_id,
+              status: "active",
+              updated_at: new Date().toISOString()
+            })
+            .eq("property_id", propertyId);
+            
+          if (leaseError) throw leaseError;
+        } else {
+          // Create new lease
+          const { error: leaseError } = await supabase
+            .from("property_leases")
+            .insert([{
+              property_id: propertyId,
+              tenant_id: tenant_id,
+              status: "active"
+            }]);
+            
+          if (leaseError) throw leaseError;
+        }
+      }
     } else {
       // Create new property
-      const { error } = await supabase
+      if (!workspaceId) {
+        // Try to get user's default workspace
+        const { data: workspaceData, error: workspaceError } = await supabase
+          .rpc('get_default_workspace', { p_user_id: userId });
+        
+        if (workspaceError || !workspaceData) {
+          throw new Error("Workspace ID is required when creating a new property");
+        }
+        
+        workspaceId = workspaceData;
+      }
+      
+      // Insert the property with processed data
+      const { data: newProperty, error } = await supabase
         .from("properties")
-        .insert([
-          {
-            ...propertyData,
-            user_id: userId,
-            compliance_status: "pending",
-          },
-        ]);
+        .insert([{
+          ...dataToSave,
+          user_id: userId,
+          workspace_id: workspaceId,
+          compliance_status: "pending",
+        }])
+        .select();
 
       if (error) throw error;
+      
+      // If tenant_id is specified and property was created successfully, create a lease
+      if (tenant_id && newProperty && newProperty.length > 0) {
+        const { error: leaseError } = await supabase
+          .from("property_leases")
+          .insert([{
+            property_id: newProperty[0].id,
+            tenant_id: tenant_id,
+            status: "active"
+          }]);
+          
+        if (leaseError) throw leaseError;
+      }
     }
   } catch (error) {
     return handleServiceError(error, "saveProperty");

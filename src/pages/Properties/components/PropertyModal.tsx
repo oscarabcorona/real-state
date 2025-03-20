@@ -4,10 +4,12 @@ import {
   Tenant,
   PropertyFormValues,
   PropertyFormSchema,
+  parseSyndication,
 } from "../types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useAuthStore } from "@/store/authStore"; // Import auth store directly
 import {
   Dialog,
   DialogContent,
@@ -40,6 +42,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { saveProperty } from "@/services/propertyService";
+import { Badge } from "@/components/ui/badge";
 
 interface PropertyModalProps {
   isOpen: boolean;
@@ -60,6 +63,10 @@ export function PropertyModal({
 }: PropertyModalProps) {
   const [activeTab, setActiveTab] = React.useState("details");
   const [loading, setLoading] = React.useState(false);
+  const [amenityInput, setAmenityInput] = React.useState("");
+
+  // Get workspace from auth store
+  const { workspace } = useAuthStore();
 
   // Initialize the form with React Hook Form + Zod
   const form = useForm<PropertyFormValues>({
@@ -70,19 +77,19 @@ export function PropertyModal({
       city: "",
       state: "",
       zip_code: "",
-      description: "",
-      tenant_id: "",
+      description: null,
+      tenant_id: null,
       property_type: "house",
-      price: 0,
-      bedrooms: 0,
-      bathrooms: 0,
-      square_feet: 0,
+      price: null,
+      bedrooms: null,
+      bathrooms: null,
+      square_feet: null,
       amenities: [],
-      available_date: "",
-      pet_policy: "",
-      lease_terms: "",
-      published: false,
       images: [],
+      available_date: null,
+      pet_policy: null,
+      lease_terms: null,
+      published: false,
       syndication: {
         zillow: false,
         trulia: false,
@@ -94,31 +101,29 @@ export function PropertyModal({
 
   useEffect(() => {
     if (editingProperty) {
+      // Use the utility function to parse syndication data
+      const syndication = parseSyndication(editingProperty.syndication);
+
       form.reset({
-        tenant_id: editingProperty.property_leases?.[0]?.tenant.id || "",
+        tenant_id: editingProperty.property_leases?.[0]?.tenant.id || null,
         name: editingProperty.name,
         address: editingProperty.address,
         city: editingProperty.city,
         state: editingProperty.state,
         zip_code: editingProperty.zip_code,
-        description: editingProperty.description || "",
-        price: editingProperty.price || 0,
-        bedrooms: editingProperty.bedrooms || 0,
-        bathrooms: editingProperty.bathrooms || 0,
-        square_feet: editingProperty.square_feet || 0,
+        description: editingProperty.description,
+        price: editingProperty.price,
+        bedrooms: editingProperty.bedrooms,
+        bathrooms: editingProperty.bathrooms,
+        square_feet: editingProperty.square_feet,
         property_type: editingProperty.property_type || "house",
         amenities: editingProperty.amenities || [],
         images: editingProperty.images || [],
-        available_date: editingProperty.available_date || "",
-        pet_policy: editingProperty.pet_policy || "",
-        lease_terms: editingProperty.lease_terms || "",
+        available_date: editingProperty.available_date,
+        pet_policy: editingProperty.pet_policy,
+        lease_terms: editingProperty.lease_terms,
         published: editingProperty.published || false,
-        syndication: editingProperty.syndication || {
-          zillow: false,
-          trulia: false,
-          realtor: false,
-          hotpads: false,
-        },
+        syndication: syndication,
       });
     }
   }, [editingProperty, form]);
@@ -128,7 +133,12 @@ export function PropertyModal({
     setLoading(true);
 
     try {
-      await saveProperty(userId, data, editingProperty?.id);
+      await saveProperty(
+        userId,
+        data,
+        editingProperty?.id,
+        workspace?.id // Use workspace from auth store
+      );
 
       // Updated toast implementation using Sonner
       toast(`Property ${editingProperty ? "updated" : "created"}`, {
@@ -153,12 +163,29 @@ export function PropertyModal({
     }
   };
 
-  // Function to handle image removal
+  // Function to handle image removal - Fix for undefined value
   const handleRemoveImage = (index: number) => {
-    const currentImages = form.getValues().images;
+    const currentImages = form.getValues().images || [];
     const newImages = [...currentImages];
     newImages.splice(index, 1);
     form.setValue("images", newImages);
+  };
+
+  // Add amenity to the list
+  const handleAddAmenity = () => {
+    if (!amenityInput.trim()) return;
+
+    const currentAmenities = form.getValues().amenities || [];
+    form.setValue("amenities", [...currentAmenities, amenityInput.trim()]);
+    setAmenityInput("");
+  };
+
+  // Remove amenity from the list
+  const handleRemoveAmenity = (index: number) => {
+    const currentAmenities = form.getValues().amenities || [];
+    const newAmenities = [...currentAmenities];
+    newAmenities.splice(index, 1);
+    form.setValue("amenities", newAmenities);
   };
 
   const handleClose = () => {
@@ -169,7 +196,7 @@ export function PropertyModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {editingProperty ? "Edit Property" : "Add New Property"}
@@ -187,9 +214,10 @@ export function PropertyModal({
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="w-full grid grid-cols-4">
+              <TabsList className="w-full grid grid-cols-5">
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="features">Features</TabsTrigger>
+                <TabsTrigger value="policies">Policies</TabsTrigger>
                 <TabsTrigger value="media">Media</TabsTrigger>
                 <TabsTrigger value="publishing">Publishing</TabsTrigger>
               </TabsList>
@@ -317,7 +345,7 @@ export function PropertyModal({
                         <FormItem>
                           <FormLabel>Property Type</FormLabel>
                           <Select
-                            value={field.value}
+                            value={field.value ?? undefined}
                             onValueChange={field.onChange}
                           >
                             <FormControl>
@@ -344,6 +372,29 @@ export function PropertyModal({
                       )}
                     />
                   </div>
+
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="available_date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Available Date</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="date"
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            When is this property available for tenants?
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </TabsContent>
 
@@ -357,7 +408,11 @@ export function PropertyModal({
                         <FormItem>
                           <FormLabel>Price ($/month)</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -373,7 +428,11 @@ export function PropertyModal({
                         <FormItem>
                           <FormLabel>Square Feet</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -389,7 +448,11 @@ export function PropertyModal({
                         <FormItem>
                           <FormLabel>Bedrooms</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -405,7 +468,12 @@ export function PropertyModal({
                         <FormItem>
                           <FormLabel>Bathrooms</FormLabel>
                           <FormControl>
-                            <Input type="number" step="0.5" {...field} />
+                            <Input
+                              type="number"
+                              step="0.5"
+                              {...field}
+                              value={field.value ?? ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -421,13 +489,126 @@ export function PropertyModal({
                         <FormItem>
                           <FormLabel>Description</FormLabel>
                           <FormControl>
-                            <Textarea rows={4} {...field} />
+                            <Textarea
+                              rows={4}
+                              value={field.value ?? ""}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              ref={field.ref}
+                              name={field.name}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
+
+                  <div className="col-span-2">
+                    <FormField
+                      control={form.control}
+                      name="amenities"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Amenities</FormLabel>
+                          <div className="flex gap-2 mb-2">
+                            <Input
+                              placeholder="Add amenity (e.g. Garage, Pool, etc.)"
+                              value={amenityInput}
+                              onChange={(e) => setAmenityInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleAddAmenity();
+                                }
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              onClick={handleAddAmenity}
+                              variant="secondary"
+                            >
+                              Add
+                            </Button>
+                          </div>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {(field.value || []).map((amenity, index) => (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="flex items-center gap-1"
+                              >
+                                {amenity}
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-auto p-0 ml-1 text-muted-foreground hover:text-foreground"
+                                  onClick={() => handleRemoveAmenity(index)}
+                                >
+                                  ×
+                                </Button>
+                              </Badge>
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="policies" className="space-y-4 py-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="pet_policy"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Pet Policy</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            rows={3}
+                            placeholder="Describe the pet policy for this property"
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Are pets allowed? What types? Any restrictions?
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="lease_terms"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Lease Terms</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            rows={3}
+                            placeholder="Summarize the lease terms"
+                            value={field.value || ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Specify lease duration, deposit, special conditions,
+                          etc.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </TabsContent>
 
@@ -440,7 +621,7 @@ export function PropertyModal({
                       <FormItem>
                         <FormLabel>Property Images</FormLabel>
                         <div className="grid grid-cols-3 gap-4">
-                          {field.value.map((image, index) => (
+                          {(field.value || []).map((image, index) => (
                             <div
                               key={index}
                               className="relative rounded-md overflow-hidden h-32"
@@ -493,7 +674,7 @@ export function PropertyModal({
                         </div>
                         <FormControl>
                           <Switch
-                            checked={field.value}
+                            checked={field.value ?? false}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
