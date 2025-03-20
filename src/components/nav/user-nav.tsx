@@ -8,6 +8,7 @@ import {
   ChevronsUpDown,
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
+import { supabase } from "../../lib/supabase";
 
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
@@ -27,13 +28,21 @@ import {
 } from "../ui/dropdown-menu";
 
 export function UserNav() {
-  const { user, signOut } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const { isMobile } = useSidebar();
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error.message);
+        return;
+      }
+      navigate("/login");
+    } catch (err) {
+      console.error("Sign out failed:", err);
+    }
   };
 
   return (

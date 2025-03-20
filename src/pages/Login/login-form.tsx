@@ -1,151 +1,170 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Key, Mail, User } from "lucide-react";
+import { Auth } from "@supabase/auth-ui-react";
+import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/store/authStore";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
-import { PasswordInput } from "@/components/ui/password-input";
+import { Session } from "@supabase/supabase-js";
+import { useTheme } from "@/components/ui/theme-provider";
 
 export function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [role, setRole] = useState<"lessor" | "tenant" | "">("");
+  const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuthStore();
+  const { initialize } = useAuthStore();
+  const { theme } = useTheme();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setIsLoading(true);
-
-    try {
-      if (isSignUp) {
-        if (!role) {
-          throw new Error("Please select a role");
-        }
-        await signUp(email, password, role);
-      }
-      await signIn(email, password);
-      navigate("/dashboard");
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : isSignUp
-          ? "Failed to create account"
-          : "Invalid email or password";
-      setError(message);
-    } finally {
-      setIsLoading(false);
-    }
+  // Define a custom theme for the Auth UI
+  const customTheme = {
+    default: {
+      colors: {
+        brand: "var(--primary)",
+        brandAccent: "var(--primary)",
+        brandButtonText: "var(--primary-foreground)",
+        defaultButtonBackground: "var(--secondary)",
+        defaultButtonBackgroundHover: "var(--muted)",
+        defaultButtonBorder: "var(--border)",
+        defaultButtonText: "var(--secondary-foreground)",
+        dividerBackground: "var(--border)",
+        inputBackground: "var(--background)",
+        inputBorder: "var(--input)",
+        inputBorderHover: "var(--ring)",
+        inputBorderFocus: "var(--ring)",
+        inputText: "var(--foreground)",
+        inputLabelText: "var(--foreground)",
+        inputPlaceholder: "var(--muted-foreground)",
+        messageText: "var(--foreground)",
+        messageTextDanger: "var(--destructive)",
+        anchorTextColor: "var(--primary)",
+        anchorTextHoverColor: "var(--primary)",
+      },
+      space: {
+        buttonPadding: "10px 15px",
+        inputPadding: "10px 15px",
+      },
+      borderWidths: {
+        buttonBorderWidth: "1px",
+        inputBorderWidth: "1px",
+      },
+      radii: {
+        borderRadiusButton: "var(--radius)",
+        buttonBorderRadius: "var(--radius)",
+        inputBorderRadius: "var(--radius)",
+      },
+      fontSizes: {
+        baseBodySize: "14px",
+        baseInputSize: "14px",
+        baseLabelSize: "14px",
+        baseButtonSize: "14px",
+      },
+      fonts: {
+        bodyFontFamily: `var(--font-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif)`,
+        buttonFontFamily: `var(--font-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif)`,
+        inputFontFamily: `var(--font-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif)`,
+        labelFontFamily: `var(--font-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif)`,
+      },
+    },
+    dark: {
+      colors: {
+        brand: "var(--primary)",
+        brandAccent: "var(--primary)",
+        brandButtonText: "var(--primary-foreground)",
+        defaultButtonBackground: "var(--secondary)",
+        defaultButtonBackgroundHover: "var(--muted)",
+        defaultButtonBorder: "var(--border)",
+        defaultButtonText: "var(--secondary-foreground)",
+        dividerBackground: "var(--border)",
+        inputBackground: "var(--background)",
+        inputBorder: "var(--input)",
+        inputBorderHover: "var(--ring)",
+        inputBorderFocus: "var(--ring)",
+        inputText: "var(--foreground)",
+        inputLabelText: "var(--foreground)",
+        inputPlaceholder: "var(--muted-foreground)",
+        messageText: "var(--foreground)",
+        messageTextDanger: "var(--destructive)",
+        anchorTextColor: "var(--primary)",
+        anchorTextHoverColor: "var(--primary)",
+      },
+    },
   };
+
+  useEffect(() => {
+    const initAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setSession(session);
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        setSession(session);
+        if (session) {
+          try {
+            await initialize();
+            navigate("/dashboard");
+          } catch (err) {
+            const message =
+              err instanceof Error
+                ? err.message
+                : "Failed to initialize user data";
+            setError(message);
+          }
+        }
+      });
+
+      return () => subscription.unsubscribe();
+    };
+
+    initAuth();
+  }, [navigate, initialize]);
+
+  if (session) {
+    return (
+      <div className="flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-current border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
-          {isSignUp ? "Create your account" : "Welcome back"}
+          Welcome to Real Estate Management
         </h1>
         <p className="text-muted-foreground text-sm">
-          {isSignUp
-            ? "Join our property management platform"
-            : "Sign in to continue to your account"}
+          Sign in or create an account to continue
         </p>
       </div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
-          <div className="relative">
-            <Mail className="text-muted-foreground absolute left-3 top-2.5 h-4 w-4" />
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              className="pl-9"
-            />
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Password</Label>
-          <PasswordInput
-            id="password"
-            value={password}
-            placeholder="Enter your password"
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-            icon={<Key className="h-4 w-4" />}
-          />
-        </div>
 
-        {isSignUp && (
-          <div className="flex flex-col gap-2">
-            <Label>I am a...</Label>
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                type="button"
-                onClick={() => setRole("lessor")}
-                variant={role === "lessor" ? "default" : "outline"}
-                className="relative flex flex-col items-center justify-center p-4 h-auto"
-              >
-                <Building2 className="h-6 w-6 mb-2" />
-                <span className="text-sm">Property Owner</span>
-              </Button>
-              <Button
-                type="button"
-                onClick={() => setRole("tenant")}
-                variant={role === "tenant" ? "default" : "outline"}
-                className="relative flex flex-col items-center justify-center p-4 h-auto"
-              >
-                <User className="h-6 w-6 mb-2" />
-                <span className="text-sm">Tenant</span>
-              </Button>
-            </div>
-          </div>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        <Button type="submit" disabled={isLoading || (isSignUp && !role)}>
-          {isLoading && (
-            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          )}
-          {isSignUp ? "Create Account" : "Sign In"}
-        </Button>
-      </form>
-
-      <div className="relative">
-        <Separator />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="bg-background text-muted-foreground px-2 text-sm">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}
-          </span>
-        </div>
-      </div>
-
-      <Button
-        variant="outline"
-        disabled={isLoading}
-        onClick={() => {
-          setIsSignUp(!isSignUp);
-          setError("");
-          setRole("");
+      <Auth
+        supabaseClient={supabase}
+        appearance={{ theme: customTheme }}
+        providers={["google", "github"]}
+        redirectTo={window.location.origin + "/dashboard"}
+        theme={theme === "dark" ? "dark" : "default"}
+        socialLayout="horizontal"
+        localization={{
+          variables: {
+            sign_in: {
+              email_label: "Email address",
+              password_label: "Password",
+            },
+            sign_up: {
+              email_label: "Email address",
+              password_label: "Create a password",
+            },
+          },
         }}
-      >
-        {isSignUp ? "Sign in instead" : "Create an account"}
-      </Button>
+      />
     </div>
   );
 }

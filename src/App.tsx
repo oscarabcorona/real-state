@@ -18,7 +18,6 @@ import { Marketplace } from "./pages/Marketplace";
 import { Appointments } from "./pages/Appointments";
 import { AppointmentTenant } from "./pages/AppointmentTenant";
 import { useAuthStore } from "./store/authStore";
-import { ThemeProvider } from "@/components/ui/theme-provider";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthStore();
@@ -47,57 +46,49 @@ function App() {
   }, [initialize]);
 
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/properties" element={<PublicProperties />} />
-          <Route path="/login" element={<Login />} />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/properties" element={<PublicProperties />} />
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route
-            path="/dashboard"
+            index
             element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
+              user?.role === "tenant" ? (
+                <DashboardTenant />
+              ) : (
+                <DashboardLessor />
+              )
             }
-          >
-            <Route
-              index
-              element={
-                user?.role === "tenant" ? (
-                  <DashboardTenant />
-                ) : (
-                  <DashboardLessor />
-                )
-              }
-            />
-            <Route path="properties" element={<Properties />} />
-            <Route path="marketplace" element={<Marketplace />} />
-            <Route
-              path="payments"
-              element={
-                user?.role === "tenant" ? <PaymentTenant /> : <Payments />
-              }
-            />
-            <Route path="documents" element={<Documents />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="reports/:id" element={<ReportDetails />} />
-            <Route
-              path="appointments"
-              element={
-                user?.role === "tenant" ? (
-                  <AppointmentTenant />
-                ) : (
-                  <Appointments />
-                )
-              }
-            />
-            <Route path="notifications" element={<Notifications />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+          />
+          <Route path="properties" element={<Properties />} />
+          <Route path="marketplace" element={<Marketplace />} />
+          <Route
+            path="payments"
+            element={user?.role === "tenant" ? <PaymentTenant /> : <Payments />}
+          />
+          <Route path="documents" element={<Documents />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="reports/:id" element={<ReportDetails />} />
+          <Route
+            path="appointments"
+            element={
+              user?.role === "tenant" ? <AppointmentTenant /> : <Appointments />
+            }
+          />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
