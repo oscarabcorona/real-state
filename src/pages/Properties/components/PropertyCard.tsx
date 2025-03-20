@@ -1,5 +1,5 @@
-import { Property, getSyndicationValue } from "../types";
-import { Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,20 +7,35 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ImagePlaceholder } from "@/components/ui/image-placeholder";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Bath,
+  Bed,
+  CalendarClock,
+  DollarSign,
+  Edit,
+  Eye,
+  EyeOff,
+  Home,
+  MapPin,
+  Share2,
+  Square,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { useRef } from "react";
+import { Property, getSyndicationValue } from "../types";
 
 interface PropertyCardProps {
   property: Property;
   onEdit: (property: Property) => void;
   onDelete: (id: string) => void;
   onPublish: (property: Property) => void;
+  viewMode?: "grid" | "list";
 }
 
 export function PropertyCard({
@@ -28,131 +43,322 @@ export function PropertyCard({
   onEdit,
   onDelete,
   onPublish,
+  viewMode = "grid",
 }: PropertyCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
   const hasSyndication =
     getSyndicationValue(property, "zillow") ||
     getSyndicationValue(property, "trulia") ||
     getSyndicationValue(property, "realtor") ||
     getSyndicationValue(property, "hotpads");
 
-  return (
-    <Card className="group overflow-hidden transition-all hover:shadow-md">
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
-        {property.images?.[0] ? (
-          <img
-            src={property.images[0]}
-            alt={property.name}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-          />
-        ) : (
-          <ImagePlaceholder />
-        )}
-        <div className="absolute top-2 flex w-full justify-between px-2">
-          <div className="flex gap-2">
-            {hasSyndication && <Badge variant="secondary">Syndicated</Badge>}
-          </div>
-          <Badge variant={property.published ? "default" : "outline"}>
-            {property.published ? "Published" : "Draft"}
-          </Badge>
-        </div>
-      </div>
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Not specified";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
-      <CardHeader className="space-y-1">
-        <CardTitle className="line-clamp-1">{property.name}</CardTitle>
-        <div className="line-clamp-1 text-sm text-muted-foreground">
-          {property.address}, {property.city}, {property.state}{" "}
-          {property.zip_code}
-        </div>
-      </CardHeader>
+  if (viewMode === "list") {
+    return (
+      <Card className="overflow-hidden transition-all hover:shadow-md">
+        <div className="flex flex-col sm:flex-row">
+          <div className="relative w-full sm:w-48 h-40">
+            {property.images?.[0] ? (
+              <img
+                src={property.images[0]}
+                alt={property.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full flex items-center justify-center bg-muted">
+                <Home className="h-12 w-12 text-muted-foreground/50" />
+              </div>
+            )}
+            <div className="absolute top-2 right-2">
+              <Badge variant={property.published ? "default" : "outline"}>
+                {property.published ? "Published" : "Draft"}
+              </Badge>
+            </div>
+          </div>
 
-      <CardContent>
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Price</p>
-            <p className="font-medium">${property.price?.toLocaleString()}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Beds</p>
-            <p className="font-medium">{property.bedrooms}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Baths</p>
-            <p className="font-medium">{property.bathrooms}</p>
-          </div>
-        </div>
+          <div className="flex flex-col flex-1 p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-semibold text-lg">{property.name}</h3>
+                <div className="flex items-center text-sm text-muted-foreground mt-1">
+                  <MapPin className="h-3.5 w-3.5 mr-1" />
+                  {property.address}, {property.city}, {property.state}{" "}
+                  {property.zip_code}
+                </div>
+              </div>
+              <div className="text-xl font-bold">
+                {property.price
+                  ? `$${property.price.toLocaleString()}`
+                  : "Price not set"}
+              </div>
+            </div>
 
-        {property.property_leases?.[0]?.tenant && (
-          <div className="mt-4 flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Leased to:</span>
-            <span className="font-medium">
-              {property.property_leases[0].tenant.name}
-            </span>
-          </div>
-        )}
-      </CardContent>
+            <div className="flex items-center gap-4 mt-3">
+              <div className="flex items-center text-sm">
+                <Bed className="h-4 w-4 mr-1 text-muted-foreground" />
+                <span>{property.bedrooms || 0} beds</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <Bath className="h-4 w-4 mr-1 text-muted-foreground" />
+                <span>{property.bathrooms || 0} baths</span>
+              </div>
+              <div className="flex items-center text-sm">
+                <Square className="h-4 w-4 mr-1 text-muted-foreground" />
+                <span>{property.square_feet?.toLocaleString() || 0} sq.ft</span>
+              </div>
+              {property.property_type && (
+                <Badge variant="outline">{property.property_type}</Badge>
+              )}
+              {property.available_date && (
+                <div className="flex items-center text-sm">
+                  <CalendarClock className="h-4 w-4 mr-1 text-muted-foreground" />
+                  <span>Available: {formatDate(property.available_date)}</span>
+                </div>
+              )}
+            </div>
 
-      <CardFooter className="border-t p-2 sm:p-3">
-        <div className="flex w-full items-center justify-between gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2 sm:px-3"
-                onClick={() => onPublish(property)}
-              >
-                {property.published ? (
-                  <EyeOff className="size-4" />
-                ) : (
-                  <Eye className="size-4" />
-                )}
-                <span className="ml-1.5 hidden sm:inline-block">
-                  {property.published ? "Unpublish" : "Publish"}
+            {property.property_leases?.[0]?.tenant && (
+              <div className="mt-2 flex items-center gap-2 text-sm">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Leased to:</span>
+                <span className="font-medium">
+                  {property.property_leases[0].tenant.name}
                 </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="sm:hidden">
-              {property.published ? "Unpublish" : "Publish"}
-            </TooltipContent>
-          </Tooltip>
+              </div>
+            )}
 
-          <div className="flex items-center gap-1 sm:gap-1.5">
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <div className="flex items-center mt-4 justify-between">
+              <div className="flex gap-1">
+                {hasSyndication && (
+                  <Badge
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    <Share2 className="h-3 w-3" />
+                    Syndicated
+                  </Badge>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2"
+                  onClick={() => onPublish(property)}
+                >
+                  {property.published ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                  <span className="ml-1.5">
+                    {property.published ? "Unpublish" : "Publish"}
+                  </span>
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 px-2 sm:px-3"
+                  className="h-8 px-2"
                   onClick={() => onEdit(property)}
                 >
                   <Edit className="size-4" />
-                  <span className="ml-1.5 hidden sm:inline-block">Edit</span>
+                  <span className="ml-1.5">Edit</span>
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="sm:hidden">
-                Edit property
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="h-8 px-2 sm:px-3"
+                  className="h-8 px-2"
                   onClick={() => onDelete(property.id)}
                 >
                   <Trash2 className="size-4" />
-                  <span className="ml-1.5 hidden sm:inline-block">Delete</span>
+                  <span className="ml-1.5">Delete</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <div ref={cardRef} className="transition-all duration-300">
+      <Card className="group overflow-hidden transition-all hover:shadow-md h-full flex flex-col">
+        <div className="relative aspect-video w-full overflow-hidden bg-muted">
+          {property.images?.[0] ? (
+            <img
+              src={property.images[0]}
+              alt={property.name}
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            />
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <Home className="h-12 w-12 text-muted-foreground/50" />
+            </div>
+          )}
+          <div className="absolute top-2 flex w-full justify-between px-2">
+            <div className="flex gap-2">
+              {hasSyndication && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Share2 className="h-3 w-3" />
+                  Syndicated
+                </Badge>
+              )}
+              {property.property_type && (
+                <Badge
+                  variant="outline"
+                  className="bg-white/70 backdrop-blur-sm"
+                >
+                  {property.property_type}
+                </Badge>
+              )}
+            </div>
+            <Badge
+              variant={property.published ? "default" : "outline"}
+              className={
+                property.published
+                  ? "bg-green-600"
+                  : "bg-white/70 backdrop-blur-sm"
+              }
+            >
+              {property.published ? "Published" : "Draft"}
+            </Badge>
+          </div>
+          {property.price && (
+            <div className="absolute bottom-0 left-0 m-2">
+              <Badge className="bg-primary text-white text-sm py-1 px-2 flex items-center">
+                <DollarSign className="h-3.5 w-3.5 mr-0.5" />
+                {property.price.toLocaleString()}
+              </Badge>
+            </div>
+          )}
+        </div>
+
+        <CardHeader className="space-y-1 pb-2">
+          <CardTitle className="line-clamp-1">{property.name}</CardTitle>
+          <div className="line-clamp-1 text-sm text-muted-foreground flex items-center">
+            <MapPin className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+            {property.address}, {property.city}
+          </div>
+        </CardHeader>
+
+        <CardContent className="pb-3 pt-0 flex-1">
+          <div className="grid grid-cols-3 gap-4 text-sm">
+            <div className="space-y-1 flex flex-col items-center">
+              <div className="flex items-center text-muted-foreground">
+                <Bed className="h-4 w-4" />
+              </div>
+              <p className="font-medium">{property.bedrooms || 0}</p>
+            </div>
+            <div className="space-y-1 flex flex-col items-center">
+              <div className="flex items-center text-muted-foreground">
+                <Bath className="h-4 w-4" />
+              </div>
+              <p className="font-medium">{property.bathrooms || 0}</p>
+            </div>
+            <div className="space-y-1 flex flex-col items-center">
+              <div className="flex items-center text-muted-foreground">
+                <Square className="h-4 w-4" />
+              </div>
+              <p className="font-medium">
+                {property.square_feet?.toLocaleString() || 0}
+              </p>
+            </div>
+          </div>
+
+          {property.property_leases?.[0]?.tenant && (
+            <div className="mt-4 flex items-center gap-2 text-sm border-t pt-3">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Leased to:</span>
+              <span className="font-medium">
+                {property.property_leases[0].tenant.name}
+              </span>
+            </div>
+          )}
+
+          {property.available_date && (
+            <div className="mt-2 text-xs text-muted-foreground flex items-center">
+              <CalendarClock className="h-3.5 w-3.5 mr-1" />
+              <span>Available: {formatDate(property.available_date)}</span>
+            </div>
+          )}
+        </CardContent>
+
+        <CardFooter className="border-t p-2 sm:p-3 mt-auto">
+          <div className="flex w-full items-center justify-between gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 sm:px-3"
+                  onClick={() => onPublish(property)}
+                >
+                  {property.published ? (
+                    <EyeOff className="size-4" />
+                  ) : (
+                    <Eye className="size-4" />
+                  )}
+                  <span className="ml-1.5 hidden sm:inline-block">
+                    {property.published ? "Unpublish" : "Publish"}
+                  </span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="sm:hidden">
-                Delete property
+                {property.published ? "Unpublish" : "Publish"}
               </TooltipContent>
             </Tooltip>
+
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-2 sm:px-3"
+                    onClick={() => onEdit(property)}
+                  >
+                    <Edit className="size-4" />
+                    <span className="ml-1.5 hidden sm:inline-block">Edit</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="sm:hidden">
+                  Edit property
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="h-8 px-2 sm:px-3"
+                    onClick={() => onDelete(property.id)}
+                  >
+                    <Trash2 className="size-4" />
+                    <span className="ml-1.5 hidden sm:inline-block">
+                      Delete
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="sm:hidden">
+                  Delete property
+                </TooltipContent>
+              </Tooltip>
+            </div>
           </div>
-        </div>
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
