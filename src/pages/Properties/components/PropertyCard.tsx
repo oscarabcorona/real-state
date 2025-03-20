@@ -102,7 +102,7 @@ export function PropertyCard({
               </div>
             </div>
 
-            <div className="flex items-center gap-4 mt-3">
+            <div className="flex items-center gap-4 mt-3 flex-wrap">
               <div className="flex items-center text-sm">
                 <Bed className="h-4 w-4 mr-1 text-muted-foreground" />
                 <span>{property.bedrooms || 0} beds</span>
@@ -150,39 +150,66 @@ export function PropertyCard({
               </div>
 
               <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 px-2"
-                  onClick={() => onPublish(property)}
-                >
-                  {property.published ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                  <span className="ml-1.5">
-                    {property.published ? "Unpublish" : "Publish"}
-                  </span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-2"
-                  onClick={() => onEdit(property)}
-                >
-                  <Edit className="size-4" />
-                  <span className="ml-1.5">Edit</span>
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="h-8 px-2"
-                  onClick={() => onDelete(property.id)}
-                >
-                  <Trash2 className="size-4" />
-                  <span className="ml-1.5">Delete</span>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2"
+                      onClick={() => onPublish(property)}
+                    >
+                      {property.published ? (
+                        <>
+                          <EyeOff className="size-4" />
+                          <span className="ml-1.5">Hide</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="size-4" />
+                          <span className="ml-1.5">Show</span>
+                        </>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    {property.published
+                      ? "Hide from public view"
+                      : "Make property visible to public"}
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-2"
+                      onClick={() => onEdit(property)}
+                    >
+                      <Edit className="size-4" />
+                      <span className="ml-1.5">Edit</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    Edit property details
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="h-8 px-2"
+                      onClick={() => onDelete(property.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    Delete this property
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -294,14 +321,14 @@ export function PropertyCard({
           )}
         </CardContent>
 
-        <CardFooter className="border-t p-2 sm:p-3 mt-auto">
-          <div className="flex w-full items-center justify-between gap-2">
+        <CardFooter className="border-t p-2 mt-auto">
+          <div className="flex w-full items-center justify-between">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 px-2 sm:px-3"
+                  className="h-8 w-10 px-0"
                   onClick={() => onPublish(property)}
                 >
                   {property.published ? (
@@ -309,31 +336,29 @@ export function PropertyCard({
                   ) : (
                     <Eye className="size-4" />
                   )}
-                  <span className="ml-1.5 hidden sm:inline-block">
-                    {property.published ? "Unpublish" : "Publish"}
-                  </span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="sm:hidden">
-                {property.published ? "Unpublish" : "Publish"}
+              <TooltipContent side="top">
+                {property.published
+                  ? "Hide from public view"
+                  : "Make property visible to public"}
               </TooltipContent>
             </Tooltip>
 
-            <div className="flex items-center gap-1 sm:gap-1.5">
+            <div className="flex items-center gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-2 sm:px-3"
+                    className="h-8 w-10 px-0"
                     onClick={() => onEdit(property)}
                   >
                     <Edit className="size-4" />
-                    <span className="ml-1.5 hidden sm:inline-block">Edit</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="sm:hidden">
-                  Edit property
+                <TooltipContent side="top">
+                  Edit property details
                 </TooltipContent>
               </Tooltip>
 
@@ -342,18 +367,13 @@ export function PropertyCard({
                   <Button
                     variant="destructive"
                     size="sm"
-                    className="h-8 px-2 sm:px-3"
+                    className="h-8 w-10 px-0"
                     onClick={() => onDelete(property.id)}
                   >
                     <Trash2 className="size-4" />
-                    <span className="ml-1.5 hidden sm:inline-block">
-                      Delete
-                    </span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="sm:hidden">
-                  Delete property
-                </TooltipContent>
+                <TooltipContent side="top">Delete this property</TooltipContent>
               </Tooltip>
             </div>
           </div>

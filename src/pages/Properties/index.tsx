@@ -126,8 +126,8 @@ export function Properties() {
   );
 
   return (
-    <div className="container mx-auto py-8 px-4 space-y-6">
-      <Card>
+    <div className="w-full h-full p-4 md:p-6">
+      <Card className="h-full border-none shadow-none">
         <CardHeader className="flex flex-row items-center justify-between px-6 py-4">
           <div className="flex items-center space-x-2">
             <Building2 className="h-6 w-6 text-primary" />
@@ -145,7 +145,7 @@ export function Properties() {
           </Button>
         </CardHeader>
         <Separator />
-        <div className="px-6 py-3 flex flex-col sm:flex-row gap-4 bg-muted/40">
+        <div className="px-6 py-3 flex flex-col sm:flex-row gap-4 bg-muted/20">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -155,7 +155,7 @@ export function Properties() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <Select value={selectedTenant} onValueChange={setSelectedTenant}>
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center">
@@ -205,7 +205,7 @@ export function Properties() {
             </div>
           </div>
         </div>
-        <CardContent className="p-6">
+        <CardContent className="p-6 overflow-auto h-[calc(100vh-13rem)]">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -223,7 +223,7 @@ export function Properties() {
             <div
               className={
                 viewMode === "grid"
-                  ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
                   : "flex flex-col gap-4"
               }
             >
