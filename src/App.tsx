@@ -17,6 +17,7 @@ import { DashboardLessor } from "./pages/DashboardLessor";
 import { Marketplace } from "./pages/Marketplace";
 import { Appointments } from "./pages/Appointments";
 import { AppointmentTenant } from "./pages/AppointmentTenant";
+import { AuthCallback } from "./pages/AuthCallback";
 import { useAuthStore } from "./store/authStore";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -51,6 +52,7 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/properties" element={<PublicProperties />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
         <Route
           path="/dashboard"
           element={

@@ -11,7 +11,7 @@
 -- Set the user ID to be deleted
 DO $$
 DECLARE
-  target_user_id uuid := '08f55d26-e6b4-4ca7-8fdd-57864b9a9e37';
+  target_user_id uuid := 'e07aef51-638e-43c9-8b14-350a9eee6d76';
 BEGIN
   -- Step 1: Update properties to remove workspace_id foreign key constraint
   UPDATE properties

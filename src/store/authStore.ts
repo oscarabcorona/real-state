@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AuthState } from '../types/auth';
+import { AuthState, WorkspaceType } from '../types/auth';
 import { supabase } from '../lib/supabase';
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -37,30 +37,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             .select(`
               workspace_id,
               role,
-              workspaces:workspace_id (
-                id,
-                name,
-                description,
-                region,
-                currency,
-                timezone,
-                is_default,
-                settings,
-                created_at,
-                updated_at
-              )
+              workspaces:workspace_id (*)
             `)
             .eq('user_id', session.user.id);
 
-          const workspaces = workspacesData?.map(item => ({
+          const workspaces: WorkspaceType[] = workspacesData?.map(item => ({
             ...item.workspaces,
-            userRole: item.role,
-            created_at: item.workspaces.created_at || null,
-            updated_at: item.workspaces.updated_at || null
+            userRole: item.role
           })) || [];
 
           // Determine active workspace
-          let activeWorkspace = null;
+          let activeWorkspace: WorkspaceType | null = null;
           if (userData.preferred_workspace_id && workspaces.length > 0) {
             activeWorkspace = workspaces.find(w => w.id === userData.preferred_workspace_id) || workspaces[0];
           } else if (workspaces.length > 0) {
@@ -119,7 +106,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (profileError) throw profileError;
 
       // For lessors, create a default workspace if name provided
-      let workspace = null;
+      let workspace: WorkspaceType | null = null;
       if (role === 'lessor') {
         const defaultWorkspaceName = workspaceName || 'My Properties';
         
@@ -153,9 +140,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         
         workspace = {
           ...workspaceData,
-          userRole: 'owner',
-          created_at: workspaceData.created_at || null,
-          updated_at: workspaceData.updated_at || null
+          userRole: 'owner'
         };
         
         // Update user's preferred workspace
@@ -165,17 +150,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .eq('id', user.id);
       }
 
+      const workspaces = workspace ? [workspace] : [];
+
       set({ 
         error: null,
         user: userData,
         workspace,
-        workspaces: workspace ? [{ ...workspace, userRole: 'owner' }] : []
+        workspaces
       });
       
       return { 
         user: userData, 
         workspace,
-        workspaces: workspace ? [{ ...workspace, userRole: 'owner' }] : []
+        workspaces
       };
     } catch (error) {
       console.error('Sign up error:', error);
@@ -211,28 +198,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         .select(`
           workspace_id,
           role,
-          workspaces:workspace_id (
-            id,
-            name,
-            description,
-            region,
-            currency,
-            timezone,
-            is_default,
-            settings,
-            created_at,
-            updated_at
-          )
+          workspaces:workspace_id (*)
         `)
         .eq('user_id', session.user.id);
 
       if (workspacesError) throw workspacesError;
 
-      const workspaces = workspacesData?.map(item => ({
+      const workspaces: WorkspaceType[] = workspacesData?.map(item => ({
         ...item.workspaces,
-        userRole: item.role,
-        created_at: item.workspaces.created_at || null,
-        updated_at: item.workspaces.updated_at || null
+        userRole: item.role
       })) || [];
 
       // Determine active workspace
@@ -343,11 +317,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (membershipError) throw membershipError;
       
       // Add to state
-      const newWorkspace = {
+      const newWorkspace: WorkspaceType = {
         ...workspace,
-        userRole: 'owner',
-        created_at: workspace.created_at || null,
-        updated_at: workspace.updated_at || null
+        userRole: 'owner'
       };
       
       const updatedWorkspaces = [...get().workspaces, newWorkspace];
