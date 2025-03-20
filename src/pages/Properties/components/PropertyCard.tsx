@@ -9,6 +9,12 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ImagePlaceholder } from "@/components/ui/image-placeholder";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface PropertyCardProps {
   property: Property;
@@ -30,31 +36,30 @@ export function PropertyCard({
     getSyndicationValue(property, "hotpads");
 
   return (
-    <Card className="overflow-hidden">
-      <div className="relative h-48 w-full overflow-hidden">
-        <img
-          src={property.images?.[0] || "/placeholder-property.jpg"}
-          alt={property.name}
-          className="h-full w-full object-cover transition-transform hover:scale-105"
-        />
-        <Badge
-          variant={property.published ? "default" : "outline"}
-          className="absolute top-2 right-2"
-        >
-          {property.published ? "Published" : "Draft"}
-        </Badge>
-
-        {/* Display syndication status badge if needed */}
-        {hasSyndication && (
-          <Badge variant="secondary" className="absolute top-2 left-2">
-            Syndicated
-          </Badge>
+    <Card className="group overflow-hidden transition-all hover:shadow-md">
+      <div className="relative aspect-video w-full overflow-hidden bg-muted">
+        {property.images?.[0] ? (
+          <img
+            src={property.images[0]}
+            alt={property.name}
+            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+          />
+        ) : (
+          <ImagePlaceholder />
         )}
+        <div className="absolute top-2 flex w-full justify-between px-2">
+          <div className="flex gap-2">
+            {hasSyndication && <Badge variant="secondary">Syndicated</Badge>}
+          </div>
+          <Badge variant={property.published ? "default" : "outline"}>
+            {property.published ? "Published" : "Draft"}
+          </Badge>
+        </div>
       </div>
 
-      <CardHeader>
-        <CardTitle>{property.name}</CardTitle>
-        <div className="text-sm text-muted-foreground">
+      <CardHeader className="space-y-1">
+        <CardTitle className="line-clamp-1">{property.name}</CardTitle>
+        <div className="line-clamp-1 text-sm text-muted-foreground">
           {property.address}, {property.city}, {property.state}{" "}
           {property.zip_code}
         </div>
@@ -62,23 +67,23 @@ export function PropertyCard({
 
       <CardContent>
         <div className="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <p className="text-muted-foreground">Price</p>
-            <p className="font-semibold">${property.price?.toLocaleString()}</p>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Price</p>
+            <p className="font-medium">${property.price?.toLocaleString()}</p>
           </div>
-          <div>
-            <p className="text-muted-foreground">Beds</p>
-            <p className="font-semibold">{property.bedrooms}</p>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Beds</p>
+            <p className="font-medium">{property.bedrooms}</p>
           </div>
-          <div>
-            <p className="text-muted-foreground">Baths</p>
-            <p className="font-semibold">{property.bathrooms}</p>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">Baths</p>
+            <p className="font-medium">{property.bathrooms}</p>
           </div>
         </div>
 
         {property.property_leases?.[0]?.tenant && (
-          <div className="mt-3 text-sm">
-            <span className="text-muted-foreground">Leased to: </span>
+          <div className="mt-4 flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground">Leased to:</span>
             <span className="font-medium">
               {property.property_leases[0].tenant.name}
             </span>
@@ -86,29 +91,66 @@ export function PropertyCard({
         )}
       </CardContent>
 
-      <CardFooter className="flex justify-between border-t pt-4">
-        <Button variant="ghost" size="sm" onClick={() => onPublish(property)}>
-          {property.published ? (
-            <EyeOff className="h-4 w-4 mr-1" />
-          ) : (
-            <Eye className="h-4 w-4 mr-1" />
-          )}
-          {property.published ? "Unpublish" : "Publish"}
-        </Button>
+      <CardFooter className="border-t p-2 sm:p-3">
+        <div className="flex w-full items-center justify-between gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 px-2 sm:px-3"
+                onClick={() => onPublish(property)}
+              >
+                {property.published ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+                <span className="ml-1.5 hidden sm:inline-block">
+                  {property.published ? "Unpublish" : "Publish"}
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="sm:hidden">
+              {property.published ? "Unpublish" : "Publish"}
+            </TooltipContent>
+          </Tooltip>
 
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => onEdit(property)}>
-            <Edit className="h-4 w-4 mr-1" />
-            Edit
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDelete(property.id)}
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            Delete
-          </Button>
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2 sm:px-3"
+                  onClick={() => onEdit(property)}
+                >
+                  <Edit className="size-4" />
+                  <span className="ml-1.5 hidden sm:inline-block">Edit</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="sm:hidden">
+                Edit property
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="h-8 px-2 sm:px-3"
+                  onClick={() => onDelete(property.id)}
+                >
+                  <Trash2 className="size-4" />
+                  <span className="ml-1.5 hidden sm:inline-block">Delete</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="sm:hidden">
+                Delete property
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </CardFooter>
     </Card>
