@@ -2,7 +2,6 @@ import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AnimatedElement } from "@/components/animated/AnimatedElement";
-import { AnimatedText } from "@/components/animated/AnimatedText";
 
 export function EmptyState() {
   return (
@@ -12,9 +11,7 @@ export function EmptyState() {
           <div className="mx-auto p-3 bg-muted inline-block rounded-full mb-2">
             <Bell className="h-8 w-8 text-muted-foreground" />
           </div>
-          <CardTitle>
-            <AnimatedText text="No notifications yet" delay={0.2} />
-          </CardTitle>
+          <CardTitle>No notifications yet</CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
           <p className="text-muted-foreground text-sm text-center mb-6">

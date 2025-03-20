@@ -3,7 +3,6 @@ import { useAuthStore } from "../../store/authStore";
 import { Notification } from "./types";
 import { NotificationsList } from "./components/NotificationsList";
 import { AnimatedElement } from "@/components/animated/AnimatedElement";
-import { AnimatedText } from "@/components/animated/AnimatedText";
 import {
   fetchUserNotifications,
   markNotificationAsRead,
@@ -120,7 +119,7 @@ export function Notifications() {
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <div className="flex items-center">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  <AnimatedText text="Notifications" delay={0.1} />
+                  Notifications
                 </h1>
                 {unreadCount > 0 && (
                   <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">

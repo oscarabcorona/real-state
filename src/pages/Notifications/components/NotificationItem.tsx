@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AnimatedElement } from "@/components/animated/AnimatedElement";
-import { AnimatedText } from "@/components/animated/AnimatedText";
 
 type NotificationItemProps = {
   notification: Notification;
@@ -70,11 +69,7 @@ export function NotificationItem({
                 )}
               >
                 {isUnread ? (
-                  <AnimatedText
-                    text={notification.title}
-                    delay={0.2}
-                    className="inline"
-                  />
+                  <span className="text-primary">{notification.title}</span>
                 ) : (
                   notification.title
                 )}
