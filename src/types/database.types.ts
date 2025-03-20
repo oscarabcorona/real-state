@@ -7,6 +7,31 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       appointment_rules: {
@@ -431,6 +456,7 @@ export type Database = {
           syndication: Json | null
           updated_at: string | null
           user_id: string
+          workspace_id: string
           zip_code: string
         }
         Insert: {
@@ -456,6 +482,7 @@ export type Database = {
           syndication?: Json | null
           updated_at?: string | null
           user_id: string
+          workspace_id: string
           zip_code: string
         }
         Update: {
@@ -481,6 +508,7 @@ export type Database = {
           syndication?: Json | null
           updated_at?: string | null
           user_id?: string
+          workspace_id?: string
           zip_code?: string
         }
         Relationships: [
@@ -489,6 +517,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "properties_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
             referencedColumns: ["id"]
           },
         ]
@@ -620,19 +655,52 @@ export type Database = {
           },
         ]
       }
+      user_workspaces: {
+        Row: {
+          created_at: string | null
+          role: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          role: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string | null
+          role?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_workspaces_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           address: string | null
           avatar_url: string | null
           bio: string | null
           city: string | null
+          company_name: string | null
           created_at: string | null
           date_of_birth: string | null
+          display_name: string | null
           email: string
           full_name: string | null
           id: string
           phone: string | null
+          preferred_workspace_id: string | null
           role: string
+          settings: Json | null
           state: string | null
           updated_at: string | null
           zip_code: string | null
@@ -642,13 +710,17 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
+          company_name?: string | null
           created_at?: string | null
           date_of_birth?: string | null
+          display_name?: string | null
           email: string
           full_name?: string | null
           id: string
           phone?: string | null
+          preferred_workspace_id?: string | null
           role: string
+          settings?: Json | null
           state?: string | null
           updated_at?: string | null
           zip_code?: string | null
@@ -658,16 +730,70 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           city?: string | null
+          company_name?: string | null
           created_at?: string | null
           date_of_birth?: string | null
+          display_name?: string | null
           email?: string
           full_name?: string | null
           id?: string
           phone?: string | null
+          preferred_workspace_id?: string | null
           role?: string
+          settings?: Json | null
           state?: string | null
           updated_at?: string | null
           zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_preferred_workspace_id_fkey"
+            columns: ["preferred_workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspaces: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          owner_id: string
+          region: string | null
+          settings: Json | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          owner_id: string
+          region?: string | null
+          settings?: Json | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          owner_id?: string
+          region?: string | null
+          settings?: Json | null
+          timezone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -704,6 +830,12 @@ export type Database = {
         Args: {
           payment_id: string
           doc_type: string
+        }
+        Returns: string
+      }
+      get_default_workspace: {
+        Args: {
+          p_user_id: string
         }
         Returns: string
       }
@@ -838,3 +970,4 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+
