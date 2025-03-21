@@ -89,8 +89,6 @@ export function Properties() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this property?")) return;
-
     try {
       await deleteProperty(id);
       loadProperties();
