@@ -20,8 +20,16 @@ import {
   Tag,
   ArrowLeft,
   ArrowRight,
+  Ruler,
 } from "lucide-react";
 import { AmenityField } from "../form-fields/AmenityField";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface FeaturesTabProps {
   form: UseFormReturn<PropertyFormValues>;
@@ -116,6 +124,87 @@ export function FeaturesTab({ form, onNextTab, onPrevTab }: FeaturesTabProps) {
                     value={field.value ?? ""}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="col-span-2">
+          <FormField
+            control={form.control}
+            name="measurement_system"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center">
+                  <Ruler className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Measurement System
+                </FormLabel>
+                <Select
+                  value={field.value || "imperial"}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    // When switching measurement systems, ensure the other measurement field is updated
+                    if (value === "imperial") {
+                      const squareMeters = form.getValues().square_meters;
+                      if (squareMeters) {
+                        // Approximate conversion from m² to sq ft
+                        const squareFeet = Math.round(squareMeters * 10.7639);
+                        form.setValue("square_feet", squareFeet);
+                      }
+                    } else if (value === "metric") {
+                      const squareFeet = form.getValues().square_feet;
+                      if (squareFeet) {
+                        // Approximate conversion from sq ft to m²
+                        const squareMeters = Math.round(squareFeet * 0.092903);
+                        form.setValue("square_meters", squareMeters);
+                      }
+                    }
+                  }}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select measurement system" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="imperial">Imperial (sq ft)</SelectItem>
+                    <SelectItem value="metric">Metric (m²)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Choose the measurement system for this property
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div>
+          <FormField
+            control={form.control}
+            name={
+              form.watch("measurement_system") === "metric"
+                ? "square_meters"
+                : "square_feet"
+            }
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center">
+                  <Square className="h-4 w-4 mr-2 text-muted-foreground" />
+                  {form.watch("measurement_system") === "metric"
+                    ? "Square Meters"
+                    : "Square Feet"}
+                </FormLabel>
+                <FormControl>
+                  <Input type="number" {...field} value={field.value ?? ""} />
+                </FormControl>
+                <FormDescription>
+                  {form.watch("measurement_system") === "metric"
+                    ? "Property size in square meters (m²)"
+                    : "Property size in square feet (sq ft)"}
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

@@ -1,4 +1,4 @@
-import { Tenant, PropertyFormValues } from "../../types";
+import { Tenant, PropertyFormValues, PROPERTY_REGIONS } from "../../types";
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ import {
   CalendarClock,
   Users,
   ArrowRight,
+  Globe,
 } from "lucide-react";
 
 interface DetailsTabProps {
@@ -156,6 +157,42 @@ export function DetailsTab({ form, tenants, onNextTab }: DetailsTabProps) {
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div>
+          <FormField
+            control={form.control}
+            name="region"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center">
+                  <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Region
+                </FormLabel>
+                <Select
+                  value={field.value || "USA"}
+                  onValueChange={field.onChange}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="max-h-[200px]">
+                    {PROPERTY_REGIONS.map((region) => (
+                      <SelectItem key={region} value={region}>
+                        {region.replace(/_/g, " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  The country where this property is located
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

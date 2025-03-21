@@ -26,9 +26,10 @@ import {
   Square,
   Trash2,
   Users,
+  Globe,
 } from "lucide-react";
 import { useRef } from "react";
-import { Property, getSyndicationValue } from "../types";
+import { Property, getSyndicationValue, formatArea } from "../types";
 
 interface PropertyCardProps {
   property: Property;
@@ -94,6 +95,12 @@ export function PropertyCard({
                   {property.address}, {property.city}, {property.state}{" "}
                   {property.zip_code}
                 </div>
+                {property.region && (
+                  <div className="flex items-center text-xs text-muted-foreground mt-1">
+                    <Globe className="h-3 w-3 mr-1" />
+                    Region: {property.region.replace(/_/g, " ")}
+                  </div>
+                )}
               </div>
               <div className="text-xl font-bold">
                 {property.price
@@ -113,7 +120,7 @@ export function PropertyCard({
               </div>
               <div className="flex items-center text-sm">
                 <Square className="h-4 w-4 mr-1 text-muted-foreground" />
-                <span>{property.square_feet?.toLocaleString() || 0} sq.ft</span>
+                <span>{formatArea(property)}</span>
               </div>
               {property.property_type && (
                 <Badge variant="outline">{property.property_type}</Badge>
@@ -297,9 +304,7 @@ export function PropertyCard({
               <div className="flex items-center text-muted-foreground">
                 <Square className="h-4 w-4" />
               </div>
-              <p className="font-medium">
-                {property.square_feet?.toLocaleString() || 0}
-              </p>
+              <p className="font-medium">{formatArea(property)}</p>
             </div>
           </div>
 
@@ -317,6 +322,13 @@ export function PropertyCard({
             <div className="mt-2 text-xs text-muted-foreground flex items-center">
               <CalendarClock className="h-3.5 w-3.5 mr-1" />
               <span>Available: {formatDate(property.available_date)}</span>
+            </div>
+          )}
+
+          {property.region && (
+            <div className="mt-2 text-xs text-muted-foreground flex items-center">
+              <Globe className="h-3.5 w-3.5 mr-1" />
+              <span>Region: {property.region.replace(/_/g, " ")}</span>
             </div>
           )}
         </CardContent>

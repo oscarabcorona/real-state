@@ -33,6 +33,9 @@ export interface Property {
   bedrooms: number | null;
   bathrooms: number | null;
   square_feet: number | null;
+  square_meters: number | null; // Add new field for square meters
+  measurement_system: string | null; // Add measurement system field
+  region: string | null; // Add region field
   property_type: string | null;
   amenities: string[] | null;
   images: string[] | null;
@@ -65,6 +68,10 @@ export const PropertyFormSchema = z.object({
   description: z.string().optional().nullable(),
   property_type: z.string().nullable().default("house"),
   
+  // Region and measurement system fields
+  region: z.string().optional().nullable().default("USA"),
+  measurement_system: z.string().nullable().default("imperial"),
+  
   // Numeric fields - ensure proper conversion
   price: z.union([z.number(), z.string().transform(val => val === '' ? null : Number(val))])
     .nullable().optional(),
@@ -73,6 +80,8 @@ export const PropertyFormSchema = z.object({
   bathrooms: z.union([z.number(), z.string().transform(val => val === '' ? null : Number(val))])
     .nullable().optional(),
   square_feet: z.union([z.number(), z.string().transform(val => val === '' ? null : Number(val))])
+    .nullable().optional(),
+  square_meters: z.union([z.number(), z.string().transform(val => val === '' ? null : Number(val))])
     .nullable().optional(),
   
   // Array fields
@@ -196,3 +205,34 @@ export interface PropertyFormData {
     hotpads: boolean;
   };
 }
+
+// Add helper function to format area based on measurement system
+export function formatArea(property: Property): string {
+  if (property.measurement_system === 'metric' && property.square_meters) {
+    return `${property.square_meters.toLocaleString()} m²`;
+  } else if (property.square_feet) {
+    return `${property.square_feet.toLocaleString()} sq.ft`;
+  }
+  return "0";
+}
+
+// Get list of all regions for selection dropdown
+export const PROPERTY_REGIONS = [
+  // North America
+  'USA', 'CANADA', 'MEXICO',
+  
+  // Central America
+  'BELIZE', 'GUATEMALA', 'HONDURAS', 'EL_SALVADOR', 
+  'NICARAGUA', 'COSTA_RICA', 'PANAMA',
+  
+  // Caribbean
+  'ANTIGUA_AND_BARBUDA', 'BAHAMAS', 'BARBADOS', 'CUBA', 
+  'DOMINICA', 'DOMINICAN_REPUBLIC', 'GRENADA', 'HAITI', 
+  'JAMAICA', 'SAINT_KITTS_AND_NEVIS', 'SAINT_LUCIA', 
+  'SAINT_VINCENT_AND_GRENADINES', 'TRINIDAD_AND_TOBAGO',
+  
+  // South America
+  'COLOMBIA', 'VENEZUELA', 'GUYANA', 'SURINAME', 
+  'FRENCH_GUIANA', 'ECUADOR', 'PERU', 'BRAZIL', 
+  'BOLIVIA', 'PARAGUAY', 'URUGUAY', 'ARGENTINA', 'CHILE'
+];
