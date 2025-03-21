@@ -18,9 +18,11 @@ npx supabase migration status
 supabase migration up
 
 # Prod
-npx supabase gen types typescript --project-id "$PROJECT_REF" --schema public > database.types.ts
+npx supabase gen types typescript --project-id "$PROJECT_REF" --schema public > src/types/database.types.ts
 
 # Local
-npx supabase gen types typescript --local > database.types.ts
+```sh
+npx supabase gen types typescript --local > src/types/database.types.ts
+```
 
 ````

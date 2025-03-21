@@ -446,12 +446,17 @@ export type Database = {
           id: string
           images: string[] | null
           lease_terms: string | null
+          measurement_system:
+            | Database["public"]["Enums"]["measurement_system"]
+            | null
           name: string
           pet_policy: string | null
           price: number | null
           property_type: string | null
           published: boolean | null
+          region: Database["public"]["Enums"]["property_region"] | null
           square_feet: number | null
+          square_meters: number | null
           state: string
           syndication: Json | null
           updated_at: string | null
@@ -472,12 +477,17 @@ export type Database = {
           id?: string
           images?: string[] | null
           lease_terms?: string | null
+          measurement_system?:
+            | Database["public"]["Enums"]["measurement_system"]
+            | null
           name: string
           pet_policy?: string | null
           price?: number | null
           property_type?: string | null
           published?: boolean | null
+          region?: Database["public"]["Enums"]["property_region"] | null
           square_feet?: number | null
+          square_meters?: number | null
           state: string
           syndication?: Json | null
           updated_at?: string | null
@@ -498,12 +508,17 @@ export type Database = {
           id?: string
           images?: string[] | null
           lease_terms?: string | null
+          measurement_system?:
+            | Database["public"]["Enums"]["measurement_system"]
+            | null
           name?: string
           pet_policy?: string | null
           price?: number | null
           property_type?: string | null
           published?: boolean | null
+          region?: Database["public"]["Enums"]["property_region"] | null
           square_feet?: number | null
+          square_meters?: number | null
           state?: string
           syndication?: Json | null
           updated_at?: string | null
@@ -757,41 +772,56 @@ export type Database = {
       }
       workspaces: {
         Row: {
+          allowed_regions:
+            | Database["public"]["Enums"]["property_region"][]
+            | null
           created_at: string | null
           currency: string | null
           description: string | null
           id: string
           is_default: boolean | null
+          max_properties: number | null
           name: string
           owner_id: string
           region: string | null
           settings: Json | null
+          tier: Database["public"]["Enums"]["workspace_tier"]
           timezone: string | null
           updated_at: string | null
         }
         Insert: {
+          allowed_regions?:
+            | Database["public"]["Enums"]["property_region"][]
+            | null
           created_at?: string | null
           currency?: string | null
           description?: string | null
           id?: string
           is_default?: boolean | null
+          max_properties?: number | null
           name: string
           owner_id: string
           region?: string | null
           settings?: Json | null
+          tier?: Database["public"]["Enums"]["workspace_tier"]
           timezone?: string | null
           updated_at?: string | null
         }
         Update: {
+          allowed_regions?:
+            | Database["public"]["Enums"]["property_region"][]
+            | null
           created_at?: string | null
           currency?: string | null
           description?: string | null
           id?: string
           is_default?: boolean | null
+          max_properties?: number | null
           name?: string
           owner_id?: string
           region?: string | null
           settings?: Json | null
+          tier?: Database["public"]["Enums"]["workspace_tier"]
           timezone?: string | null
           updated_at?: string | null
         }
@@ -822,6 +852,25 @@ export type Database = {
         }
         Returns: boolean
       }
+      convert_property_measurement: {
+        Args: {
+          p_property_id: string
+          p_target_system: Database["public"]["Enums"]["measurement_system"]
+        }
+        Returns: undefined
+      }
+      convert_sqft_to_sqm: {
+        Args: {
+          sqft: number
+        }
+        Returns: number
+      }
+      convert_sqm_to_sqft: {
+        Args: {
+          sqm: number
+        }
+        Returns: number
+      }
       generate_invoice_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -833,17 +882,51 @@ export type Database = {
         }
         Returns: string
       }
+      get_available_workspace_tiers: {
+        Args: {
+          p_workspace_id: string
+        }
+        Returns: {
+          available_tier: Database["public"]["Enums"]["workspace_tier"]
+        }[]
+      }
       get_default_workspace: {
         Args: {
           p_user_id: string
         }
         Returns: string
       }
+      get_default_workspace_with_tier: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          workspace_id: string
+          workspace_tier: Database["public"]["Enums"]["workspace_tier"]
+          property_count: number
+          max_properties: number
+        }[]
+      }
       update_document_assignment_status: {
         Args: {
           p_assignment_id: string
           p_status: string
           p_notes?: string
+        }
+        Returns: undefined
+      }
+      update_workspace_tier_limits: {
+        Args: {
+          p_workspace_id: string
+          p_tier: Database["public"]["Enums"]["workspace_tier"]
+        }
+        Returns: undefined
+      }
+      upgrade_workspace_tier: {
+        Args: {
+          p_workspace_id: string
+          p_new_tier: Database["public"]["Enums"]["workspace_tier"]
+          p_allowed_regions?: Database["public"]["Enums"]["property_region"][]
         }
         Returns: undefined
       }
@@ -857,6 +940,7 @@ export type Database = {
       }
     }
     Enums: {
+      measurement_system: "imperial" | "metric"
       notification_type:
         | "appointment_scheduled"
         | "appointment_confirmed"
@@ -867,6 +951,44 @@ export type Database = {
         | "payment_received"
         | "payment_due"
         | "report_ready"
+      property_region:
+        | "USA"
+        | "CANADA"
+        | "MEXICO"
+        | "BELIZE"
+        | "GUATEMALA"
+        | "HONDURAS"
+        | "EL_SALVADOR"
+        | "NICARAGUA"
+        | "COSTA_RICA"
+        | "PANAMA"
+        | "ANTIGUA_AND_BARBUDA"
+        | "BAHAMAS"
+        | "BARBADOS"
+        | "CUBA"
+        | "DOMINICA"
+        | "DOMINICAN_REPUBLIC"
+        | "GRENADA"
+        | "HAITI"
+        | "JAMAICA"
+        | "SAINT_KITTS_AND_NEVIS"
+        | "SAINT_LUCIA"
+        | "SAINT_VINCENT_AND_GRENADINES"
+        | "TRINIDAD_AND_TOBAGO"
+        | "COLOMBIA"
+        | "VENEZUELA"
+        | "GUYANA"
+        | "SURINAME"
+        | "FRENCH_GUIANA"
+        | "ECUADOR"
+        | "PERU"
+        | "BRAZIL"
+        | "BOLIVIA"
+        | "PARAGUAY"
+        | "URUGUAY"
+        | "ARGENTINA"
+        | "CHILE"
+      workspace_tier: "free" | "starter" | "pro" | "international"
     }
     CompositeTypes: {
       [_ in never]: never

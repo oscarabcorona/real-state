@@ -2,7 +2,7 @@ import { Database } from "./database.types";
 
 export type UserType = Database["public"]["Tables"]["users"]["Row"];
 export type WorkspaceType = Database["public"]["Tables"]["workspaces"]["Row"] & {
-  userRole: string;
+  userRole: string; 
 };
 
 export interface AuthState {

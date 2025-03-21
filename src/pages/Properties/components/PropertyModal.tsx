@@ -6,7 +6,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { saveProperty } from "@/services/propertyService";
 import { useAuthStore } from "@/store/authStore";
@@ -23,7 +22,6 @@ import {
   parseSyndication,
 } from "../types";
 
-// Import tab components
 import { DetailsTab } from "./modal-tabs/DetailsTab";
 import { FeaturesTab } from "./modal-tabs/FeaturesTab";
 import { MediaTab } from "./modal-tabs/MediaTab";
@@ -44,12 +42,10 @@ export function PropertyModal({
   onClose,
   userId,
   editingProperty,
-  tenants,
   onSuccess,
 }: PropertyModalProps) {
   const [activeTab, setActiveTab] = React.useState("details");
   const [loading, setLoading] = React.useState(false);
-  const [formProgress, setFormProgress] = React.useState(0);
 
   // Get workspace from auth store
   const { workspace } = useAuthStore();
@@ -64,12 +60,14 @@ export function PropertyModal({
       state: "",
       zip_code: "",
       description: null,
-      tenant_id: null,
       property_type: "house",
       price: null,
       bedrooms: null,
       bathrooms: null,
       square_feet: null,
+      square_meters: null,
+      measurement_system: "imperial",
+      region: "USA",
       amenities: [],
       images: [],
       available_date: null,
@@ -114,25 +112,6 @@ export function PropertyModal({
       });
     }
   }, [editingProperty, form]);
-
-  // Calculate form progress
-  useEffect(() => {
-    const formValues = form.getValues();
-
-    let fieldsCompleted = 0;
-    const totalFields = 7;
-
-    if (formValues.name) fieldsCompleted++;
-    if (formValues.address) fieldsCompleted++;
-    if (formValues.city) fieldsCompleted++;
-    if (formValues.state) fieldsCompleted++;
-    if (formValues.zip_code) fieldsCompleted++;
-    if (formValues.property_type) fieldsCompleted++;
-    if (formValues.price) fieldsCompleted++;
-
-    setFormProgress(Math.round((fieldsCompleted / totalFields) * 100));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form.watch()]);
 
   // Handle form submission
   const onSubmit = async (data: PropertyFormValues) => {
@@ -207,13 +186,6 @@ export function PropertyModal({
             Fill in the property details. Navigate between tabs to complete all
             information.
           </DialogDescription>
-          <div className="mt-2">
-            <div className="flex justify-between text-sm mb-1">
-              <span>Completion</span>
-              <span>{formProgress}%</span>
-            </div>
-            <Progress value={formProgress} className="h-2" />
-          </div>
         </DialogHeader>
 
         <Form {...form}>
@@ -261,11 +233,7 @@ export function PropertyModal({
                 </TabsTrigger>
               </TabsList>
 
-              <DetailsTab
-                form={form}
-                tenants={tenants}
-                onNextTab={goToNextTab}
-              />
+              <DetailsTab form={form} onNextTab={goToNextTab} />
 
               <FeaturesTab
                 form={form}
