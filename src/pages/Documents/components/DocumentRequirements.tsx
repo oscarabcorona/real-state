@@ -41,7 +41,7 @@ export const DocumentRequirements: React.FC<DocumentRequirementsProps> = ({
                   <div>
                     <Card
                       className={cn(
-                        "p-4 hover:shadow-md transition-all cursor-pointer",
+                        "p-4 hover:shadow-md transition-all cursor-pointer h-full",
                         isComplete &&
                           "bg-primary/5 border-primary/20 dark:bg-primary/10 dark:border-primary/30",
                         isPending &&
@@ -54,10 +54,10 @@ export const DocumentRequirements: React.FC<DocumentRequirementsProps> = ({
                         !isComplete && !isPending && onUpload(req.type)
                       }
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 w-full">
                         <div
                           className={cn(
-                            "p-2 rounded-lg",
+                            "p-2 rounded-lg flex-shrink-0",
                             isComplete &&
                               "bg-primary/10 text-primary dark:bg-primary/20",
                             isPending &&
@@ -69,9 +69,9 @@ export const DocumentRequirements: React.FC<DocumentRequirementsProps> = ({
                         >
                           {req.icon}
                         </div>
-                        <div className="space-y-1.5">
-                          <h3 className="font-medium">{req.label}</h3>
-                          <p className="text-xs text-muted-foreground">
+                        <div className="space-y-1.5 min-w-0 flex-1">
+                          <h3 className="font-medium truncate">{req.label}</h3>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
                             {req.description}
                           </p>
                           <div className="pt-1">
@@ -97,10 +97,10 @@ export const DocumentRequirements: React.FC<DocumentRequirementsProps> = ({
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="gap-1 w-full justify-center mt-1 border-dashed"
+                                className="gap-1 w-full justify-center mt-1 border-dashed text-xs px-1"
                               >
-                                <Upload className="h-3 w-3" />
-                                Upload Document
+                                <Upload className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">Upload</span>
                               </Button>
                             )}
                           </div>
