@@ -1,9 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { addDays } from "date-fns";
 import { CalendarIcon, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../store/authStore";
 import {
   AppointmentDetailsModal,
@@ -12,6 +10,11 @@ import {
   UpcomingAppointments,
 } from "./components";
 import { Appointment } from "./types";
+import {
+  fetchUserAppointments,
+  getUpcomingAppointments,
+  updateAppointmentStatus,
+} from "@/services/appointmentService";
 
 function Appointments() {
   const { user } = useAuthStore();
@@ -28,76 +31,19 @@ function Appointments() {
 
   useEffect(() => {
     if (user) {
-      fetchAppointments();
+      loadAppointments();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const fetchAppointments = async () => {
+  const loadAppointments = async () => {
     try {
-      let query = supabase.from("appointments").select(`
-            *,
-            properties (
-              name,
-              address,
-              city,
-              state
-            )
-          `);
-
-      // Filter appointments based on user role
-      if (user?.role === "lessor") {
-        // First get the property IDs for this lessor
-        const { data: propertyData } = await supabase
-          .from("properties")
-          .select("id")
-          .eq("user_id", user.id);
-
-        if (propertyData && propertyData.length > 0) {
-          const propertyIds = propertyData.map((p) => p.id);
-          query = query.in("property_id", propertyIds);
-        }
-      } else if (user?.role === "tenant") {
-        // For tenants, we need to:
-        // 1. Get properties they have access to
-        const { data: accessData } = await supabase
-          .from("tenant_property_access")
-          .select("property_id")
-          .eq("tenant_user_id", user.id);
-
-        if (accessData && accessData.length > 0) {
-          const propertyIds = accessData.map((a) => a.property_id);
-          // 2. Get appointments for those properties OR where they are the tenant
-          query = query.or(
-            `property_id.in.(${propertyIds}),tenant_user_id.eq.${user.id}`
-          );
-        } else {
-          // If no property access, only get appointments they created
-          query = query.eq("tenant_user_id", user.id);
-        }
-      }
-
-      const { data, error } = await query.order("preferred_date", {
-        ascending: true,
-      });
-
-      if (error) throw error;
-
-      const appointments = data || [];
-      setAppointments(appointments);
-
-      // Set upcoming appointments (next 7 days)
-      const now = new Date();
-      const nextWeek = addDays(now, 7);
-      const upcoming = appointments.filter((apt) => {
-        const aptDate = new Date(apt.preferred_date);
-        return (
-          aptDate >= now && aptDate <= nextWeek && apt.status === "confirmed"
-        );
-      });
-      setUpcomingAppointments(upcoming);
+      setLoading(true);
+      const data = await fetchUserAppointments(user?.id || "", user?.role);
+      setAppointments(data);
+      setUpcomingAppointments(getUpcomingAppointments(data));
     } catch (error) {
-      console.error("Error fetching appointments:", error);
+      console.error("Error loading appointments:", error);
     } finally {
       setLoading(false);
     }
@@ -108,17 +54,12 @@ function Appointments() {
     status: "confirmed" | "cancelled"
   ) => {
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({
-          status,
-          lessor_notes: lessorNotes,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", appointmentId);
-
-      if (error) throw error;
-      fetchAppointments();
+      await updateAppointmentStatus({
+        appointmentId,
+        status,
+        notes: lessorNotes,
+      });
+      loadAppointments();
       setShowDetailsModal(false);
     } catch (error) {
       console.error("Error updating appointment:", error);
