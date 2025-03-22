@@ -83,7 +83,10 @@ function App() {
                 user?.role === "tenant" ? <PaymentTenant /> : <Payments />
               }
             />
-            <Route path="documents" element={<Documents />} />
+            <Route
+              path="documents"
+              element={user?.role === "tenant" ? <Documents /> : null}
+            />
             <Route path="reports" element={<Reports />} />
             <Route path="reports/:id" element={<ReportDetails />} />
             <Route

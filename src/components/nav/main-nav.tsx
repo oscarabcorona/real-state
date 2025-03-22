@@ -30,10 +30,10 @@ export function MainNav() {
       ? [
           { title: "Marketplace", url: "/dashboard/marketplace", icon: Search },
           { title: "Reports", url: "/dashboard/reports", icon: FileBarChart },
+          { title: "Documents", url: "/dashboard/documents", icon: FileText },
         ]
       : [{ title: "Properties", url: "/dashboard/properties", icon: Home }]),
     { title: "Payments", url: "/dashboard/payments", icon: CreditCard },
-    { title: "Documents", url: "/dashboard/documents", icon: FileText },
     { title: "Appointments", url: "/dashboard/appointments", icon: Calendar },
     { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
     { title: "Settings", url: "/dashboard/settings", icon: Settings },
