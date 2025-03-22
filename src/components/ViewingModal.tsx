@@ -139,21 +139,15 @@ export function ViewingModal({
       onOpenChange(false);
       form.reset();
 
-      toast({
-        title: "Success",
-        description: "Viewing request submitted successfully!",
-      });
+      toast.success("Appointment scheduled successfully!");
     } catch (error) {
       console.error("Error submitting appointment:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to submit viewing request. Please try again.",
-      });
+      toast.error("An error occurred. Please try again later.");
     } finally {
       setSubmitting(false);
     }
   };
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   const availableTimes = Array.from({ length: 9 }, (_, i) => {
     const hour = i + 9; // 9 AM to 5 PM
@@ -210,13 +204,19 @@ export function ViewingModal({
                 </FormItem>
               )}
             />
-
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              className="rounded-md border shadow"
+            />
             <FormField
               control={form.control}
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Preferred Date</FormLabel>
+
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -241,18 +241,13 @@ export function ViewingModal({
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date: Date) => {
-                          const now = new Date();
-                          const maxDate = addDays(
-                            now,
-                            VIEWING_RULES.daysInAdvance
-                          );
-                          return (
-                            date < now ||
-                            date > maxDate ||
-                            VIEWING_RULES.excludeDays.includes(date.getDay())
-                          );
-                        }}
+                        disabled={(date) =>
+                          isBefore(date, new Date()) ||
+                          isAfter(
+                            date,
+                            addDays(new Date(), VIEWING_RULES.daysInAdvance)
+                          )
+                        }
                         initialFocus
                       />
                     </PopoverContent>
