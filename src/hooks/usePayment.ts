@@ -2,6 +2,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { usePaymentStore } from '@/store/paymentStore';
 import { exportPaymentsToCSV } from '@/services/paymentService';
 import { useAuthStore } from '@/store/authStore';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
+ 
 
 export function usePaymentData() {
   const { user } = useAuthStore();
@@ -68,6 +72,25 @@ export function usePaymentForm() {
     description: "",
   });
 
+  // Get properties based on user role (lessor or tenant)
+  const { data: propertiesWithTenants } = useQuery({
+    queryKey: ['propertiesWithTenants', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const { data, error } = await supabase
+        .rpc('get_properties_with_tenants', { p_user_id: user.id });
+    
+      if (error) {
+        toast.error("Error fetching properties: " + error.message);
+        return [];
+      }
+      
+      return data || [];
+    },
+    enabled: !!user
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id) return;
@@ -89,7 +112,8 @@ export function usePaymentForm() {
     formData,
     setFormData,
     handleSubmit,
-    loading
+    loading,
+    propertiesWithTenants: propertiesWithTenants || [],
   };
 }
 

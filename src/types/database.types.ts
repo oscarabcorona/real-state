@@ -907,6 +907,22 @@ export type Database = {
           max_properties: number
         }[]
       }
+      get_properties_with_tenants: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: {
+          property_id: string
+          property_name: string
+          tenant_count: number
+        }[]
+      }
+      has_active_tenant: {
+        Args: {
+          p_property_id: string
+        }
+        Returns: boolean
+      }
       update_document_assignment_status: {
         Args: {
           p_assignment_id: string

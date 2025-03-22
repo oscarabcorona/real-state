@@ -17,14 +17,8 @@ import { getStatusIcon } from "./utils";
 
 export function Payments() {
   const [activeTab, setActiveTab] = useState("overview");
-  const {
-    filteredPayments,
-    properties,
-    stats,
-    filters,
-    setFilters,
-    resetFilters,
-  } = usePaymentData();
+  const { filteredPayments, stats, filters, setFilters, resetFilters } =
+    usePaymentData();
 
   const {
     isModalOpen,
@@ -50,27 +44,12 @@ export function Payments() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="border-b">
+          <div className="flex items-center justify-between">
             <div className="px-6">
-              <TabsList className="h-10 bg-transparent">
-                <TabsTrigger
-                  value="overview"
-                  className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
-                >
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger
-                  value="transactions"
-                  className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
-                >
-                  Transactions
-                </TabsTrigger>
-                <TabsTrigger
-                  value="settings"
-                  className="rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary"
-                >
-                  Payment Settings
-                </TabsTrigger>
+              <TabsList>
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="transactions">Transactions</TabsTrigger>
+                <TabsTrigger value="settings">Payment Settings</TabsTrigger>
               </TabsList>
             </div>
           </div>
@@ -107,7 +86,6 @@ export function Payments() {
         <PaymentModal
           formData={formData}
           setFormData={setFormData}
-          properties={properties}
           handleSubmit={async (e) => {
             const success = await handleSubmit(e);
             if (success) setIsModalOpen(false);
