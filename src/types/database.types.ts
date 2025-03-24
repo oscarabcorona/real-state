@@ -847,7 +847,7 @@ export type Database = {
           p_property_id: string
           p_date: string
           p_time: string
-          p_duration_minutes: number
+          p_duration_minutes?: number
           p_exclude_appointment_id?: string
         }
         Returns: boolean

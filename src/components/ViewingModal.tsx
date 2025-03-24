@@ -128,19 +128,77 @@ export function ViewingModal({
     setSubmitting(true);
 
     try {
-      const { error } = await supabase.from("appointments").insert([
-        {
-          property_id: propertyId,
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
-          preferred_date: format(data.date, "yyyy-MM-dd"),
-          preferred_time: data.time,
-          message: data.message,
-          status: "pending",
-          tenant_user_id: userId,
-        },
-      ]);
+      // Format date as a simple string without time component
+      const formattedDate = format(data.date, "yyyy-MM-dd");
+
+      // Manual conflict check
+      const { data: existingAppointments, error: queryError } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("property_id", propertyId)
+        .eq("preferred_date", formattedDate)
+        .neq("status", "cancelled");
+
+      if (queryError) {
+        console.error("Error checking existing appointments:", queryError);
+        throw queryError;
+      }
+
+      // Check for time conflicts (assuming 60 minute appointments)
+      const hasConflict = existingAppointments?.some((appointment) => {
+        const [appHours, appMinutes] = appointment.preferred_time.split(":");
+        const [newHours, newMinutes] = data.time.split(":");
+
+        const appTime = new Date(
+          0,
+          0,
+          0,
+          parseInt(appHours),
+          parseInt(appMinutes)
+        );
+        const newTime = new Date(
+          0,
+          0,
+          0,
+          parseInt(newHours),
+          parseInt(newMinutes)
+        );
+
+        // Add 60 minutes to appointment time
+        const appEndTime = new Date(appTime);
+        appEndTime.setMinutes(appEndTime.getMinutes() + 60);
+
+        // Add 60 minutes to new appointment time
+        const newEndTime = new Date(newTime);
+        newEndTime.setMinutes(newEndTime.getMinutes() + 60);
+
+        // Check for overlap
+        return (
+          (newTime <= appTime && newEndTime > appTime) ||
+          (appTime <= newTime && appEndTime > newTime)
+        );
+      });
+
+      if (hasConflict) {
+        setTimeError(
+          "This time slot is already booked. Please select a different time."
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      // Insert with explicit casting to strings, avoiding any automatic type conversion
+      const { error } = await supabase.from("appointments").insert({
+        property_id: propertyId,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        preferred_date: formattedDate,
+        preferred_time: data.time,
+        message: data.message || "",
+        status: "pending",
+        tenant_user_id: userId || null,
+      });
 
       if (error) throw error;
 
@@ -156,6 +214,7 @@ export function ViewingModal({
       setSubmitting(false);
     }
   };
+
   const [date, setDate] = useState<Date | null>(new Date());
 
   const availableTimes = Array.from({ length: 9 }, (_, i) => {
