@@ -1,4 +1,4 @@
-import { AlertCircle, CalendarIcon, Clock } from "lucide-react";
+import { AlertCircle, CalendarIcon } from "lucide-react";
 import { addDays, format, isAfter, isBefore } from "date-fns";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -28,6 +28,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -147,7 +156,7 @@ export function ViewingModal({
       setSubmitting(false);
     }
   };
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | null>(new Date());
 
   const availableTimes = Array.from({ length: 9 }, (_, i) => {
     const hour = i + 9; // 9 AM to 5 PM
@@ -204,12 +213,6 @@ export function ViewingModal({
                 </FormItem>
               )}
             />
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              className="rounded-md border shadow"
-            />
             <FormField
               control={form.control}
               name="date"
@@ -238,17 +241,11 @@ export function ViewingModal({
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          isBefore(date, new Date()) ||
-                          isAfter(
-                            date,
-                            addDays(new Date(), VIEWING_RULES.daysInAdvance)
-                          )
-                        }
-                        initialFocus
+                        value={date}
+                        onChange={(date) => {
+                          setDate(date);
+                          field.onChange(date);
+                        }}
                       />
                     </PopoverContent>
                   </Popover>
@@ -263,36 +260,23 @@ export function ViewingModal({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Preferred Time</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value || "Select a time"}
-                          <Clock className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[240px] p-0">
-                      <div className="grid gap-1 p-2">
-                        {availableTimes.map((time) => (
-                          <Button
-                            key={time}
-                            variant={field.value === time ? "default" : "ghost"}
-                            onClick={() => field.onChange(time)}
-                            className="justify-start font-normal"
-                          >
-                            {time}
-                          </Button>
-                        ))}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                  <FormControl>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Available Times</SelectLabel>
+                          {availableTimes.map((time) => (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

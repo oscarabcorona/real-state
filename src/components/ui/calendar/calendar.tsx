@@ -70,12 +70,7 @@ export function Calendar({ value, onChange, className }: CalendarProps) {
   };
 
   return (
-    <div
-      className={cn(
-        "border border-gray-200 rounded-lg shadow-sm p-5 bg-white",
-        className
-      )}
-    >
+    <div className={cn("rounded-lg shadow-sm p-5 bg-white", className)}>
       <div className="flex items-center justify-between text-gray-900">
         <button
           type="button"

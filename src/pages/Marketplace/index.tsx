@@ -31,7 +31,6 @@ import { useProperties, SortOption } from "./hooks/useProperties";
 import { usePagination } from "./hooks/usePagination";
 import { useFavorites } from "./hooks/useFavorites";
 import { useFilters } from "./hooks/useFilters";
-import { Calendar } from "@/components/ui/calendar/calendar";
 
 export function Marketplace() {
   const { user } = useAuthStore();
@@ -204,120 +203,6 @@ export function Marketplace() {
                 </Button>
               </div>
             )}
-            <Calendar
-              daysOfWeek={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}
-              days={[
-                {
-                  date: "2022-01-01",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-02",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-03",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-04",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-05",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-06",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-07",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-08",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-09",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-10",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-11",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-12",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-13",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-14",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-15",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-16",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-17",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-                {
-                  date: "2022-01-18",
-                  isCurrentMonth: true,
-                  isSelected: false,
-                  isToday: false,
-                },
-              ]}
-              onSelectDay={(day) => console.log(day)}
-            />
 
             {/* Results Grid */}
             {loading ? (
