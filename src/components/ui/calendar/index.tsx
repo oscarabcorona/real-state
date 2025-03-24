@@ -16,8 +16,17 @@ import {
 } from "lucide-react";
 import { MonthCalendar } from "./month-calendar";
 import { WeekCalendar } from "./week-view";
+import { DayCalendar } from "./day-view";
 import { cn } from "@/lib/utils";
-import { addMonths, addWeeks, format, subMonths, subWeeks } from "date-fns";
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  format,
+  subDays,
+  subMonths,
+  subWeeks,
+} from "date-fns";
 
 type CalendarView = "day" | "week" | "month" | "year";
 
@@ -43,6 +52,8 @@ export function CalendarContainer({
       setCurrentDate((prev) => subMonths(prev, 1));
     } else if (view === "week") {
       setCurrentDate((prev) => subWeeks(prev, 1));
+    } else if (view === "day") {
+      setCurrentDate((prev) => subDays(prev, 1));
     }
   };
 
@@ -51,6 +62,8 @@ export function CalendarContainer({
       setCurrentDate((prev) => addMonths(prev, 1));
     } else if (view === "week") {
       setCurrentDate((prev) => addWeeks(prev, 1));
+    } else if (view === "day") {
+      setCurrentDate((prev) => addDays(prev, 1));
     }
   };
 
@@ -62,6 +75,9 @@ export function CalendarContainer({
 
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
+    if (date) {
+      setCurrentDate(date);
+    }
   };
 
   const getViewLabel = () => {
@@ -80,11 +96,26 @@ export function CalendarContainer({
   };
 
   const getHeaderTitle = () => {
+    if (view === "day") {
+      return (
+        format(currentDate, "MMMM d, yyyy") +
+        " • " +
+        format(currentDate, "EEEE")
+      );
+    }
     return format(currentDate, "MMMM yyyy");
   };
 
   const renderCalendarView = () => {
     switch (view) {
+      case "day":
+        return (
+          <DayCalendar
+            value={selectedDate}
+            onChange={handleDateChange}
+            currentDate={currentDate}
+          />
+        );
       case "week":
         return (
           <WeekCalendar

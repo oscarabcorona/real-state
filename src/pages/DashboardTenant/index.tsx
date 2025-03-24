@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { Calendar } from "../../components/ui/calendar";
 import { useOptimistic } from "../../hooks/useOptimisticAction";
 import { supabase } from "../../lib/supabase";
 import { fetchDashboardData } from "../../services/dashboardService";
@@ -10,8 +9,6 @@ import { RecentDocuments } from "./RecentDocuments";
 import { RecentPayments } from "./RecentPayments";
 import { StatsOverview } from "./StatsOverview";
 import { UpcomingViewings } from "./UpcomingViewings";
-// import { MonthCalendar } from "@/components/ui/calendar/month-calendar";
-import { CalendarContainer } from "@/components/ui/calendar/index";
 
 const INITIAL_STATE: DashboardData = {
   properties: [],
@@ -33,7 +30,6 @@ export function DashboardTenant() {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [optimisticData, setOptimisticData] = useOptimistic(INITIAL_STATE);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const fetchDashboard = useCallback(async () => {
     if (!user?.id) return;
@@ -81,61 +77,32 @@ export function DashboardTenant() {
       };
     }
   }, [user, fetchDashboard, subscribeToNotifications]);
-
-  const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
-    console.log(`Selected date: ${date?.toLocaleDateString() || "None"}`);
-  };
-  // const events = [
-  //   {
-  //     id: 1,
-  //     name: "Meeting with client",
-  //     time: "10:00 AM",
-  //     datetime: "2023-07-15T10:00",
-  //     href: "#",
-  //   },
-  //   // More events...
-  // ];
   return (
-    <div className="h-screen">
-      <CalendarContainer defaultView="month" />
-    </div>
-    // <div className="space-y-6">
-    //   <StatsOverview stats={optimisticData.stats} isLoading={loading} />
-    //   <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-    //     <div className="lg:col-span-2">
-    //       <PropertiesSections
-    //         properties={optimisticData.properties}
-    //         isLoading={loading}
-    //       />
-    //     </div>
-    //     {/* <MonthCalendar
-    //       events={events}
-    //       onAddEvent={() => console.log("Add event")}
-    //       onViewChange={(view) => console.log(`Changed to ${view} view`)}
-    //     /> */}
-    //     <div>
-    //       <h2 className="text-base font-semibold text-gray-900 mb-4">
-    //         Calendar
-    //       </h2>
-    //       <Calendar value={selectedDate} onChange={handleDateChange} />
-    //     </div>
-    //   </div>
+    <div className="space-y-6">
+      <StatsOverview stats={optimisticData.stats} isLoading={loading} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <PropertiesSections
+            properties={optimisticData.properties}
+            isLoading={loading}
+          />
+        </div>
+      </div>
 
-    //   <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-    //     <RecentPayments
-    //       payments={optimisticData.payments}
-    //       isLoading={loading}
-    //     />
-    //     <RecentDocuments
-    //       documents={optimisticData.documents}
-    //       isLoading={loading}
-    //     />
-    //   </div>
-    //   <UpcomingViewings
-    //     appointments={optimisticData.appointments}
-    //     isLoading={loading}
-    //   />
-    // </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <RecentPayments
+          payments={optimisticData.payments}
+          isLoading={loading}
+        />
+        <RecentDocuments
+          documents={optimisticData.documents}
+          isLoading={loading}
+        />
+      </div>
+      <UpcomingViewings
+        appointments={optimisticData.appointments}
+        isLoading={loading}
+      />
+    </div>
   );
 }

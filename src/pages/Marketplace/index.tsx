@@ -31,7 +31,7 @@ import { useProperties, SortOption } from "./hooks/useProperties";
 import { usePagination } from "./hooks/usePagination";
 import { useFavorites } from "./hooks/useFavorites";
 import { useFilters } from "./hooks/useFilters";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar/calendar";
 
 export function Marketplace() {
   const { user } = useAuthStore();

@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar/calendar";
 import {
   Form,
   FormControl,
