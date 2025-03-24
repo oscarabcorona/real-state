@@ -1,6 +1,7 @@
 import { CheckCircle, Clock, XCircle } from "lucide-react";
+import { AppointmentStatus } from "./types";
 
-export const getStatusIcon = (status: string) => {
+export const getStatusIcon = (status: AppointmentStatus | null) => {
   switch (status) {
     case "confirmed":
       return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -11,7 +12,7 @@ export const getStatusIcon = (status: string) => {
   }
 };
 
-export const getStatusClass = (status: string) => {
+export const getStatusClass = (status: AppointmentStatus | null) => {
   switch (status) {
     case "confirmed":
       return "bg-green-100 text-green-800";
@@ -22,6 +23,8 @@ export const getStatusClass = (status: string) => {
   }
 };
 
-export const getStatusText = (status: string) => {
-  return status.charAt(0).toUpperCase() + status.slice(1);
+export const getStatusText = (status: AppointmentStatus | null) => {
+  // Handle null or undefined status
+  const statusText = status || "pending";
+  return statusText.charAt(0).toUpperCase() + statusText.slice(1);
 };

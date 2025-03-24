@@ -1,5 +1,5 @@
 import { Calendar } from "lucide-react";
-import { Appointment } from "./tpyes";
+import { Appointment } from "./types";
 import { getStatusClass, getStatusIcon, getStatusText } from "./utils";
 
 export function MainAppointmentsList({
