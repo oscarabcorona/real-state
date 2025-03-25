@@ -17,15 +17,18 @@ import {
 import { MonthCalendar } from "./month-calendar";
 import { WeekCalendar } from "./week-view";
 import { DayCalendar } from "./day-view";
+import { YearCalendar } from "./year-view";
 import { cn } from "@/lib/utils";
 import {
   addDays,
   addMonths,
   addWeeks,
+  addYears,
   format,
   subDays,
   subMonths,
   subWeeks,
+  subYears,
 } from "date-fns";
 import { CalendarEvent, CalendarView, EventClickHandler } from "./types";
 
@@ -57,6 +60,8 @@ export function CalendarContainer({
       setCurrentDate((prev) => subWeeks(prev, 1));
     } else if (view === "day") {
       setCurrentDate((prev) => subDays(prev, 1));
+    } else if (view === "year") {
+      setCurrentDate((prev) => subYears(prev, 1));
     }
   };
 
@@ -67,6 +72,8 @@ export function CalendarContainer({
       setCurrentDate((prev) => addWeeks(prev, 1));
     } else if (view === "day") {
       setCurrentDate((prev) => addDays(prev, 1));
+    } else if (view === "year") {
+      setCurrentDate((prev) => addYears(prev, 1));
     }
   };
 
@@ -105,6 +112,8 @@ export function CalendarContainer({
         " • " +
         format(currentDate, "EEEE")
       );
+    } else if (view === "year") {
+      return format(currentDate, "yyyy");
     }
     return format(currentDate, "MMMM yyyy");
   };
@@ -129,6 +138,15 @@ export function CalendarContainer({
             currentDate={currentDate}
             events={events}
             onEventClick={onEventClick}
+          />
+        );
+      case "year":
+        return (
+          <YearCalendar
+            value={selectedDate}
+            onChange={handleDateChange}
+            currentDate={currentDate}
+            events={events}
           />
         );
       case "month":
