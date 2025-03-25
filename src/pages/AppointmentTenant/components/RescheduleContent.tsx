@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { InfoIcon } from "lucide-react";
-import { RescheduleForm } from "../types";
+import { RescheduleForm } from "../../Calendar/types";
 
 interface RescheduleContentProps {
   rescheduleForm: RescheduleForm;

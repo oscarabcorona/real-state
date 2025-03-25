@@ -1,5 +1,9 @@
-import { Appointment } from "./types";
-import { getStatusClass, getStatusIcon, getStatusText } from "./utils";
+import { Appointment } from "../Calendar/types";
+import {
+  getStatusClass,
+  getStatusIcon,
+  getStatusText,
+} from "../Calendar/utils";
 import { NoAppointments } from "./components/NoAppointments";
 
 export function MainAppointmentsList({

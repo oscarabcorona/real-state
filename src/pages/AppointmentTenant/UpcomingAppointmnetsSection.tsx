@@ -1,6 +1,6 @@
 import { addDays, format } from "date-fns";
 import { Calendar } from "lucide-react";
-import { Appointment } from "./types";
+import { Appointment } from "../Calendar/types";
 
 export function UpcomingAppointmentsSection({
   appointments,

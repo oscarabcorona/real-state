@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/components/ui/calendar/types";
 import { format } from "date-fns";
-import { Appointment } from "../types";
+import { Appointment } from "../../Calendar/types";
 import { getStatusIcon } from "../utils";
 
 interface CalendarEventItemProps {

@@ -24,7 +24,7 @@ import {
 import { useAuthStore } from "../../store/authStore";
 import { DetailsContent } from "./components/DetailsContent";
 import { MainAppointmentsList } from "./MainAppointmentsList";
-import { Appointment, RescheduleForm } from "./types";
+import { Appointment, RescheduleForm } from "../Calendar/types";
 import { UpcomingAppointmentsSection } from "./UpcomingAppointmnetsSection";
 import { RescheduleContent } from "./components/RescheduleContent";
 import { CancelContent } from "./components/CancelContent";

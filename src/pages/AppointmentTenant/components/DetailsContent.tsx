@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { format } from "date-fns";
-import { Appointment } from "../types";
+import { Appointment } from "../../Calendar/types";
 
 interface DetailsContentProps {
   appointment: Appointment;

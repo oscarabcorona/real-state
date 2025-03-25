@@ -1,6 +1,6 @@
 import { AlertCircle, X } from "lucide-react";
-import { RescheduleForm } from "../types";
-import { VIEWING_RULES } from "../const";
+import { RescheduleForm } from "../../Calendar/types";
+import { VIEWING_RULES } from "../../Calendar/const";
 
 interface RescheduleModalProps {
   rescheduleForm: RescheduleForm;

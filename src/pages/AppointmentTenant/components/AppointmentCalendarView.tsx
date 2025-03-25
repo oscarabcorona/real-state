@@ -1,7 +1,7 @@
 import { CalendarContainer } from "@/components/ui/calendar";
 import { CalendarEvent } from "@/components/ui/calendar/types";
 import { parseISO } from "date-fns";
-import { Appointment } from "../types";
+import { Appointment } from "../../Calendar/types";
 
 interface AppointmentCalendarViewProps {
   appointments: Appointment[];

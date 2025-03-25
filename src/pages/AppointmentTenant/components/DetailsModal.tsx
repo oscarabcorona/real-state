@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { Appointment } from "../types";
+import { Appointment } from "../../Calendar/types";
 import { getStatusClass, getStatusIcon, getStatusText } from "../utils";
 
 interface DetailsModalProps {

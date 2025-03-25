@@ -1,5 +1,5 @@
 import { addMinutes, parse, format } from "date-fns";
-import { ValidationResult } from "../types";
+import { ValidationResult } from "../../Calendar/types";
 import { VIEWING_RULES } from "../const";
 import { isDateInRange, isWeekday } from "./dateUtils";
 

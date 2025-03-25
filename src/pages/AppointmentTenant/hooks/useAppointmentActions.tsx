@@ -7,7 +7,7 @@ import {
   validateDate,
   validateTime,
 } from "../../../services/appointmentTenantService";
-import { Appointment, RescheduleForm } from "../types";
+import { Appointment, RescheduleForm } from "../../Calendar/types";
 
 export function useAppointmentActions(onSuccess: () => Promise<void>) {
   const [processing, setProcessing] = useState(false);

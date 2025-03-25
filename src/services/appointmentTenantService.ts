@@ -6,8 +6,8 @@ import {
   ValidationResult, 
   AppointmentActionResult,
   AppointmentStatus
-} from "../pages/AppointmentTenant/types";
-import { VIEWING_RULES } from "../pages/AppointmentTenant/const";
+} from "../pages/Calendar/types";
+import { VIEWING_RULES } from "../pages/Calendar/const";
 
 /**
  * Fetch all appointments for the tenant

@@ -1,4 +1,4 @@
-import { Appointment } from "../../../pages/AppointmentTenant/types";
+import { Appointment } from "../../../pages/Calendar/types";
 
 export interface CalendarEvent {
   id: string;

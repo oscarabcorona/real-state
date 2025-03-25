@@ -1,5 +1,5 @@
 import { CheckCircle, Clock, XCircle } from "lucide-react";
-import { AppointmentStatus } from "../types";
+import { AppointmentStatus } from "../../Calendar/types";
 
 export const getStatusIcon = (status: AppointmentStatus | null) => {
   switch (status) {

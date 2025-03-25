@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Appointment, RescheduleForm } from "../types";
+import { Appointment, RescheduleForm } from "../../Calendar/types";
 import { DetailsContent } from "./DetailsContent";
 import { RescheduleContent } from "./RescheduleContent";
 import { CancelContent } from "./CancelContent";
