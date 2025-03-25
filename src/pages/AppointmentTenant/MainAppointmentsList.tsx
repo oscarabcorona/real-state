@@ -1,6 +1,6 @@
-import { Calendar } from "lucide-react";
 import { Appointment } from "./types";
 import { getStatusClass, getStatusIcon, getStatusText } from "./utils";
+import { NoAppointments } from "./components/NoAppointments";
 
 export function MainAppointmentsList({
   appointments,
@@ -23,15 +23,7 @@ export function MainAppointmentsList({
 
       <div className="p-6">
         {appointments.length === 0 ? (
-          <div className="text-center py-12">
-            <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No appointments
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              You haven't scheduled any viewings yet.
-            </p>
-          </div>
+          <NoAppointments />
         ) : (
           <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
             <table className="min-w-full divide-y divide-gray-300">
