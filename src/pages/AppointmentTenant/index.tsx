@@ -1,6 +1,15 @@
 import { CalendarContainer } from "@/components/ui/calendar";
 import { CalendarEvent } from "@/components/ui/calendar/types";
 import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
 import { parseISO } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -13,12 +22,13 @@ import {
   validateTime,
 } from "../../services/appointmentTenantService";
 import { useAuthStore } from "../../store/authStore";
-import { CancelModal } from "./components/CancelModal";
-import { DetailsModal } from "./components/DetailsModal";
-import { RescheduleModal } from "./components/RescheduleModal";
+import { DetailsContent } from "./components/DetailsContent";
 import { MainAppointmentsList } from "./MainAppointmentsList";
 import { Appointment, RescheduleForm } from "./types";
 import { UpcomingAppointmentsSection } from "./UpcomingAppointmnetsSection";
+import { RescheduleContent } from "./components/RescheduleContent";
+import { CancelContent } from "./components/CancelContent";
+import { Button } from "@/components/ui/button";
 
 export function AppointmentTenant() {
   const { user } = useAuthStore();
@@ -292,43 +302,110 @@ export function AppointmentTenant() {
         </div>
       )}
 
-      {/* Modals */}
-      {showDetailsModal && selectedAppointment && (
-        <DetailsModal
-          appointment={selectedAppointment}
-          onClose={() => setShowDetailsModal(false)}
-          onReschedule={() => {
-            setShowDetailsModal(false);
-            setShowRescheduleModal(true);
-          }}
-          onCancel={() => {
-            setShowDetailsModal(false);
-            setShowCancelModal(true);
-          }}
-        />
-      )}
+      {/* Sheets with improved layout */}
+      <Sheet open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <SheetContent className="sm:max-w-md p-0">
+          <SheetHeader className="px-6 pt-6 pb-2">
+            <SheetTitle>Appointment Details</SheetTitle>
+            <SheetDescription>
+              View the details of your property viewing appointment
+            </SheetDescription>
+          </SheetHeader>
 
-      {showRescheduleModal && selectedAppointment && (
-        <RescheduleModal
-          rescheduleForm={rescheduleForm}
-          onUpdateForm={setRescheduleForm}
-          onClose={() => setShowRescheduleModal(false)}
-          onReschedule={handleReschedule}
-          processing={processing}
-          timeError={timeError}
-          timeSlots={timeSlots}
-        />
-      )}
+          {selectedAppointment && (
+            <DetailsContent
+              appointment={selectedAppointment}
+              onReschedule={() => {
+                setShowDetailsModal(false);
+                setShowRescheduleModal(true);
+              }}
+              onCancel={() => {
+                setShowDetailsModal(false);
+                setShowCancelModal(true);
+              }}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
 
-      {showCancelModal && selectedAppointment && (
-        <CancelModal
-          cancelNote={cancelNote}
-          onUpdateNote={setCancelNote}
-          onClose={() => setShowCancelModal(false)}
-          onCancel={handleCancel}
-          processing={processing}
-        />
-      )}
+      <Sheet open={showRescheduleModal} onOpenChange={setShowRescheduleModal}>
+        <SheetContent className="sm:max-w-md p-0">
+          <SheetHeader className="px-6 pt-6 pb-2">
+            <SheetTitle>Reschedule Appointment</SheetTitle>
+            <SheetDescription>
+              Change the date and time of your property viewing
+            </SheetDescription>
+          </SheetHeader>
+
+          {selectedAppointment && (
+            <div className="px-6 py-4 overflow-y-auto">
+              <RescheduleContent
+                rescheduleForm={rescheduleForm}
+                onUpdateForm={setRescheduleForm}
+                timeError={timeError}
+                timeSlots={timeSlots}
+              />
+            </div>
+          )}
+
+          <SheetFooter className="px-6 py-4 border-t">
+            <SheetClose asChild>
+              <Button
+                variant="outline"
+                onClick={() => setShowRescheduleModal(false)}
+              >
+                Cancel
+              </Button>
+            </SheetClose>
+            <Button
+              onClick={handleReschedule}
+              disabled={
+                processing || !rescheduleForm.date || !rescheduleForm.time
+              }
+            >
+              {processing ? "Processing..." : "Reschedule"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={showCancelModal} onOpenChange={setShowCancelModal}>
+        <SheetContent className="sm:max-w-md p-0">
+          <SheetHeader className="px-6 pt-6 pb-2">
+            <SheetTitle>Cancel Appointment</SheetTitle>
+            <SheetDescription>
+              Provide a reason for cancelling your property viewing
+            </SheetDescription>
+          </SheetHeader>
+
+          {selectedAppointment && (
+            <div className="px-6 py-4 overflow-y-auto">
+              <CancelContent
+                cancelNote={cancelNote}
+                onUpdateNote={setCancelNote}
+              />
+            </div>
+          )}
+
+          <SheetFooter className="px-6 py-4 border-t">
+            <SheetClose asChild>
+              <Button
+                variant="outline"
+                onClick={() => setShowCancelModal(false)}
+              >
+                Cancel
+              </Button>
+            </SheetClose>
+            <Button
+              onClick={handleCancel}
+              disabled={processing || !cancelNote.trim()}
+              variant="destructive"
+            >
+              {processing ? "Processing..." : "Confirm Cancellation"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
