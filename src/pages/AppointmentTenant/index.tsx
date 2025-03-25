@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+import { CalendarContainer } from "@/components/ui/calendar";
+import { CalendarEvent } from "@/components/ui/calendar/types";
+import { Separator } from "@/components/ui/separator";
+import { parseISO } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
 import {
   cancelAppointment,
   checkTimeSlotConflicts,
@@ -34,6 +38,7 @@ export function AppointmentTenant() {
   const [processing, setProcessing] = useState(false);
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [timeError, setTimeError] = useState("");
+  const [showAppointmentsList, setShowAppointmentsList] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -57,6 +62,86 @@ export function AppointmentTenant() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Convert appointments to calendar events
+  const calendarEvents = useMemo<CalendarEvent[]>(() => {
+    return appointments
+      .filter(
+        (appointment) =>
+          appointment &&
+          appointment.preferred_date &&
+          appointment.preferred_time
+      ) // Filter out appointments with missing date/time
+      .map((appointment) => {
+        try {
+          // Use preferred_date and preferred_time instead of appointment_date
+          const appointmentDate = appointment.preferred_date;
+          const appointmentTime = appointment.preferred_time;
+
+          // Create start date - handle parsing errors gracefully
+          let startDate: Date;
+          try {
+            startDate = parseISO(`${appointmentDate}T${appointmentTime}`);
+            // Check if date is valid
+            if (isNaN(startDate.getTime())) {
+              throw new Error("Invalid date");
+            }
+          } catch (error) {
+            console.warn(
+              `Failed to parse date: ${appointmentDate} ${appointmentTime}`,
+              error
+            );
+            // Fallback to current date/time if parsing fails
+            startDate = new Date();
+          }
+
+          // Create end date (assuming 1 hour duration)
+          const endDate = new Date(startDate);
+          endDate.setHours(endDate.getHours() + 1);
+
+          // Determine color based on status
+          let color = "bg-blue-500"; // default
+          if (appointment.status === "confirmed") {
+            color = "bg-green-500";
+          } else if (appointment.status === "cancelled") {
+            color = "bg-red-500";
+          } else if (appointment.status === "pending") {
+            color = "bg-amber-500";
+          }
+
+          // Get property information
+          const propertyTitle = appointment.properties?.name || "Property";
+          const propertyAddress =
+            appointment.properties?.address || "Address not available";
+
+          return {
+            id: appointment.id.toString(),
+            title: `Viewing: ${propertyTitle}`,
+            start: startDate,
+            end: endDate,
+            color,
+            location: propertyAddress,
+            meta: appointment, // Include the original appointment for reference
+          };
+        } catch (error) {
+          console.error(
+            "Error converting appointment to event",
+            appointment,
+            error
+          );
+          return null;
+        }
+      })
+      .filter(Boolean) as CalendarEvent[]; // Filter out any null events from failed conversions
+  }, [appointments]);
+
+  // Handle event click in calendar
+  const handleEventClick = (event: CalendarEvent) => {
+    // The original appointment is stored in the meta field
+    const appointment = event.meta as Appointment;
+    setSelectedAppointment(appointment);
+    setShowDetailsModal(true);
   };
 
   const handleReschedule = async () => {
@@ -151,29 +236,61 @@ export function AppointmentTenant() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
+      <div className="flex justify-center items-center h-screen w-full">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Upcoming Appointments Section */}
-      <UpcomingAppointmentsSection
-        appointments={appointments}
-        setSelectedAppointment={setSelectedAppointment}
-        setShowDetailsModal={setShowDetailsModal}
-      />
+    <div className="min-h-screen w-full px-4 sm:px-6 lg:px-8 py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">My Appointments</h1>
+        <p className="text-gray-500 mt-1">
+          Manage your property viewing appointments
+        </p>
+      </div>
 
-      {/* Main Appointments List */}
-      <MainAppointmentsList
-        appointments={appointments}
-        setSelectedAppointment={setSelectedAppointment}
-        setShowDetailsModal={setShowDetailsModal}
-        setShowRescheduleModal={setShowRescheduleModal}
-        setShowCancelModal={setShowCancelModal}
-      />
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">
+          Viewing Calendar
+        </h2>
+        <button
+          onClick={() => setShowAppointmentsList(!showAppointmentsList)}
+          className="py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          {showAppointmentsList ? "Show Calendar" : "Show List View"}
+        </button>
+      </div>
+
+      <Separator className="mb-6" />
+
+      {showAppointmentsList ? (
+        <div className="space-y-8">
+          {/* Upcoming Appointments Section */}
+          <UpcomingAppointmentsSection
+            appointments={appointments}
+            setSelectedAppointment={setSelectedAppointment}
+            setShowDetailsModal={setShowDetailsModal}
+          />
+
+          {/* Main Appointments List */}
+          <MainAppointmentsList
+            appointments={appointments}
+            setSelectedAppointment={setSelectedAppointment}
+            setShowDetailsModal={setShowDetailsModal}
+            setShowRescheduleModal={setShowRescheduleModal}
+            setShowCancelModal={setShowCancelModal}
+          />
+        </div>
+      ) : (
+        <div className="h-[80vh]">
+          <CalendarContainer
+            events={calendarEvents}
+            onEventClick={handleEventClick}
+          />
+        </div>
+      )}
 
       {/* Modals */}
       {showDetailsModal && selectedAppointment && (

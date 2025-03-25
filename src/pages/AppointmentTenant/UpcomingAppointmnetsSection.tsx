@@ -13,7 +13,7 @@ export function UpcomingAppointmentsSection({
 }) {
   return (
     <div className="bg-white rounded-lg shadow mb-6">
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4">
         <h2 className="text-lg font-medium text-gray-900">Upcoming Viewings</h2>
       </div>
       <div className="p-6">

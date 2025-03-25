@@ -17,7 +17,7 @@ export function MainAppointmentsList({
 }) {
   return (
     <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4">
         <h1 className="text-2xl font-bold text-gray-900">My Appointments</h1>
       </div>
 

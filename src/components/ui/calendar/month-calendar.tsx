@@ -9,6 +9,7 @@ import {
   startOfWeek,
 } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
+import { CalendarEvent, EventClickHandler } from "./types";
 
 export interface MonthDay {
   date: Date;
@@ -22,6 +23,8 @@ export interface MonthCalendarProps {
   onChange?: (date: Date | null) => void;
   className?: string;
   currentDate: Date;
+  events?: CalendarEvent[];
+  onEventClick?: EventClickHandler;
 }
 
 export function MonthCalendar({
@@ -29,6 +32,8 @@ export function MonthCalendar({
   onChange,
   className,
   currentDate,
+  events = [],
+  onEventClick,
 }: MonthCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(value || null);
 
@@ -65,6 +70,19 @@ export function MonthCalendar({
     onChange?.(newSelectedDate);
   };
 
+  // Get events for a specific day
+  const getEventsForDay = (day: Date) => {
+    return events.filter((event) => isSameDay(event.start, day));
+  };
+
+  // Handle event click
+  const handleEventClick = (event: CalendarEvent, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent day click when clicking on an event
+    if (onEventClick) {
+      onEventClick(event);
+    }
+  };
+
   return (
     <div className={cn("lg:flex lg:h-full lg:flex-col", className)}>
       <div className="ring-1 shadow-sm ring-black/5 lg:flex lg:flex-auto lg:flex-col">
@@ -95,70 +113,114 @@ export function MonthCalendar({
         <div className="flex bg-gray-200 text-xs/6 text-gray-700 lg:flex-auto">
           {/* Desktop view */}
           <div className="hidden w-full lg:grid lg:grid-cols-7 lg:grid-rows-6 lg:gap-px">
-            {days.map((day) => (
-              <div
-                key={format(day.date, "yyyy-MM-dd")}
-                className={cn(
-                  day.isCurrentMonth ? "bg-white" : "bg-gray-50 text-gray-500",
-                  "relative px-3 py-2 min-h-[6rem] cursor-pointer",
-                  day.isSelected && "bg-gray-50"
-                )}
-                onClick={() => handleSelectDay(day)}
-              >
-                <time
-                  dateTime={format(day.date, "yyyy-MM-dd")}
+            {days.map((day) => {
+              const dayEvents = getEventsForDay(day.date);
+              return (
+                <div
+                  key={format(day.date, "yyyy-MM-dd")}
                   className={cn(
-                    "block w-6 h-6 flex items-center justify-center",
-                    day.isToday &&
-                      "rounded-full bg-primary font-semibold text-white",
-                    day.isSelected &&
-                      !day.isToday &&
-                      "rounded-full bg-gray-900 font-semibold text-white"
+                    day.isCurrentMonth
+                      ? "bg-white"
+                      : "bg-gray-50 text-gray-500",
+                    "relative px-3 py-2 min-h-[6rem] cursor-pointer flex flex-col",
+                    day.isSelected && "bg-gray-50"
                   )}
+                  onClick={() => handleSelectDay(day)}
                 >
-                  {format(day.date, "d")}
-                </time>
-              </div>
-            ))}
+                  <time
+                    dateTime={format(day.date, "yyyy-MM-dd")}
+                    className={cn(
+                      "block w-6 h-6 flex items-center justify-center",
+                      day.isToday &&
+                        "rounded-full bg-primary font-semibold text-white",
+                      day.isSelected &&
+                        !day.isToday &&
+                        "rounded-full bg-gray-900 font-semibold text-white"
+                    )}
+                  >
+                    {format(day.date, "d")}
+                  </time>
+
+                  {/* Display events for this day */}
+                  <div className="mt-1 overflow-y-auto max-h-20">
+                    {dayEvents.map((event) => (
+                      <div
+                        key={event.id}
+                        className={cn(
+                          "px-1 py-1 mb-1 text-xs font-medium text-white rounded truncate cursor-pointer transition-opacity hover:opacity-90",
+                          event.color || "bg-blue-500"
+                        )}
+                        onClick={(e) => handleEventClick(event, e)}
+                      >
+                        {format(event.start, "h:mm a")} {event.title}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* Mobile view */}
           <div className="isolate grid w-full grid-cols-7 grid-rows-6 gap-px lg:hidden">
-            {days.map((day) => (
-              <button
-                key={format(day.date, "yyyy-MM-dd")}
-                type="button"
-                onClick={() => handleSelectDay(day)}
-                className={cn(
-                  day.isCurrentMonth ? "bg-white" : "bg-gray-50",
-                  (day.isSelected || day.isToday) && "font-semibold",
-                  day.isSelected && !day.isToday && "text-white",
-                  !day.isSelected && day.isToday && "text-primary",
-                  !day.isSelected &&
-                    day.isCurrentMonth &&
-                    !day.isToday &&
-                    "text-gray-900",
-                  !day.isSelected &&
-                    !day.isCurrentMonth &&
-                    !day.isToday &&
-                    "text-gray-500",
-                  "flex h-14 flex-col px-3 py-2 hover:bg-gray-100 focus:z-10"
-                )}
-              >
-                <time
-                  dateTime={format(day.date, "yyyy-MM-dd")}
+            {days.map((day) => {
+              const dayEvents = getEventsForDay(day.date);
+              const hasEvents = dayEvents.length > 0;
+
+              return (
+                <button
+                  key={format(day.date, "yyyy-MM-dd")}
+                  type="button"
+                  onClick={() => handleSelectDay(day)}
                   className={cn(
-                    "ml-auto",
-                    day.isSelected &&
-                      "flex size-6 items-center justify-center rounded-full",
-                    day.isSelected && day.isToday && "bg-primary",
-                    day.isSelected && !day.isToday && "bg-gray-900"
+                    day.isCurrentMonth ? "bg-white" : "bg-gray-50",
+                    (day.isSelected || day.isToday) && "font-semibold",
+                    day.isSelected && !day.isToday && "text-white",
+                    !day.isSelected && day.isToday && "text-primary",
+                    !day.isSelected &&
+                      day.isCurrentMonth &&
+                      !day.isToday &&
+                      "text-gray-900",
+                    !day.isSelected &&
+                      !day.isCurrentMonth &&
+                      !day.isToday &&
+                      "text-gray-500",
+                    "flex h-14 flex-col px-3 py-2 hover:bg-gray-100 focus:z-10 relative"
                   )}
                 >
-                  {format(day.date, "d")}
-                </time>
-              </button>
-            ))}
+                  <time
+                    dateTime={format(day.date, "yyyy-MM-dd")}
+                    className={cn(
+                      "ml-auto",
+                      day.isSelected &&
+                        "flex size-6 items-center justify-center rounded-full",
+                      day.isSelected && day.isToday && "bg-primary",
+                      day.isSelected && !day.isToday && "bg-gray-900"
+                    )}
+                  >
+                    {format(day.date, "d")}
+                  </time>
+
+                  {/* Indicator for events */}
+                  {hasEvents && (
+                    <div className="mt-auto">
+                      <div className="h-1 w-full flex gap-0.5 justify-center">
+                        {dayEvents.slice(0, 3).map((event) => (
+                          <div
+                            key={event.id}
+                            className={cn(
+                              "h-1 w-1 rounded-full",
+                              event.color?.replace("bg-", "bg-") ||
+                                "bg-blue-500"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

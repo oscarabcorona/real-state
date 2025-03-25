@@ -27,17 +27,20 @@ import {
   subMonths,
   subWeeks,
 } from "date-fns";
-
-type CalendarView = "day" | "week" | "month" | "year";
+import { CalendarEvent, CalendarView, EventClickHandler } from "./types";
 
 export interface CalendarContainerProps {
   defaultView?: CalendarView;
   className?: string;
+  events?: CalendarEvent[];
+  onEventClick?: EventClickHandler;
 }
 
 export function CalendarContainer({
   defaultView = "month",
   className,
+  events = [],
+  onEventClick,
 }: CalendarContainerProps) {
   const [view, setView] = useState<CalendarView>(defaultView);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -114,6 +117,8 @@ export function CalendarContainer({
             value={selectedDate}
             onChange={handleDateChange}
             currentDate={currentDate}
+            events={events}
+            onEventClick={onEventClick}
           />
         );
       case "week":
@@ -122,6 +127,8 @@ export function CalendarContainer({
             value={selectedDate}
             onChange={handleDateChange}
             currentDate={currentDate}
+            events={events}
+            onEventClick={onEventClick}
           />
         );
       case "month":
@@ -131,6 +138,8 @@ export function CalendarContainer({
             value={selectedDate}
             onChange={handleDateChange}
             currentDate={currentDate}
+            events={events}
+            onEventClick={onEventClick}
           />
         );
     }

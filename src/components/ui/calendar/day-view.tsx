@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import {
   addDays,
@@ -11,18 +9,23 @@ import {
 } from "date-fns";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Calendar } from "./calendar";
+import { CalendarEvent, EventClickHandler } from "./types";
 
 export interface DayCalendarProps {
   value?: Date | null;
   onChange?: (date: Date | null) => void;
   className?: string;
   currentDate: Date;
+  events?: CalendarEvent[];
+  onEventClick?: EventClickHandler;
 }
 
 export function DayCalendar({
   onChange,
   className,
   currentDate,
+  events = [],
+  onEventClick,
 }: DayCalendarProps) {
   const container = useRef<HTMLDivElement>(null);
   const containerNav = useRef<HTMLDivElement>(null);
@@ -73,6 +76,35 @@ export function DayCalendar({
         1440;
     }
   }, []);
+
+  // Filter events for the current day
+  const dayEvents = useMemo(() => {
+    return events.filter((event) => isSameDay(event.start, localCurrentDate));
+  }, [events, localCurrentDate]);
+
+  // Handle event click
+  const handleEventClick = (event: CalendarEvent) => {
+    if (onEventClick) {
+      onEventClick(event);
+    }
+  };
+
+  // Calculate position and height for events
+  const getEventStyles = (event: CalendarEvent) => {
+    const startHour = event.start.getHours();
+    const startMinute = event.start.getMinutes();
+    const endHour = event.end.getHours();
+    const endMinute = event.end.getMinutes();
+
+    // Calculate top position as percentage of 24 hours
+    const startInMinutes = startHour * 60 + startMinute;
+    const durationInMinutes = endHour * 60 + endMinute - startInMinutes;
+
+    return {
+      gridRowStart: Math.floor(startInMinutes / 30) + 2, // +2 because of the offset row
+      gridRowEnd: Math.ceil((startInMinutes + durationInMinutes) / 30) + 2,
+    };
+  };
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
@@ -166,7 +198,7 @@ export function DayCalendar({
                   ))}
                 </div>
 
-                {/* Empty grid for events (would be populated dynamically in real usage) */}
+                {/* Event display */}
                 <ol
                   className="col-start-1 col-end-2 row-start-1 grid grid-cols-1"
                   style={{
@@ -174,7 +206,30 @@ export function DayCalendar({
                       "1.75rem repeat(48, minmax(1.75rem, 1fr))",
                   }}
                 >
-                  {/* Events would be rendered here */}
+                  {dayEvents.map((event) => (
+                    <li
+                      key={event.id}
+                      className={cn(
+                        "relative mx-4 flex rounded-lg cursor-pointer transition-opacity hover:opacity-90",
+                        event.color || "bg-blue-500"
+                      )}
+                      style={getEventStyles(event)}
+                      onClick={() => handleEventClick(event)}
+                    >
+                      <div className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg p-2 text-xs">
+                        <p className="font-semibold text-white">
+                          {event.title}
+                        </p>
+                        <p className="text-white/90">
+                          {format(event.start, "h:mm a")} -{" "}
+                          {format(event.end, "h:mm a")}
+                        </p>
+                        {event.location && (
+                          <p className="text-white/80 mt-1">{event.location}</p>
+                        )}
+                      </div>
+                    </li>
+                  ))}
                 </ol>
               </div>
             </div>
