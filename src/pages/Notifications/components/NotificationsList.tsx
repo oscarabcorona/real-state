@@ -2,7 +2,6 @@ import { Notification } from "../types";
 import { EmptyState } from "./EmptyState";
 import { NotificationItem } from "./NotificationItem";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { groupNotificationsByDate } from "../utils/notificationHelpers";
 import { AnimatedElement } from "@/components/animated/AnimatedElement";
@@ -43,17 +42,20 @@ export function NotificationsList({
     return (
       <div className={cn("p-0", className)}>
         <ScrollArea className="h-[calc(100vh-12rem)] md:h-[500px]">
-          <div className="py-2">
+          <div className="space-y-0.5 px-1 py-2">
             {notifications.map((notification, index) => (
-              <div key={notification.id}>
-                <NotificationItem
-                  notification={notification}
-                  onMarkAsRead={onMarkAsRead}
-                />
-                {index < notifications.length - 1 && (
-                  <Separator className="mx-4" />
-                )}
-              </div>
+              <AnimatedElement
+                key={notification.id}
+                animation="fadeIn"
+                delay={index * 0.05}
+              >
+                <div className="hover:bg-muted/30 transition-colors rounded-md">
+                  <NotificationItem
+                    notification={notification}
+                    onMarkAsRead={onMarkAsRead}
+                  />
+                </div>
+              </AnimatedElement>
             ))}
           </div>
         </ScrollArea>
@@ -67,30 +69,33 @@ export function NotificationsList({
   return (
     <div className={cn("p-0", className)}>
       <ScrollArea className="h-[calc(100vh-12rem)] md:h-[500px]">
-        <div className="py-2">
+        <div className="space-y-6 px-2 py-3">
           {groups.map((group, groupIndex) => (
             <AnimatedElement
               key={group.label}
               animation="fadeIn"
               delay={0.1 * groupIndex}
             >
-              <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-2">
-                <h3 className="text-sm font-medium text-muted-foreground px-4">
-                  {group.label}
-                </h3>
-              </div>
-              {group.notifications.map((notification, index) => (
-                <div key={notification.id}>
-                  <NotificationItem
-                    notification={notification}
-                    onMarkAsRead={onMarkAsRead}
-                  />
-                  {index < group.notifications.length - 1 && (
-                    <Separator className="mx-4" />
-                  )}
+              <div className="rounded-md overflow-hidden">
+                <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 py-2 px-3 border-b">
+                  <h3 className="text-sm font-medium text-muted-foreground">
+                    {group.label}
+                  </h3>
                 </div>
-              ))}
-              {groupIndex < groups.length - 1 && <Separator />}
+                <div className="divide-y divide-border/60">
+                  {group.notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className="hover:bg-muted/20 transition-colors"
+                    >
+                      <NotificationItem
+                        notification={notification}
+                        onMarkAsRead={onMarkAsRead}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </AnimatedElement>
           ))}
         </div>

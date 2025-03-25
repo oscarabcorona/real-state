@@ -9,6 +9,7 @@ import { RecentDocuments } from "./RecentDocuments";
 import { RecentPayments } from "./RecentPayments";
 import { StatsOverview } from "./StatsOverview";
 import { UpcomingViewings } from "./UpcomingViewings";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 const INITIAL_STATE: DashboardData = {
   properties: [],
@@ -80,25 +81,35 @@ export function DashboardTenant() {
   return (
     <div className="space-y-6">
       <StatsOverview stats={optimisticData.stats} isLoading={loading} />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+
+      <Tabs defaultValue="properties" className="w-full">
+        <TabsList className="grid grid-cols-3 w-full">
+          <TabsTrigger value="properties">Properties</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="properties" className="mt-6">
           <PropertiesSections
             properties={optimisticData.properties}
             isLoading={loading}
           />
-        </div>
-      </div>
+        </TabsContent>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <RecentPayments
-          payments={optimisticData.payments}
-          isLoading={loading}
-        />
-        <RecentDocuments
-          documents={optimisticData.documents}
-          isLoading={loading}
-        />
-      </div>
+        <TabsContent value="payments" className="mt-6">
+          <RecentPayments
+            payments={optimisticData.payments}
+            isLoading={loading}
+          />
+        </TabsContent>
+
+        <TabsContent value="documents" className="mt-6">
+          <RecentDocuments
+            documents={optimisticData.documents}
+            isLoading={loading}
+          />
+        </TabsContent>
+      </Tabs>
       <UpcomingViewings
         appointments={optimisticData.appointments}
         isLoading={loading}
