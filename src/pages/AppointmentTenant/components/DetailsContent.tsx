@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { format } from "date-fns";
 import { Appointment } from "../types";
 
@@ -51,18 +56,29 @@ export function DetailsContent({
           <TableRow>
             <TableCell className="font-medium py-3 pl-0">Status</TableCell>
             <TableCell className="py-3 pr-0">
-              <span
-                className={`inline-block px-2 py-1 rounded-full text-xs font-medium
-                ${
-                  appointment.status === "confirmed"
-                    ? "bg-green-100 text-green-800"
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className={`inline-block px-2 py-1 rounded-full text-xs font-medium cursor-help
+                    ${
+                      appointment.status === "confirmed"
+                        ? "bg-green-100 text-green-800"
+                        : appointment.status === "cancelled"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {appointment.status}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {appointment.status === "confirmed"
+                    ? "This appointment has been confirmed by the property owner"
                     : appointment.status === "cancelled"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-amber-100 text-amber-800"
-                }`}
-              >
-                {appointment.status}
-              </span>
+                    ? "This appointment has been cancelled"
+                    : "This appointment is awaiting confirmation from the property owner"}
+                </TooltipContent>
+              </Tooltip>
             </TableCell>
           </TableRow>
 
@@ -90,15 +106,29 @@ export function DetailsContent({
 
       <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
         {canReschedule && (
-          <Button onClick={onReschedule} variant="outline">
-            Reschedule
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={onReschedule} variant="outline">
+                Reschedule
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Request a different date and time for this appointment
+            </TooltipContent>
+          </Tooltip>
         )}
 
         {canCancel && (
-          <Button onClick={onCancel} variant="destructive">
-            Cancel Appointment
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={onCancel} variant="destructive">
+                Cancel Appointment
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              Cancel this appointment (cannot be undone)
+            </TooltipContent>
+          </Tooltip>
         )}
       </div>
     </div>

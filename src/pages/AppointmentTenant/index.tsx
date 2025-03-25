@@ -29,6 +29,11 @@ import { UpcomingAppointmentsSection } from "./UpcomingAppointmnetsSection";
 import { RescheduleContent } from "./components/RescheduleContent";
 import { CancelContent } from "./components/CancelContent";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function AppointmentTenant() {
   const { user } = useAuthStore();
@@ -265,12 +270,21 @@ export function AppointmentTenant() {
         <h2 className="text-xl font-semibold text-gray-800">
           Viewing Calendar
         </h2>
-        <button
-          onClick={() => setShowAppointmentsList(!showAppointmentsList)}
-          className="py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          {showAppointmentsList ? "Show Calendar" : "Show List View"}
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => setShowAppointmentsList(!showAppointmentsList)}
+              className="py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              {showAppointmentsList ? "Show Calendar" : "Show List View"}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {showAppointmentsList
+              ? "Switch to calendar view to see appointments visually"
+              : "Switch to list view to see all appointments in a list"}
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       <Separator className="mb-6" />
@@ -331,10 +345,39 @@ export function AppointmentTenant() {
       <Sheet open={showRescheduleModal} onOpenChange={setShowRescheduleModal}>
         <SheetContent className="sm:max-w-md p-0">
           <SheetHeader className="px-6 pt-6 pb-2">
-            <SheetTitle>Reschedule Appointment</SheetTitle>
-            <SheetDescription>
-              Change the date and time of your property viewing
-            </SheetDescription>
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="mr-2"
+                onClick={() => {
+                  setShowRescheduleModal(false);
+                  setShowDetailsModal(true);
+                }}
+                aria-label="Back to appointment details"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </Button>
+              <div>
+                <SheetTitle>Reschedule Appointment</SheetTitle>
+                <SheetDescription>
+                  Change the date and time of your property viewing
+                </SheetDescription>
+              </div>
+            </div>
           </SheetHeader>
 
           {selectedAppointment && (
@@ -350,21 +393,31 @@ export function AppointmentTenant() {
 
           <SheetFooter className="px-6 py-4 border-t">
             <SheetClose asChild>
-              <Button
-                variant="outline"
-                onClick={() => setShowRescheduleModal(false)}
-              >
-                Cancel
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowRescheduleModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Close without saving changes</TooltipContent>
+              </Tooltip>
             </SheetClose>
-            <Button
-              onClick={handleReschedule}
-              disabled={
-                processing || !rescheduleForm.date || !rescheduleForm.time
-              }
-            >
-              {processing ? "Processing..." : "Reschedule"}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleReschedule}
+                  disabled={
+                    processing || !rescheduleForm.date || !rescheduleForm.time
+                  }
+                >
+                  {processing ? "Processing..." : "Reschedule"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Submit your reschedule request</TooltipContent>
+            </Tooltip>
           </SheetFooter>
         </SheetContent>
       </Sheet>
@@ -372,10 +425,39 @@ export function AppointmentTenant() {
       <Sheet open={showCancelModal} onOpenChange={setShowCancelModal}>
         <SheetContent className="sm:max-w-md p-0">
           <SheetHeader className="px-6 pt-6 pb-2">
-            <SheetTitle>Cancel Appointment</SheetTitle>
-            <SheetDescription>
-              Provide a reason for cancelling your property viewing
-            </SheetDescription>
+            <div className="flex items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="mr-2"
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setShowDetailsModal(true);
+                }}
+                aria-label="Back to appointment details"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </Button>
+              <div>
+                <SheetTitle>Cancel Appointment</SheetTitle>
+                <SheetDescription>
+                  Provide a reason for cancelling your property viewing
+                </SheetDescription>
+              </div>
+            </div>
           </SheetHeader>
 
           {selectedAppointment && (
@@ -389,20 +471,34 @@ export function AppointmentTenant() {
 
           <SheetFooter className="px-6 py-4 border-t">
             <SheetClose asChild>
-              <Button
-                variant="outline"
-                onClick={() => setShowCancelModal(false)}
-              >
-                Cancel
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCancelModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Close without cancelling appointment
+                </TooltipContent>
+              </Tooltip>
             </SheetClose>
-            <Button
-              onClick={handleCancel}
-              disabled={processing || !cancelNote.trim()}
-              variant="destructive"
-            >
-              {processing ? "Processing..." : "Confirm Cancellation"}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleCancel}
+                  disabled={processing || !cancelNote.trim()}
+                  variant="destructive"
+                >
+                  {processing ? "Processing..." : "Confirm Cancellation"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Permanently cancel this appointment
+              </TooltipContent>
+            </Tooltip>
           </SheetFooter>
         </SheetContent>
       </Sheet>

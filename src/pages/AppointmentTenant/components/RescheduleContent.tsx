@@ -8,6 +8,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { InfoIcon } from "lucide-react";
 import { RescheduleForm } from "../types";
 
 interface RescheduleContentProps {
@@ -26,7 +32,17 @@ export function RescheduleContent({
   return (
     <div className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="date">Date</Label>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="date">Date</Label>
+          <Tooltip>
+            <TooltipTrigger className="cursor-help">
+              <InfoIcon className="h-4 w-4 text-gray-400" />
+            </TooltipTrigger>
+            <TooltipContent>
+              Select a new date for your appointment
+            </TooltipContent>
+          </Tooltip>
+        </div>
         <Input
           id="date"
           type="date"
@@ -40,7 +56,15 @@ export function RescheduleContent({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="time">Time</Label>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="time">Time</Label>
+          <Tooltip>
+            <TooltipTrigger className="cursor-help">
+              <InfoIcon className="h-4 w-4 text-gray-400" />
+            </TooltipTrigger>
+            <TooltipContent>Select an available time slot</TooltipContent>
+          </Tooltip>
+        </div>
         {timeSlots.length > 0 ? (
           <Select
             value={rescheduleForm.time}
@@ -74,7 +98,17 @@ export function RescheduleContent({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="note">Reason for rescheduling</Label>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="note">Reason for rescheduling</Label>
+          <Tooltip>
+            <TooltipTrigger className="cursor-help">
+              <InfoIcon className="h-4 w-4 text-gray-400" />
+            </TooltipTrigger>
+            <TooltipContent>
+              Please explain why you need to reschedule this appointment
+            </TooltipContent>
+          </Tooltip>
+        </div>
         <Textarea
           id="note"
           value={rescheduleForm.note}
