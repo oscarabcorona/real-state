@@ -1,8 +1,8 @@
 export interface UserProfile {
   id: string;
-  avatar_url: string | null;
-  full_name: string | null;
   email: string;
+  full_name: string;
+  avatar_url: string | null;
   phone: string | null;
   address: string | null;
   city: string | null;
@@ -10,10 +10,8 @@ export interface UserProfile {
   zip_code: string | null;
   date_of_birth: string | null;
   bio: string | null;
-  company_name?: string | null;
-  role?: string;
-  created_at?: string | null;
-  updated_at?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ProfileForm {
@@ -48,6 +46,6 @@ export interface PasswordForm {
 }
 
 export interface MessageState {
-  type: "" | "success" | "error";
+  type: "success" | "error" | "";
   text: string;
 }

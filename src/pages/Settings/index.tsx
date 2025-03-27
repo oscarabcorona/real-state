@@ -9,12 +9,12 @@ import {
 import { ProfileSettings } from "./ProfileSettings";
 import { PasswordSettings } from "./PasswordSettings";
 import { fetchUserProfile } from "../../services/userSettingsService";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings as SettingsIcon, Key } from "lucide-react";
 import { Toaster } from "sonner";
 
 export function Settings() {
   const { user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<"profile" | "password">("profile");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<MessageState>({ type: "", text: "" });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -78,55 +78,71 @@ export function Settings() {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Account Settings</h1>
+    <div className="container max-w-4xl mx-auto">
+      <h1 className="text-2xl font-semibold mb-2">Account Settings</h1>
+      <p className="text-muted-foreground text-sm mb-6">
+        Manage your account settings and preferences
+      </p>
+
+      <div className="flex flex-col gap-4">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab("profile")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === "profile"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            <SettingsIcon className="h-4 w-4" />
+            Profile
+          </button>
+          <button
+            onClick={() => setActiveTab("password")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === "password"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            <Key className="h-4 w-4" />
+            Password
+          </button>
+        </div>
+
+        <div className="bg-card rounded-lg border">
+          {activeTab === "profile" && (
+            <ProfileSettings
+              user={user as UserProfile}
+              profileForm={profileForm}
+              setProfileForm={setProfileForm}
+              loading={loading}
+              setLoading={setLoading}
+              message={message}
+              setMessage={setMessage}
+              avatarFile={avatarFile}
+              setAvatarFile={setAvatarFile}
+              avatarPreview={avatarPreview}
+              setAvatarPreview={setAvatarPreview}
+              uploadingAvatar={uploadingAvatar}
+              setUploadingAvatar={setUploadingAvatar}
+              refreshProfile={loadUserProfile}
+            />
+          )}
+
+          {activeTab === "password" && (
+            <PasswordSettings
+              passwordForm={passwordForm}
+              setPasswordForm={setPasswordForm}
+              loading={loading}
+              setLoading={setLoading}
+              message={message}
+              setMessage={setMessage}
+            />
+          )}
+        </div>
       </div>
 
-      <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="mb-8 grid w-full grid-cols-2">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <SettingsIcon className="h-4 w-4" />
-            <span>Profile</span>
-          </TabsTrigger>
-          <TabsTrigger value="password" className="flex items-center gap-2">
-            <Key className="h-4 w-4" />
-            <span>Password</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="profile" className="mt-0">
-          <ProfileSettings
-            user={user as UserProfile}
-            profileForm={profileForm}
-            setProfileForm={setProfileForm}
-            loading={loading}
-            setLoading={setLoading}
-            message={message}
-            setMessage={setMessage}
-            avatarFile={avatarFile}
-            setAvatarFile={setAvatarFile}
-            avatarPreview={avatarPreview}
-            setAvatarPreview={setAvatarPreview}
-            uploadingAvatar={uploadingAvatar}
-            setUploadingAvatar={setUploadingAvatar}
-            refreshProfile={loadUserProfile}
-          />
-        </TabsContent>
-
-        <TabsContent value="password" className="mt-0">
-          <PasswordSettings
-            passwordForm={passwordForm}
-            setPasswordForm={setPasswordForm}
-            loading={loading}
-            setLoading={setLoading}
-            message={message}
-            setMessage={setMessage}
-          />
-        </TabsContent>
-      </Tabs>
-
-      {/* Global toast container */}
       <Toaster position="top-right" closeButton />
     </div>
   );
