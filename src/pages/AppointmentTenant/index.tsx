@@ -1,6 +1,5 @@
 import { CalendarContainer } from "@/components/ui/calendar";
 import { CalendarEvent } from "@/components/ui/calendar/types";
-import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -8,8 +7,8 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetClose,
 } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { parseISO } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -28,12 +27,8 @@ import { UpcomingAppointmentsSection } from "./UpcomingAppointmnetsSection";
 import { RescheduleContent } from "./components/RescheduleContent";
 import { CancelContent } from "./components/CancelContent";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { AppointmentDetailsSheet } from "@/components/appointments/AppointmentDetailsSheet";
+import { CalendarDays, List } from "lucide-react";
 
 export function AppointmentTenant() {
   const { user } = useAuthStore();
@@ -53,7 +48,7 @@ export function AppointmentTenant() {
   const [processing, setProcessing] = useState(false);
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [timeError, setTimeError] = useState("");
-  const [showAppointmentsList, setShowAppointmentsList] = useState(false);
+  const [view, setView] = useState<"calendar" | "list">("calendar");
 
   useEffect(() => {
     if (user) {
@@ -87,18 +82,15 @@ export function AppointmentTenant() {
           appointment &&
           appointment.preferred_date &&
           appointment.preferred_time
-      ) // Filter out appointments with missing date/time
+      )
       .map((appointment) => {
         try {
-          // Use preferred_date and preferred_time instead of appointment_date
           const appointmentDate = appointment.preferred_date;
           const appointmentTime = appointment.preferred_time;
 
-          // Create start date - handle parsing errors gracefully
           let startDate: Date;
           try {
             startDate = parseISO(`${appointmentDate}T${appointmentTime}`);
-            // Check if date is valid
             if (isNaN(startDate.getTime())) {
               throw new Error("Invalid date");
             }
@@ -107,16 +99,13 @@ export function AppointmentTenant() {
               `Failed to parse date: ${appointmentDate} ${appointmentTime}`,
               error
             );
-            // Fallback to current date/time if parsing fails
             startDate = new Date();
           }
 
-          // Create end date (assuming 1 hour duration)
           const endDate = new Date(startDate);
           endDate.setHours(endDate.getHours() + 1);
 
-          // Determine color based on status
-          let color = "bg-blue-500"; // default
+          let color = "bg-blue-500";
           if (appointment.status === "confirmed") {
             color = "bg-green-500";
           } else if (appointment.status === "cancelled") {
@@ -125,7 +114,6 @@ export function AppointmentTenant() {
             color = "bg-amber-500";
           }
 
-          // Get property information
           const propertyTitle = appointment.properties?.name || "Property";
           const propertyAddress =
             appointment.properties?.address || "Address not available";
@@ -137,7 +125,7 @@ export function AppointmentTenant() {
             end: endDate,
             color,
             location: propertyAddress,
-            meta: appointment, // Include the original appointment for reference
+            meta: appointment,
           };
         } catch (error) {
           console.error(
@@ -148,12 +136,10 @@ export function AppointmentTenant() {
           return null;
         }
       })
-      .filter(Boolean) as CalendarEvent[]; // Filter out any null events from failed conversions
+      .filter(Boolean) as CalendarEvent[];
   }, [appointments]);
 
-  // Handle event click in calendar
   const handleEventClick = (event: CalendarEvent) => {
-    // The original appointment is stored in the meta field
     const appointment = event.meta as Appointment;
     setSelectedAppointment(appointment);
     setShowDetailsSheet(true);
@@ -165,7 +151,6 @@ export function AppointmentTenant() {
     setTimeError("");
 
     try {
-      // Validate the date and time
       const dateValidation = validateDate(rescheduleForm.date);
       if (!dateValidation.valid) {
         setTimeError(dateValidation.error || "Invalid date");
@@ -181,7 +166,6 @@ export function AppointmentTenant() {
         return;
       }
 
-      // Check for conflicts
       const hasConflicts = await checkTimeSlotConflicts(
         selectedAppointment.property_id,
         selectedAppointment.id,
@@ -196,17 +180,13 @@ export function AppointmentTenant() {
         return;
       }
 
-      // Reschedule the appointment
       const result = await rescheduleAppointment(
         selectedAppointment.id,
         rescheduleForm
       );
 
       if (result.success) {
-        // Refresh appointment data
         await fetchAppointments();
-
-        // Reset and close modals
         setShowRescheduleModal(false);
         setShowDetailsSheet(false);
         setRescheduleForm({ date: "", time: "", note: "" });
@@ -252,71 +232,69 @@ export function AppointmentTenant() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen w-full">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full px-4 sm:px-6 lg:px-8 py-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">My Appointments</h1>
-        <p className="text-gray-500 mt-1">
+    <div className="container py-8 space-y-6">
+      <div className="flex flex-col gap-4">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          My Appointments
+        </h1>
+        <p className="text-muted-foreground">
           Manage your property viewing appointments
         </p>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-800">
-          Viewing Calendar
-        </h2>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => setShowAppointmentsList(!showAppointmentsList)}
-              className="py-2 px-4 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              {showAppointmentsList ? "Show Calendar" : "Show List View"}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {showAppointmentsList
-              ? "Switch to calendar view to see appointments visually"
-              : "Switch to list view to see all appointments in a list"}
-          </TooltipContent>
-        </Tooltip>
-      </div>
-
-      <Separator className="mb-6" />
-
-      {showAppointmentsList ? (
-        <div className="space-y-8">
-          {/* Upcoming Appointments Section */}
-          <UpcomingAppointmentsSection
-            appointments={appointments}
-            setSelectedAppointment={setSelectedAppointment}
-            setShowDetailsSheet={setShowDetailsSheet}
-          />
-
-          {/* Main Appointments List */}
-          <MainAppointmentsList
-            appointments={appointments}
-            setSelectedAppointment={setSelectedAppointment}
-            setShowDetailsSheet={setShowDetailsSheet}
-            setShowRescheduleModal={setShowRescheduleModal}
-            setShowCancelModal={setShowCancelModal}
-          />
+      <Tabs
+        value={view}
+        onValueChange={(v) => setView(v as "calendar" | "list")}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium">Viewing Calendar</h2>
+          <TabsList>
+            <TabsTrigger value="calendar" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Calendar
+            </TabsTrigger>
+            <TabsTrigger value="list" className="flex items-center gap-2">
+              <List className="h-4 w-4" />
+              List
+            </TabsTrigger>
+          </TabsList>
         </div>
-      ) : (
-        <div className="h-[80vh]">
-          <CalendarContainer
-            events={calendarEvents}
-            onEventClick={handleEventClick}
-          />
-        </div>
-      )}
 
-      {/* Sheets with improved layout */}
+        <div className="mt-4">
+          <TabsContent value="calendar" className="m-0">
+            <div className="h-[75vh] bg-background rounded-md">
+              <CalendarContainer
+                events={calendarEvents}
+                onEventClick={handleEventClick}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="list" className="m-0">
+            <div className="space-y-8">
+              <UpcomingAppointmentsSection
+                appointments={appointments}
+                setSelectedAppointment={setSelectedAppointment}
+                setShowDetailsSheet={setShowDetailsSheet}
+              />
+              <MainAppointmentsList
+                appointments={appointments}
+                setSelectedAppointment={setSelectedAppointment}
+                setShowDetailsSheet={setShowDetailsSheet}
+                setShowRescheduleModal={setShowRescheduleModal}
+                setShowCancelModal={setShowCancelModal}
+              />
+            </div>
+          </TabsContent>
+        </div>
+      </Tabs>
+
       {selectedAppointment && (
         <AppointmentDetailsSheet
           appointment={selectedAppointment}
@@ -335,45 +313,16 @@ export function AppointmentTenant() {
       )}
 
       <Sheet open={showRescheduleModal} onOpenChange={setShowRescheduleModal}>
-        <SheetContent className="sm:max-w-md p-0">
-          <SheetHeader className="px-6 pt-6 pb-2">
-            <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="mr-2"
-                onClick={() => {
-                  setShowRescheduleModal(false);
-                  setShowDetailsSheet(true);
-                }}
-                aria-label="Back to appointment details"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              </Button>
-              <div>
-                <SheetTitle>Reschedule Appointment</SheetTitle>
-                <SheetDescription>
-                  Change the date and time of your property viewing
-                </SheetDescription>
-              </div>
-            </div>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Reschedule Appointment</SheetTitle>
+            <SheetDescription>
+              Change the date and time of your property viewing
+            </SheetDescription>
           </SheetHeader>
 
           {selectedAppointment && (
-            <div className="px-6 py-4 overflow-y-auto">
+            <div className="py-4">
               <RescheduleContent
                 rescheduleForm={rescheduleForm}
                 onUpdateForm={setRescheduleForm}
@@ -383,77 +332,36 @@ export function AppointmentTenant() {
             </div>
           )}
 
-          <SheetFooter className="px-6 py-4 border-t">
-            <SheetClose asChild>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowRescheduleModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Close without saving changes</TooltipContent>
-              </Tooltip>
-            </SheetClose>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={handleReschedule}
-                  disabled={
-                    processing || !rescheduleForm.date || !rescheduleForm.time
-                  }
-                >
-                  {processing ? "Processing..." : "Reschedule"}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Submit your reschedule request</TooltipContent>
-            </Tooltip>
+          <SheetFooter className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowRescheduleModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleReschedule}
+              disabled={
+                processing || !rescheduleForm.date || !rescheduleForm.time
+              }
+            >
+              {processing ? "Processing..." : "Reschedule"}
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>
 
       <Sheet open={showCancelModal} onOpenChange={setShowCancelModal}>
-        <SheetContent className="sm:max-w-md p-0">
-          <SheetHeader className="px-6 pt-6 pb-2">
-            <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="mr-2"
-                onClick={() => {
-                  setShowCancelModal(false);
-                  setShowDetailsSheet(true);
-                }}
-                aria-label="Back to appointment details"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
-              </Button>
-              <div>
-                <SheetTitle>Cancel Appointment</SheetTitle>
-                <SheetDescription>
-                  Provide a reason for cancelling your property viewing
-                </SheetDescription>
-              </div>
-            </div>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Cancel Appointment</SheetTitle>
+            <SheetDescription>
+              Provide a reason for cancelling your property viewing
+            </SheetDescription>
           </SheetHeader>
 
           {selectedAppointment && (
-            <div className="px-6 py-4 overflow-y-auto">
+            <div className="py-4">
               <CancelContent
                 cancelNote={cancelNote}
                 onUpdateNote={setCancelNote}
@@ -461,36 +369,17 @@ export function AppointmentTenant() {
             </div>
           )}
 
-          <SheetFooter className="px-6 py-4 border-t">
-            <SheetClose asChild>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowCancelModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Close without cancelling appointment
-                </TooltipContent>
-              </Tooltip>
-            </SheetClose>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={handleCancel}
-                  disabled={processing || !cancelNote.trim()}
-                  variant="destructive"
-                >
-                  {processing ? "Processing..." : "Confirm Cancellation"}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Permanently cancel this appointment
-              </TooltipContent>
-            </Tooltip>
+          <SheetFooter className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setShowCancelModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCancel}
+              disabled={processing || !cancelNote.trim()}
+              variant="destructive"
+            >
+              {processing ? "Processing..." : "Confirm Cancellation"}
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>

@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from "react";
 import { Appointment } from "../Calendar/types";
 import { getStatusClass } from "../Calendar/utils";
 import { NoAppointments } from "./components/NoAppointments";
@@ -6,15 +7,28 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";
 
+interface MainAppointmentsListProps {
+  appointments: Appointment[];
+  setSelectedAppointment: Dispatch<SetStateAction<Appointment | null>>;
+  setShowDetailsSheet: Dispatch<SetStateAction<boolean>>;
+  setShowRescheduleModal: Dispatch<SetStateAction<boolean>>;
+  setShowCancelModal: Dispatch<SetStateAction<boolean>>;
+}
+
 export function MainAppointmentsList({
   appointments,
   setSelectedAppointment,
   setShowDetailsSheet,
-}: {
-  appointments: Appointment[];
-  setSelectedAppointment: (appointment: Appointment) => void;
-  setShowDetailsSheet: (show: boolean) => void;
-}) {
+  setShowRescheduleModal,
+  setShowCancelModal,
+}: MainAppointmentsListProps) {
+  const sortedAppointments = [...appointments].sort((a, b) => {
+    return (
+      new Date(b.preferred_date).getTime() -
+      new Date(a.preferred_date).getTime()
+    );
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -27,18 +41,18 @@ export function MainAppointmentsList({
         </div>
       </div>
 
-      <div className="rounded-lg border">
-        {appointments.length === 0 ? (
-          <div className="p-6">
-            <NoAppointments />
-          </div>
-        ) : (
-          <div className="divide-y">
-            {appointments.map((appointment) => (
-              <div
-                key={appointment.id}
-                className="flex items-start justify-between p-4 hover:bg-muted/50 transition-colors"
-              >
+      {appointments.length === 0 ? (
+        <div className="rounded-md bg-muted/50 p-8">
+          <NoAppointments />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {sortedAppointments.map((appointment) => (
+            <div
+              key={appointment.id}
+              className="rounded-lg bg-card p-4 hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">
@@ -73,21 +87,47 @@ export function MainAppointmentsList({
                       : "Documents pending"}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedAppointment(appointment);
-                    setShowDetailsSheet(true);
-                  }}
-                >
-                  View Details
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedAppointment(appointment);
+                      setShowDetailsSheet(true);
+                    }}
+                  >
+                    View Details
+                  </Button>
+                  {new Date(appointment.preferred_date) > new Date() && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedAppointment(appointment);
+                          setShowRescheduleModal(true);
+                        }}
+                      >
+                        Reschedule
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedAppointment(appointment);
+                          setShowCancelModal(true);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
