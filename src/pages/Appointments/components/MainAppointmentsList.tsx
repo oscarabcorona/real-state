@@ -1,28 +1,28 @@
-import { Appointment } from "../Calendar/types";
+import { Appointment } from "../../Calendar/types";
 import {
   getStatusClass,
   getStatusIcon,
   getStatusText,
-} from "../Calendar/utils";
-import { NoAppointments } from "./components/NoAppointments";
+} from "../../Calendar/utils";
+import { NoAppointments } from "./NoAppointments";
 
 export function MainAppointmentsList({
   appointments,
   setSelectedAppointment,
-  setShowDetailsSheet,
+  setShowDetailsModal,
   setShowRescheduleModal,
   setShowCancelModal,
 }: {
   appointments: Appointment[];
   setSelectedAppointment: (appointment: Appointment) => void;
-  setShowDetailsSheet: (show: boolean) => void;
+  setShowDetailsModal: (show: boolean) => void;
   setShowRescheduleModal: (show: boolean) => void;
   setShowCancelModal: (show: boolean) => void;
 }) {
   return (
     <div className="bg-white shadow rounded-lg">
       <div className="px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-900">My Appointments</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Property Viewings</h1>
       </div>
 
       <div className="p-6">
@@ -38,6 +38,12 @@ export function MainAppointmentsList({
                     className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
                   >
                     Property
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                  >
+                    Tenant
                   </th>
                   <th
                     scope="col"
@@ -71,6 +77,12 @@ export function MainAppointmentsList({
                       </div>
                     </td>
                     <td className="px-3 py-4 text-sm text-gray-500">
+                      <div className="font-medium text-gray-900">
+                        {appointment.name}
+                      </div>
+                      <div className="text-gray-500">{appointment.email}</div>
+                    </td>
+                    <td className="px-3 py-4 text-sm text-gray-500">
                       <div>
                         {new Date(
                           appointment.preferred_date
@@ -95,7 +107,7 @@ export function MainAppointmentsList({
                         <button
                           onClick={() => {
                             setSelectedAppointment(appointment);
-                            setShowDetailsSheet(true);
+                            setShowDetailsModal(true);
                           }}
                           className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                         >

@@ -22,7 +22,6 @@ import {
   validateTime,
 } from "../../services/appointmentTenantService";
 import { useAuthStore } from "../../store/authStore";
-import { DetailsContent } from "./components/DetailsContent";
 import { MainAppointmentsList } from "./MainAppointmentsList";
 import { Appointment, RescheduleForm } from "../Calendar/types";
 import { UpcomingAppointmentsSection } from "./UpcomingAppointmnetsSection";
@@ -34,6 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { AppointmentDetailsSheet } from "@/components/appointments/AppointmentDetailsSheet";
 
 export function AppointmentTenant() {
   const { user } = useAuthStore();
@@ -41,7 +41,7 @@ export function AppointmentTenant() {
   const [loading, setLoading] = useState(true);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showDetailsSheet, setShowDetailsSheet] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [rescheduleForm, setRescheduleForm] = useState<RescheduleForm>({
@@ -156,7 +156,7 @@ export function AppointmentTenant() {
     // The original appointment is stored in the meta field
     const appointment = event.meta as Appointment;
     setSelectedAppointment(appointment);
-    setShowDetailsModal(true);
+    setShowDetailsSheet(true);
   };
 
   const handleReschedule = async () => {
@@ -208,7 +208,7 @@ export function AppointmentTenant() {
 
         // Reset and close modals
         setShowRescheduleModal(false);
-        setShowDetailsModal(false);
+        setShowDetailsSheet(false);
         setRescheduleForm({ date: "", time: "", note: "" });
         alert(result.message || "Viewing request rescheduled successfully");
       } else {
@@ -235,7 +235,7 @@ export function AppointmentTenant() {
       if (result.success) {
         await fetchAppointments();
         setShowCancelModal(false);
-        setShowDetailsModal(false);
+        setShowDetailsSheet(false);
         setCancelNote("");
         alert(result.message || "Viewing request cancelled successfully");
       } else {
@@ -295,14 +295,14 @@ export function AppointmentTenant() {
           <UpcomingAppointmentsSection
             appointments={appointments}
             setSelectedAppointment={setSelectedAppointment}
-            setShowDetailsModal={setShowDetailsModal}
+            setShowDetailsSheet={setShowDetailsSheet}
           />
 
           {/* Main Appointments List */}
           <MainAppointmentsList
             appointments={appointments}
             setSelectedAppointment={setSelectedAppointment}
-            setShowDetailsModal={setShowDetailsModal}
+            setShowDetailsSheet={setShowDetailsSheet}
             setShowRescheduleModal={setShowRescheduleModal}
             setShowCancelModal={setShowCancelModal}
           />
@@ -317,30 +317,22 @@ export function AppointmentTenant() {
       )}
 
       {/* Sheets with improved layout */}
-      <Sheet open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <SheetContent className="sm:max-w-md p-0">
-          <SheetHeader className="px-6 pt-6 pb-2">
-            <SheetTitle>Appointment Details</SheetTitle>
-            <SheetDescription>
-              View the details of your property viewing appointment
-            </SheetDescription>
-          </SheetHeader>
-
-          {selectedAppointment && (
-            <DetailsContent
-              appointment={selectedAppointment}
-              onReschedule={() => {
-                setShowDetailsModal(false);
-                setShowRescheduleModal(true);
-              }}
-              onCancel={() => {
-                setShowDetailsModal(false);
-                setShowCancelModal(true);
-              }}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+      {selectedAppointment && (
+        <AppointmentDetailsSheet
+          appointment={selectedAppointment}
+          userRole="tenant"
+          onClose={() => setShowDetailsSheet(false)}
+          onReschedule={() => {
+            setShowDetailsSheet(false);
+            setShowRescheduleModal(true);
+          }}
+          onCancel={() => {
+            setShowDetailsSheet(false);
+            setShowCancelModal(true);
+          }}
+          open={showDetailsSheet}
+        />
+      )}
 
       <Sheet open={showRescheduleModal} onOpenChange={setShowRescheduleModal}>
         <SheetContent className="sm:max-w-md p-0">
@@ -352,7 +344,7 @@ export function AppointmentTenant() {
                 className="mr-2"
                 onClick={() => {
                   setShowRescheduleModal(false);
-                  setShowDetailsModal(true);
+                  setShowDetailsSheet(true);
                 }}
                 aria-label="Back to appointment details"
               >
@@ -432,7 +424,7 @@ export function AppointmentTenant() {
                 className="mr-2"
                 onClick={() => {
                   setShowCancelModal(false);
-                  setShowDetailsModal(true);
+                  setShowDetailsSheet(true);
                 }}
                 aria-label="Back to appointment details"
               >

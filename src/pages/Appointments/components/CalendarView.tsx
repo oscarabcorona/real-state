@@ -1,113 +1,94 @@
-import {
-  addMonths,
-  eachDayOfInterval,
-  endOfMonth,
-  format,
-  isSameDay,
-  isSameMonth,
-  startOfMonth,
-  subMonths,
-} from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { CalendarContainer } from "@/components/ui/calendar";
+import { CalendarEvent } from "@/components/ui/calendar/types";
+import { parseISO } from "date-fns";
 import { Appointment } from "../types";
-import { getStatusClass } from "../utils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CalendarViewProps {
   appointments: Appointment[];
-  userRole?: string;
   onViewDetails: (appointment: Appointment) => void;
 }
 
 export function CalendarView({
   appointments,
-  userRole,
   onViewDetails,
 }: CalendarViewProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  // Convert appointments to calendar events
+  const calendarEvents: CalendarEvent[] = appointments
+    .filter(
+      (appointment) =>
+        appointment && appointment.preferred_date && appointment.preferred_time
+    )
+    .map((appointment) => {
+      try {
+        // Create start date from preferred_date and preferred_time
+        let startDate: Date;
+        try {
+          startDate = parseISO(
+            `${appointment.preferred_date}T${appointment.preferred_time}`
+          );
+          if (isNaN(startDate.getTime())) {
+            throw new Error("Invalid date");
+          }
+        } catch (error) {
+          console.warn(
+            `Failed to parse date: ${appointment.preferred_date} ${appointment.preferred_time}`,
+            error
+          );
+          startDate = new Date();
+        }
 
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(currentMonth);
-  const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
+        // Create end date (assuming 1 hour duration)
+        const endDate = new Date(startDate);
+        endDate.setHours(endDate.getHours() + 1);
 
-  const appointmentsForDay = (date: Date) => {
-    return appointments.filter((appointment) =>
-      isSameDay(new Date(appointment.preferred_date), date)
-    );
+        // Determine color based on status
+        let color = "bg-blue-500"; // default
+        if (appointment.status === "confirmed") {
+          color = "bg-green-500";
+        } else if (appointment.status === "cancelled") {
+          color = "bg-red-500";
+        } else if (appointment.status === "pending") {
+          color = "bg-amber-500";
+        }
+
+        // Get property information
+        const propertyTitle = appointment.properties?.name || "Property";
+        const propertyAddress =
+          appointment.properties?.address || "Address not available";
+
+        return {
+          id: appointment.id.toString(),
+          title: `Viewing: ${propertyTitle} - ${appointment.name}`,
+          start: startDate,
+          end: endDate,
+          color,
+          location: propertyAddress,
+          meta: appointment, // Include the original appointment for reference
+        };
+      } catch (error) {
+        console.error(
+          "Error converting appointment to event",
+          appointment,
+          error
+        );
+        return null;
+      }
+    })
+    .filter(Boolean) as CalendarEvent[];
+
+  // Handle event click in calendar
+  const handleEventClick = (event: CalendarEvent) => {
+    // The original appointment is stored in the meta field
+    const appointment = event.meta as Appointment;
+    onViewDetails(appointment);
   };
 
   return (
-    <Card>
-      <CardHeader className="border-b pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle>{format(currentMonth, "MMMM yyyy")}</CardTitle>
-          <div className="flex space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setCurrentMonth((prev) => subMonths(prev, 1))}
-            >
-              <ChevronLeft className="h-5 w-5" />
-              <span className="sr-only">Previous month</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setCurrentMonth((prev) => addMonths(prev, 1))}
-            >
-              <ChevronRight className="h-5 w-5" />
-              <span className="sr-only">Next month</span>
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-4">
-        <div className="grid grid-cols-7 gap-px bg-muted rounded-lg overflow-hidden">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-            <div
-              key={day}
-              className="bg-muted/20 py-2 text-center text-sm font-medium text-muted-foreground"
-            >
-              {day}
-            </div>
-          ))}
-          {days.map((day) => {
-            const dayAppointments = appointmentsForDay(day);
-            return (
-              <div
-                key={day.toString()}
-                className={`bg-card min-h-[120px] p-2 ${
-                  !isSameMonth(day, currentMonth) ? "bg-muted/10" : ""
-                }`}
-              >
-                <div className="font-medium text-sm">{format(day, "d")}</div>
-                <div className="mt-1 space-y-1">
-                  {dayAppointments.map((appointment) => (
-                    <button
-                      key={appointment.id}
-                      onClick={() => onViewDetails(appointment)}
-                      className={`w-full text-left px-2 py-1 rounded text-xs ${getStatusClass(
-                        appointment.status
-                      )}`}
-                    >
-                      <div className="font-medium truncate">
-                        {userRole === "lessor"
-                          ? appointment.name
-                          : appointment.properties.name}
-                      </div>
-                      <div className="text-xs opacity-75">
-                        {appointment.preferred_time}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="h-[80vh]">
+      <CalendarContainer
+        events={calendarEvents}
+        onEventClick={handleEventClick}
+      />
+    </div>
   );
 }

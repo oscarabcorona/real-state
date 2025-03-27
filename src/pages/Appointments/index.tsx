@@ -4,11 +4,11 @@ import { CalendarIcon, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import {
-  AppointmentDetailsModal,
   AppointmentList,
   CalendarView,
   UpcomingAppointments,
 } from "./components";
+import { AppointmentDetailsSheet } from "@/components/appointments/AppointmentDetailsSheet";
 import { Appointment } from "./types";
 import {
   fetchUserAppointments,
@@ -22,7 +22,7 @@ function Appointments() {
   const [loading, setLoading] = useState(true);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showDetailsSheet, setShowDetailsSheet] = useState(false);
   const [lessorNotes, setLessorNotes] = useState("");
   const [activeTab, setActiveTab] = useState<"calendar" | "list">("calendar");
   const [upcomingAppointments, setUpcomingAppointments] = useState<
@@ -60,7 +60,7 @@ function Appointments() {
         notes: lessorNotes,
       });
       loadAppointments();
-      setShowDetailsModal(false);
+      setShowDetailsSheet(false);
     } catch (error) {
       console.error("Error updating appointment:", error);
     }
@@ -69,7 +69,7 @@ function Appointments() {
   const handleViewDetails = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setLessorNotes(appointment.lessor_notes || "");
-    setShowDetailsModal(true);
+    setShowDetailsSheet(true);
   };
 
   if (loading) {
@@ -127,7 +127,6 @@ function Appointments() {
           ) : activeTab === "calendar" ? (
             <CalendarView
               appointments={appointments}
-              userRole={user?.role}
               onViewDetails={handleViewDetails}
             />
           ) : (
@@ -140,14 +139,14 @@ function Appointments() {
       </Card>
 
       {selectedAppointment && (
-        <AppointmentDetailsModal
+        <AppointmentDetailsSheet
           appointment={selectedAppointment}
-          userRole={user?.role}
+          userRole={user?.role as "lessor" | "tenant"}
           lessorNotes={lessorNotes}
           onLessorNotesChange={setLessorNotes}
-          onClose={() => setShowDetailsModal(false)}
+          onClose={() => setShowDetailsSheet(false)}
           onStatusChange={handleStatusChange}
-          open={showDetailsModal}
+          open={showDetailsSheet}
         />
       )}
     </div>
