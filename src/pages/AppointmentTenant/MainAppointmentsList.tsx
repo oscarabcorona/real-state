@@ -1,134 +1,90 @@
 import { Appointment } from "../Calendar/types";
-import {
-  getStatusClass,
-  getStatusIcon,
-  getStatusText,
-} from "../Calendar/utils";
+import { getStatusClass } from "../Calendar/utils";
 import { NoAppointments } from "./components/NoAppointments";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock } from "lucide-react";
+import { format } from "date-fns";
 
 export function MainAppointmentsList({
   appointments,
   setSelectedAppointment,
   setShowDetailsSheet,
-  setShowRescheduleModal,
-  setShowCancelModal,
 }: {
   appointments: Appointment[];
   setSelectedAppointment: (appointment: Appointment) => void;
   setShowDetailsSheet: (show: boolean) => void;
-  setShowRescheduleModal: (show: boolean) => void;
-  setShowCancelModal: (show: boolean) => void;
 }) {
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-900">My Appointments</h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-medium">All Appointments</h2>
+          <p className="text-sm text-muted-foreground">
+            {appointments.length}{" "}
+            {appointments.length === 1 ? "appointment" : "appointments"}
+          </p>
+        </div>
       </div>
 
-      <div className="p-6">
+      <div className="rounded-lg border">
         {appointments.length === 0 ? (
-          <NoAppointments />
+          <div className="p-6">
+            <NoAppointments />
+          </div>
         ) : (
-          <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-            <table className="min-w-full divide-y divide-gray-300">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
-                  >
-                    Property
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Date & Time
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {appointments.map((appointment) => (
-                  <tr key={appointment.id}>
-                    <td className="py-4 pl-4 pr-3 text-sm sm:pl-6">
-                      <div className="font-medium text-gray-900">
-                        {appointment.properties.name}
-                      </div>
-                      <div className="text-gray-500">
-                        {appointment.properties.address}
-                      </div>
-                    </td>
-                    <td className="px-3 py-4 text-sm text-gray-500">
-                      <div>
-                        {new Date(
-                          appointment.preferred_date
-                        ).toLocaleDateString()}
-                      </div>
-                      <div>{appointment.preferred_time}</div>
-                    </td>
-                    <td className="px-3 py-4 text-sm text-gray-500">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusClass(
-                          appointment.status
-                        )}`}
-                      >
-                        {getStatusIcon(appointment.status)}
-                        <span className="ml-1">
-                          {getStatusText(appointment.status)}
-                        </span>
-                      </span>
-                    </td>
-                    <td className="px-3 py-4 text-sm text-gray-500">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => {
-                            setSelectedAppointment(appointment);
-                            setShowDetailsSheet(true);
-                          }}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                        >
-                          View Details
-                        </button>
-                        {appointment.status !== "cancelled" && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setSelectedAppointment(appointment);
-                                setShowRescheduleModal(true);
-                              }}
-                              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                            >
-                              Reschedule
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedAppointment(appointment);
-                                setShowCancelModal(true);
-                              }}
-                              className="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
-                            >
-                              Cancel
-                            </button>
-                          </>
+          <div className="divide-y">
+            {appointments.map((appointment) => (
+              <div
+                key={appointment.id}
+                className="flex items-start justify-between p-4 hover:bg-muted/50 transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {appointment.properties.name}
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className={getStatusClass(appointment.status)}
+                    >
+                      {appointment.status}
+                    </Badge>
+                  </div>
+                  <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {format(
+                          new Date(appointment.preferred_date),
+                          "MMMM d, yyyy"
                         )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{appointment.preferred_time}</span>
+                    </div>
+                  </div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {appointment.name} ·{" "}
+                    {appointment.documents_verified
+                      ? "Documents verified"
+                      : "Documents pending"}
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedAppointment(appointment);
+                    setShowDetailsSheet(true);
+                  }}
+                >
+                  View Details
+                </Button>
+              </div>
+            ))}
           </div>
         )}
       </div>

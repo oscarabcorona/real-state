@@ -1,6 +1,9 @@
-import { addDays, format } from "date-fns";
-import { Calendar } from "lucide-react";
 import { Appointment } from "../Calendar/types";
+import { getStatusClass } from "../Calendar/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock } from "lucide-react";
+import { format } from "date-fns";
 
 export function UpcomingAppointmentsSection({
   appointments,
@@ -11,69 +14,80 @@ export function UpcomingAppointmentsSection({
   setSelectedAppointment: (appointment: Appointment) => void;
   setShowDetailsSheet: (show: boolean) => void;
 }) {
+  const upcomingAppointments = appointments.filter(
+    (appointment) => appointment.status !== "cancelled"
+  );
+
   return (
-    <div className="bg-white rounded-lg shadow mb-6">
-      <div className="px-6 py-4">
-        <h2 className="text-lg font-medium text-gray-900">Upcoming Viewings</h2>
-      </div>
-      <div className="p-6">
-        {appointments.filter((apt) => {
-          const aptDate = new Date(apt.preferred_date);
-          const now = new Date();
-          const nextWeek = addDays(now, 7);
-          return (
-            aptDate >= now && aptDate <= nextWeek && apt.status === "confirmed"
-          );
-        }).length === 0 ? (
-          <p className="text-gray-500 text-sm">
-            No upcoming viewings scheduled
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-medium">Upcoming Appointments</h2>
+          <p className="text-sm text-muted-foreground">
+            {upcomingAppointments.length}{" "}
+            {upcomingAppointments.length === 1 ? "appointment" : "appointments"}
           </p>
+        </div>
+      </div>
+
+      <div className="rounded-lg border">
+        {upcomingAppointments.length === 0 ? (
+          <div className="p-6 text-center text-muted-foreground">
+            No upcoming appointments
+          </div>
         ) : (
-          <div className="space-y-4">
-            {appointments
-              .filter((apt) => {
-                const aptDate = new Date(apt.preferred_date);
-                const now = new Date();
-                const nextWeek = addDays(now, 7);
-                return (
-                  aptDate >= now &&
-                  aptDate <= nextWeek &&
-                  apt.status === "confirmed"
-                );
-              })
-              .map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      <Calendar className="h-6 w-6 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
+          <div className="divide-y">
+            {upcomingAppointments.map((appointment) => (
+              <div
+                key={appointment.id}
+                className="flex items-start justify-between p-4 hover:bg-muted/50 transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {appointment.properties.name}
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className={getStatusClass(appointment.status)}
+                    >
+                      {appointment.status}
+                    </Badge>
+                  </div>
+                  <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>
                         {format(
                           new Date(appointment.preferred_date),
                           "MMMM d, yyyy"
-                        )}{" "}
-                        at {appointment.preferred_time}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {appointment.properties.name}
-                      </p>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{appointment.preferred_time}</span>
                     </div>
                   </div>
-                  <button
-                    onClick={() => {
-                      setSelectedAppointment(appointment);
-                      setShowDetailsSheet(true);
-                    }}
-                    className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    View Details
-                  </button>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {appointment.name} ·{" "}
+                    {appointment.documents_verified
+                      ? "Documents verified"
+                      : "Documents pending"}
+                  </div>
                 </div>
-              ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedAppointment(appointment);
+                    setShowDetailsSheet(true);
+                  }}
+                >
+                  View Details
+                </Button>
+              </div>
+            ))}
           </div>
         )}
       </div>

@@ -2,34 +2,36 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { Notification } from "./types";
 import { NotificationsList } from "./components/NotificationsList";
-import { AnimatedElement } from "@/components/animated/AnimatedElement";
 import {
   fetchUserNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   subscribeToNotifications,
 } from "../../services/notificationService";
+import { sortNotifications } from "./utils/notificationHelpers";
+import { Button } from "@/components/ui/button";
+import { Eye, Filter, BellRing } from "lucide-react";
 import {
-  filterNotificationsByType,
-  filterNotificationsByReadStatus,
-  sortNotifications,
-} from "./utils/notificationHelpers";
-import { NotificationFilters } from "./components/NotificationFilters";
-import { Toggle } from "@/components/ui/toggle";
-import { Eye, EyeOff } from "lucide-react";
-import { Card } from "@/components/ui/card";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Notifications() {
   const { user } = useAuthStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filteredNotifications, setFilteredNotifications] = useState<
-    Notification[]
-  >([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
-  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const [filter, setFilter] = useState<"all" | "unread">("all");
 
   // Fetch notifications
   useEffect(() => {
@@ -40,7 +42,6 @@ export function Notifications() {
           const data = await fetchUserNotifications(user.id);
           const sortedData = sortNotifications(data, sortOrder);
           setNotifications(sortedData);
-          setFilteredNotifications(sortedData);
           setUnreadCount(data.filter((n) => !n.read).length);
         } catch (error) {
           console.error("Error in component fetching notifications:", error);
@@ -72,31 +73,9 @@ export function Notifications() {
     }
   }, [user, sortOrder]);
 
-  // Apply filters when notifications, filter, sort, or read status changes
-  useEffect(() => {
-    if (notifications.length) {
-      const typeFiltered = filterNotificationsByType(
-        notifications,
-        activeFilter
-      );
-      const readFiltered = showUnreadOnly
-        ? filterNotificationsByReadStatus(typeFiltered, false)
-        : typeFiltered;
-      setFilteredNotifications(readFiltered);
-    }
-  }, [notifications, activeFilter, showUnreadOnly]);
-
-  const handleFilterChange = (type: string | null) => {
-    setActiveFilter(type);
-  };
-
   const handleSortChange = (order: "newest" | "oldest") => {
     setSortOrder(order);
     setNotifications((prev) => sortNotifications(prev, order));
-  };
-
-  const handleToggleUnreadOnly = () => {
-    setShowUnreadOnly(!showUnreadOnly);
   };
 
   const handleMarkAsRead = async (id: string) => {
@@ -126,59 +105,76 @@ export function Notifications() {
     }
   };
 
+  const filteredNotifications = notifications.filter((n) =>
+    filter === "unread" ? !n.read : true
+  );
+
   return (
     <div className="space-y-4">
-      <AnimatedElement animation="fadeIn" duration={0.5}>
-        <Card className="overflow-hidden">
-          <div className="px-4 py-4 sm:px-6 border-b">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <div className="flex items-center">
-                <h1 className="text-xl font-semibold">Notifications</h1>
-                {unreadCount > 0 && (
-                  <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                    {unreadCount} unread
-                  </span>
-                )}
-              </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-medium flex items-center gap-2">
+            <BellRing className="h-5 w-5" />
+            Notifications
+          </h1>
+          {unreadCount > 0 && (
+            <span className="text-sm text-blue-600">{unreadCount} unread</span>
+          )}
+        </div>
 
-              <div className="flex items-center gap-2 ml-auto">
-                <Toggle
-                  pressed={showUnreadOnly}
-                  onPressedChange={handleToggleUnreadOnly}
-                  size="sm"
-                  variant="outline"
-                  className="gap-1 h-8"
-                >
-                  {showUnreadOnly ? (
-                    <EyeOff className="h-3.5 w-3.5" />
-                  ) : (
-                    <Eye className="h-3.5 w-3.5" />
-                  )}
-                  <span className="text-xs">
-                    {showUnreadOnly ? "Unread only" : "All messages"}
-                  </span>
-                </Toggle>
-              </div>
-            </div>
+        <div className="flex items-center gap-2">
+          <Select
+            defaultValue={sortOrder}
+            onValueChange={(v: "newest" | "oldest") => handleSortChange(v)}
+          >
+            <SelectTrigger className="h-8 w-[130px] text-sm">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+            </SelectContent>
+          </Select>
 
-            <div className="mt-3">
-              <NotificationFilters
-                onFilterChange={handleFilterChange}
-                onSortChange={handleSortChange}
-                unreadCount={unreadCount}
-                onMarkAllAsRead={handleMarkAllAsRead}
-              />
-            </div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2 h-8">
+                <Filter className="h-4 w-4" />
+                {filter === "all" ? "All Notifications" : "Unread"}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setFilter("all")}>
+                All Notifications
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setFilter("unread")}>
+                Unread
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <NotificationsList
-            notifications={filteredNotifications}
-            onMarkAsRead={handleMarkAsRead}
-            loading={loading}
-            grouped={true}
-          />
-        </Card>
-      </AnimatedElement>
+          {unreadCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleMarkAllAsRead}
+              className="gap-2 h-8"
+            >
+              <Eye className="h-4 w-4" />
+              Mark all as read
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-lg border">
+        <NotificationsList
+          notifications={filteredNotifications}
+          onMarkAsRead={handleMarkAsRead}
+          loading={loading}
+          grouped={true}
+        />
+      </div>
     </div>
   );
 }
