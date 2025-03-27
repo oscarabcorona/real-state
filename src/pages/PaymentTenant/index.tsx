@@ -11,6 +11,8 @@ import { PaymentModal } from "./components/PaymentModal";
 import { PaymentsTable } from "./components/PaymentsTable";
 import { PaymentStats } from "./components/PaymentStats";
 import { Payment } from "./types";
+import { Button } from "@/components/ui/button";
+import { Filter } from "lucide-react";
 
 export function PaymentTenant() {
   const { user } = useAuthStore();
@@ -39,32 +41,9 @@ export function PaymentTenant() {
     if (user) {
       fetchPaymentsData();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, filters, currentPage, pageSize]);
 
   useEffect(() => {
-    // Connect filter button to accordion trigger and toggle showFilters state
-    const filterButton = document.getElementById("filter-trigger");
-    const accordionTrigger = document.getElementById(
-      "filter-accordion-trigger"
-    );
-
-    if (filterButton && accordionTrigger) {
-      const handleClick = () => {
-        (accordionTrigger as HTMLButtonElement).click();
-        setShowFilters(!showFilters);
-      };
-
-      filterButton.addEventListener("click", handleClick);
-
-      return () => {
-        filterButton.removeEventListener("click", handleClick);
-      };
-    }
-  }, [showFilters]);
-
-  useEffect(() => {
-    // Reset to page 1 when filters change
     setCurrentPage(1);
   }, [filters]);
 
@@ -113,11 +92,9 @@ export function PaymentTenant() {
 
     try {
       await processPayment(selectedPayment.id, paymentMethod);
-
       setShowPaymentModal(false);
       setSelectedPayment(null);
       await fetchPaymentsData();
-
       alert("Payment processed successfully!");
     } catch (error) {
       console.error("Error processing payment:", error);
@@ -128,7 +105,6 @@ export function PaymentTenant() {
   const handleDownloadInvoice = async (payment: Payment) => {
     try {
       const data = await downloadInvoice(payment);
-
       const url = window.URL.createObjectURL(data);
       const a = document.createElement("a");
       a.href = url;
@@ -145,38 +121,72 @@ export function PaymentTenant() {
 
   const handlePageSizeChange = (value: number) => {
     setPageSize(value);
-    setCurrentPage(1); // Reset to first page when changing page size
+    setCurrentPage(1);
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-[200px] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-6 py-4">
-          <PaymentFilters filters={filters} onFilterChange={setFilters} />
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold">My Payments</h1>
+          <p className="text-sm text-muted-foreground">
+            Track and manage your property payments
+          </p>
         </div>
-
-        <div
-          className={`p-6 pt-0 transition-all duration-300 ease-in-out ${
-            showFilters ? "mt-2" : "mt-0"
-          }`}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowFilters(!showFilters)}
+          className="flex items-center gap-2"
         >
-          <PaymentStats
-            totalPaid={stats.totalPaid}
-            pending={stats.pending}
-            failed={stats.failed}
-          />
+          <Filter className="h-4 w-4" />
+          Filters
+        </Button>
+      </div>
 
-          <PaymentsTable
-            payments={payments}
-            loading={loading}
-            onPaymentClick={handlePayment}
-            onDownloadInvoice={handleDownloadInvoice}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-          />
+      <PaymentStats
+        totalPaid={stats.totalPaid}
+        pending={stats.pending}
+        failed={stats.failed}
+      />
+
+      <div className="rounded-xl border bg-background">
+        {showFilters && (
+          <div className="border-b p-6 animate-in slide-in-from-top-2 duration-200">
+            <PaymentFilters filters={filters} onFilterChange={setFilters} />
+          </div>
+        )}
+
+        <div className="p-6">
+          {payments.length > 0 ? (
+            <PaymentsTable
+              payments={payments}
+              loading={loading}
+              onPaymentClick={handlePayment}
+              onDownloadInvoice={handleDownloadInvoice}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              pageSize={pageSize}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="text-4xl text-muted-foreground">$</div>
+              <h3 className="mt-4 text-lg font-medium">No payments found</h3>
+              <p className="text-sm text-muted-foreground">
+                No payment records match your current filters.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
