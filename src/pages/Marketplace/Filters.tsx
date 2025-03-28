@@ -1,17 +1,9 @@
-import React from "react";
-import { DollarSign, Building, BedDouble, MapPin, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Home, Building, Building2, Hotel } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import React from "react";
 
 interface FiltersProps {
   filters: {
@@ -35,209 +27,158 @@ interface FiltersProps {
   showFilters: boolean;
 }
 
-export function Filters({ filters, setFilters, showFilters }: FiltersProps) {
-  const handleFilterChange = (key: keyof typeof filters, value: string) => {
+export function Filters({ filters, setFilters }: FiltersProps) {
+  const handlePropertyTypeClick = (type: string) => {
     setFilters((prev) => ({
       ...prev,
-      [key]: value,
+      type: prev.type === type ? "" : type,
     }));
   };
 
-  // Only render if showFilters is true
-  if (!showFilters) return null;
+  const handleBedroomClick = (beds: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      bedrooms: prev.bedrooms === beds ? "" : beds,
+    }));
+  };
 
   return (
-    <div className="py-1 flex flex-col gap-5">
-      {/* Property Type Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Building className="h-4 w-4 text-primary/70" />
-          <Label className="text-base font-medium">Property Type</Label>
+    <Tabs defaultValue="type" className="w-full">
+      <TabsList className="grid w-full grid-cols-3 mb-6">
+        <TabsTrigger value="type">Type of place</TabsTrigger>
+        <TabsTrigger value="price">Price range</TabsTrigger>
+        <TabsTrigger value="rooms">Rooms</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="type" className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            variant={filters.type === "house" ? "default" : "outline"}
+            className="h-24 flex-col gap-2"
+            onClick={() => handlePropertyTypeClick("house")}
+          >
+            <Home className="h-8 w-8" />
+            <span>House</span>
+          </Button>
+          <Button
+            variant={filters.type === "apartment" ? "default" : "outline"}
+            className="h-24 flex-col gap-2"
+            onClick={() => handlePropertyTypeClick("apartment")}
+          >
+            <Building className="h-8 w-8" />
+            <span>Apartment</span>
+          </Button>
+          <Button
+            variant={filters.type === "condo" ? "default" : "outline"}
+            className="h-24 flex-col gap-2"
+            onClick={() => handlePropertyTypeClick("condo")}
+          >
+            <Building2 className="h-8 w-8" />
+            <span>Condo</span>
+          </Button>
+          <Button
+            variant={filters.type === "townhouse" ? "default" : "outline"}
+            className="h-24 flex-col gap-2"
+            onClick={() => handlePropertyTypeClick("townhouse")}
+          >
+            <Hotel className="h-8 w-8" />
+            <span>Townhouse</span>
+          </Button>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          {[
-            {
-              label: "House",
-              value: "house",
-              icon: <Home className="h-3 w-3" />,
-            },
-            {
-              label: "Apartment",
-              value: "apartment",
-              icon: <Building className="h-3 w-3" />,
-            },
-            {
-              label: "Condo",
-              value: "condo",
-              icon: <Building className="h-3 w-3" />,
-            },
-            {
-              label: "Townhouse",
-              value: "townhouse",
-              icon: <Home className="h-3 w-3" />,
-            },
-          ].map(({ label, value, icon }) => (
+      </TabsContent>
+
+      <TabsContent value="price" className="space-y-6">
+        <div>
+          <h3 className="text-sm font-medium mb-6">Price Range</h3>
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-muted-foreground">Minimum</label>
+                <Input
+                  type="number"
+                  placeholder="$0"
+                  value={filters.minPrice}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      minPrice: e.target.value,
+                    }))
+                  }
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground">Maximum</label>
+                <Input
+                  type="number"
+                  placeholder="$5000+"
+                  value={filters.maxPrice}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      maxPrice: e.target.value,
+                    }))
+                  }
+                  className="mt-2"
+                />
+              </div>
+            </div>
+            <Slider
+              defaultValue={[0, 5000]}
+              max={5000}
+              step={100}
+              className="mt-6"
+            />
+          </div>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="rooms" className="space-y-6">
+        <div>
+          <h3 className="text-sm font-medium mb-4">Bedrooms</h3>
+          <div className="flex gap-2 mb-6">
             <Button
-              key={value}
-              variant={filters.type === value ? "default" : "outline"}
-              size="sm"
-              onClick={() =>
-                handleFilterChange("type", filters.type === value ? "" : value)
+              variant={filters.bedrooms === "any" ? "default" : "outline"}
+              size="lg"
+              className="flex-1"
+              onClick={() => handleBedroomClick("any")}
+            >
+              Any
+            </Button>
+            {["1", "2", "3", "4+"].map((num) => (
+              <Button
+                key={num}
+                variant={filters.bedrooms === num ? "default" : "outline"}
+                size="lg"
+                className="flex-1"
+                onClick={() => handleBedroomClick(num)}
+              >
+                {num}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-sm font-medium mb-4">Location</h3>
+          <div className="space-y-3">
+            <Input
+              placeholder="City"
+              value={filters.city}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, city: e.target.value }))
               }
-              className={`justify-start gap-2 ${
-                filters.type === value ? "" : "text-muted-foreground"
-              }`}
-            >
-              {icon}
-              <span>{label}</span>
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Price Range Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-primary/70" />
-          <Label className="text-base font-medium">Price Range</Label>
-        </div>
-        <div className="flex gap-3 items-center">
-          <div className="relative flex-1">
-            <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-            <Input
-              type="number"
-              placeholder="Min"
-              value={filters.minPrice}
-              onChange={(e) => handleFilterChange("minPrice", e.target.value)}
-              className="pl-7"
             />
-          </div>
-          <span className="text-muted-foreground">to</span>
-          <div className="relative flex-1">
-            <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
             <Input
-              type="number"
-              placeholder="Max"
-              value={filters.maxPrice}
-              onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
-              className="pl-7"
+              placeholder="State"
+              value={filters.state}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, state: e.target.value }))
+              }
             />
           </div>
         </div>
-
-        <div className="grid grid-cols-4 gap-2">
-          {["1000", "2000", "3000", "4000+"].map((price) => (
-            <Button
-              key={price}
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const value = price.replace("+", "");
-                handleFilterChange("maxPrice", value);
-              }}
-              className={`py-0 h-8 ${
-                filters.maxPrice === price.replace("+", "")
-                  ? "border-primary/50 bg-primary/5"
-                  : ""
-              }`}
-            >
-              ${price}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Bedrooms Section */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <BedDouble className="h-4 w-4 text-primary/70" />
-          <Label className="text-base font-medium">Bedrooms</Label>
-        </div>
-        <RadioGroup
-          value={filters.bedrooms}
-          onValueChange={(value) => handleFilterChange("bedrooms", value)}
-          className="flex gap-3"
-        >
-          {["Any", "1", "2", "3", "4+"].map((option) => {
-            const value = option === "Any" ? "" : option.replace("+", "");
-            return (
-              <div key={option} className="flex items-center space-x-1">
-                <RadioGroupItem value={value} id={`bedrooms-${option}`} />
-                <Label
-                  htmlFor={`bedrooms-${option}`}
-                  className={`cursor-pointer ${
-                    filters.bedrooms === value
-                      ? "text-primary font-medium"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {option}
-                </Label>
-              </div>
-            );
-          })}
-        </RadioGroup>
-      </div>
-
-      <Separator />
-
-      {/* Location Section */}
-      <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="location" className="border-none">
-          <AccordionTrigger className="py-0">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary/70" />
-              <span className="text-base font-medium">Location</span>
-
-              {/* Show active location filters as badges */}
-              {(filters.city || filters.state) && (
-                <div className="flex gap-1 ml-2">
-                  {filters.city && (
-                    <Badge variant="outline" className="text-xs">
-                      {filters.city}
-                    </Badge>
-                  )}
-                  {filters.state && (
-                    <Badge variant="outline" className="text-xs">
-                      {filters.state}
-                    </Badge>
-                  )}
-                </div>
-              )}
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="grid gap-3 pt-3">
-              <div className="grid gap-2">
-                <Label htmlFor="city" className="text-sm">
-                  City
-                </Label>
-                <Input
-                  id="city"
-                  value={filters.city}
-                  onChange={(e) => handleFilterChange("city", e.target.value)}
-                  placeholder="Enter city"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="state" className="text-sm">
-                  State
-                </Label>
-                <Input
-                  id="state"
-                  value={filters.state}
-                  onChange={(e) => handleFilterChange("state", e.target.value)}
-                  placeholder="Enter state"
-                />
-              </div>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 }

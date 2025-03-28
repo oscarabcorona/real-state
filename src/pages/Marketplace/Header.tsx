@@ -1,10 +1,13 @@
-import { Building2, Filter, Search, SlidersHorizontal } from "lucide-react";
+import { Building2, Filter, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Toggle } from "@/components/ui/toggle";
 import { Filters } from "./Filters";
 import React from "react";
 
@@ -41,100 +44,80 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <div className="flex items-center gap-2 mr-4">
-          <Building2 className="h-6 w-6 text-primary" />
-          <h1 className="text-xl font-semibold">Property Listings</h1>
+      <div className="container flex h-14 items-center gap-8">
+        <div className="flex items-center gap-2">
+          <Building2 className="h-5 w-5 text-primary" />
+          <h1 className="text-lg font-semibold">Property Listings</h1>
         </div>
 
-        {/* Search Bar - Desktop */}
-        <div className="hidden md:flex relative flex-1 max-w-md mx-4">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by location or property name..."
-            className="pl-9"
-            value={filters.city}
-            onChange={(e) => {
-              setFilters((prev) => ({
-                ...prev,
-                city: e.target.value,
-              }));
-            }}
-          />
-        </div>
-
-        <div className="flex items-center gap-3 ml-auto">
-          {/* Desktop Filter Toggle - fixed appearance */}
-          <Toggle
-            pressed={showFilters}
-            onPressedChange={setShowFilters}
-            variant={showFilters ? "default" : "outline"}
-            className={`hidden md:flex gap-2 transition-all duration-200 ${
-              showFilters
-                ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
-                : ""
-            }`}
-            aria-label="Toggle filters"
+        <div className="flex flex-1 items-center gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by city, state or zip code..."
+              className="pl-9"
+              value={filters.city}
+              onChange={(e) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  city: e.target.value,
+                }));
+              }}
+            />
+          </div>
+          <Button
+            variant="outline"
+            className="flex gap-2 min-w-[100px]"
+            onClick={() => setShowFilters(true)}
           >
             <Filter className="h-4 w-4" />
             <span>Filters</span>
             {activeFiltersCount > 0 && (
-              <Badge
-                variant={showFilters ? "secondary" : "default"}
-                className={`ml-1 ${
-                  showFilters ? "bg-primary-foreground text-primary" : ""
-                }`}
-              >
+              <Badge variant="secondary" className="ml-1">
                 {activeFiltersCount}
               </Badge>
             )}
-          </Toggle>
-
-          {/* Mobile Filter Sheet */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline" className="md:hidden">
-                <SlidersHorizontal className="h-4 w-4" />
-                {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 -mt-1">
-                    {activeFiltersCount}
-                  </Badge>
-                )}
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-full max-w-md p-0">
-              <div className="p-4 border-b sticky top-0 bg-background z-10">
-                <h2 className="font-semibold text-lg mb-4">
-                  Filter Properties
-                </h2>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by location..."
-                    className="pl-9"
-                    value={filters.city}
-                    onChange={(e) => {
-                      setFilters((prev) => ({
-                        ...prev,
-                        city: e.target.value,
-                      }));
-                    }}
-                  />
-                </div>
-              </div>
-              <ScrollArea className="h-[calc(100vh-9rem)]">
-                <div className="p-4">
-                  <Filters
-                    filters={filters}
-                    setFilters={setFilters}
-                    showFilters={true}
-                  />
-                </div>
-              </ScrollArea>
-            </SheetContent>
-          </Sheet>
+          </Button>
         </div>
       </div>
+
+      <Dialog open={showFilters} onOpenChange={setShowFilters}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader className="border-b pb-4">
+            <DialogTitle className="text-xl font-semibold">Filters</DialogTitle>
+          </DialogHeader>
+          <div className="py-6">
+            <Filters
+              filters={filters}
+              setFilters={setFilters}
+              showFilters={true}
+            />
+          </div>
+          <div className="flex justify-between items-center border-t pt-4">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setFilters({
+                  type: "",
+                  minPrice: "",
+                  maxPrice: "",
+                  bedrooms: "",
+                  city: "",
+                  state: "",
+                });
+              }}
+            >
+              Clear all
+            </Button>
+            <Button onClick={() => setShowFilters(false)}>
+              Show{" "}
+              {activeFiltersCount > 0
+                ? `${activeFiltersCount} properties`
+                : "properties"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

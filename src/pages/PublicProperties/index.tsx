@@ -464,8 +464,8 @@ export function PublicProperties() {
                   )}
                   <div className="absolute top-2 right-2">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-white bg-opacity-90 text-gray-800">
-                      {property.property_type.charAt(0).toUpperCase() +
-                        property.property_type.slice(1)}
+                      {(property.property_type ?? "").charAt(0).toUpperCase() +
+                        (property.property_type ?? "").slice(1)}
                     </span>
                   </div>
                 </div>
@@ -475,7 +475,7 @@ export function PublicProperties() {
                       {property.name}
                     </h3>
                     <span className="text-lg font-bold text-indigo-600">
-                      ${property.price.toLocaleString()}/mo
+                      ${(property.price ?? 0).toLocaleString()}/mo
                     </span>
                   </div>
                   <p className="text-sm text-gray-500 mb-2">
@@ -493,7 +493,7 @@ export function PublicProperties() {
                     </div>
                     <div className="flex items-center">
                       <MapPin className="h-4 w-4 mr-1" />
-                      {property.square_feet.toLocaleString()} sqft
+                      {(property.square_feet ?? 0).toLocaleString()} sqft
                     </div>
                   </div>
                   <button
