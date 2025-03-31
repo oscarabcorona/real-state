@@ -4,55 +4,56 @@ import { useEffect, useRef } from "react";
 import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import { AnimatedNumber } from "../../components/animated/AnimatedNumber";
 import { cn } from "@/lib/utils";
-import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const testimonials = [
   {
-    name: "Sarah Wilson",
-    role: "Director of Operations",
-    company: "PropertyCo",
+    key: "sarah",
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    quote:
-      "We increased our annual revenue by $287,000 and cut operational costs by 35% within just 6 months. The tenant satisfaction scores jumped from 72% to 94%. This platform has completely transformed how we manage our 1,200+ units.",
   },
   {
-    name: "Tom Anderson",
-    role: "Real Estate Investor",
-    company: "Anderson Properties",
+    key: "tom",
     image:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    quote:
-      "I was skeptical at first, but the ROI was almost immediate. The automated compliance checks saved us $45,000 in potential legal fees in the first year alone. Now I can manage twice as many properties with half the staff.",
   },
   {
-    name: "Emily Chen",
-    role: "Property Manager",
-    company: "Urban Living",
+    key: "emily",
     image:
       "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    quote:
-      "Tenant screening used to take us 3 days per applicant. Now it's 20 minutes with 200% more accuracy. We've reduced vacancy rates by 64% and bad tenant situations are virtually non-existent. Worth every penny.",
+  },
+];
+
+const stats = [
+  {
+    icon: Building,
+    key: "properties",
+    gradient: "from-blue-500 to-cyan-500",
+  },
+  {
+    icon: ChartBar,
+    key: "roi",
+    gradient: "from-violet-500 to-purple-500",
+  },
+  {
+    icon: Star,
+    key: "retention",
+    gradient: "from-amber-500 to-orange-500",
   },
 ];
 
 interface TestimonialCardProps {
-  name: string;
-  role: string;
-  company: string;
+  testimonialKey: string;
   image: string;
-  quote: string;
   delay: number;
 }
 
 function TestimonialCard({
-  name,
-  role,
-  company,
+  testimonialKey,
   image,
-  quote,
   delay,
 }: TestimonialCardProps) {
+  const { t } = useTranslation();
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -93,13 +94,18 @@ function TestimonialCard({
               <img
                 className="relative h-16 w-16 rounded-full object-cover border-2 border-white dark:border-gray-800"
                 src={image}
-                alt={name}
+                alt={t(`socialProof.testimonials.${testimonialKey}.name`)}
               />
             </div>
             <div>
-              <h4 className="text-lg font-semibold text-foreground">{name}</h4>
+              <h4 className="text-lg font-semibold text-foreground">
+                {t(`socialProof.testimonials.${testimonialKey}.name`)}
+              </h4>
               <p className="text-sm text-primary">
-                {role} at <span className="font-medium">{company}</span>
+                {t(`socialProof.testimonials.${testimonialKey}.role`)} at{" "}
+                <span className="font-medium">
+                  {t(`socialProof.testimonials.${testimonialKey}.company`)}
+                </span>
               </p>
             </div>
           </div>
@@ -116,7 +122,7 @@ function TestimonialCard({
           </div>
 
           <p className="text-muted-foreground leading-relaxed italic">
-            "{quote}"
+            "{t(`socialProof.testimonials.${testimonialKey}.quote`)}"
           </p>
         </div>
       </div>
@@ -125,6 +131,7 @@ function TestimonialCard({
 }
 
 export function SocialProof() {
+  const { t } = useTranslation();
   const statsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -184,18 +191,13 @@ export function SocialProof() {
         <AnimatedElement animation="slideUp">
           <div className="text-center">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary gap-2">
-              <Award className="h-4 w-4" /> SUCCESS STORIES FROM INDUSTRY
-              LEADERS
+              <Award className="h-4 w-4" /> {t("socialProof.badge")}
             </span>
             <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-              Don't Take Our Word For It:
-              <br />
-              See The Results For Yourself
+              {t("socialProof.title")}
             </h2>
             <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
-              These property professionals were struggling with the same
-              challenges you face today. Here's how our solution transformed
-              their businesses:
+              {t("socialProof.subtitle")}
             </p>
           </div>
         </AnimatedElement>
@@ -205,31 +207,9 @@ export function SocialProof() {
           ref={statsRef}
           className="grid grid-cols-1 md:grid-cols-3 gap-8 my-24"
         >
-          {[
-            {
-              icon: Building,
-              value: 50000,
-              suffix: "+",
-              label: "Properties Managed Successfully",
-              gradient: "from-blue-500 to-cyan-500",
-            },
-            {
-              icon: ChartBar,
-              value: 40,
-              suffix: "%",
-              label: "Average ROI Increase Year One",
-              gradient: "from-violet-500 to-purple-500",
-            },
-            {
-              icon: Star,
-              value: 98,
-              suffix: "%",
-              label: "Client Retention Rate",
-              gradient: "from-amber-500 to-orange-500",
-            },
-          ].map((stat, index) => (
+          {stats.map((stat, index) => (
             <AnimatedElement
-              key={stat.label}
+              key={stat.key}
               animation="slideUp"
               delay={0.2 * (index + 1)}
             >
@@ -247,66 +227,39 @@ export function SocialProof() {
                 </div>
 
                 <AnimatedNumber
-                  value={stat.value}
-                  suffix={stat.suffix}
-                  className="text-4xl font-bold text-foreground"
+                  value={parseInt(
+                    t(`socialProof.stats.${stat.key}.value`).replace(
+                      /[^0-9]/g,
+                      ""
+                    )
+                  )}
+                  suffix={
+                    t(`socialProof.stats.${stat.key}.value`).includes("+")
+                      ? "+"
+                      : "%"
+                  }
+                  className="text-3xl font-bold text-foreground mb-2"
                 />
 
-                <p className="mt-2 text-muted-foreground font-medium">
-                  {stat.label}
+                <p className="text-center text-muted-foreground">
+                  {t(`socialProof.stats.${stat.key}.label`)}
                 </p>
               </div>
             </AnimatedElement>
           ))}
         </div>
 
-        {/* Enhanced Testimonials Section */}
-        <div>
-          <div className="text-center mb-14">
-            <h3 className="text-2xl font-bold text-foreground sm:text-3xl">
-              Real Results from Real Clients
-            </h3>
-            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-              Join thousands of property professionals who've already
-              transformed their operations and boosted their profits
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard
-                key={testimonial.name}
-                {...testimonial}
-                delay={0.2 * (index + 1)}
-              />
-            ))}
-          </div>
+        {/* Testimonials Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {testimonials.map((testimonial, index) => (
+            <TestimonialCard
+              key={testimonial.key}
+              testimonialKey={testimonial.key}
+              image={testimonial.image}
+              delay={0.2 * (index + 1)}
+            />
+          ))}
         </div>
-
-        {/* CTA Section */}
-        <AnimatedElement animation="fadeIn" delay={0.5}>
-          <div className="mt-20 text-center bg-gradient-to-br from-primary/10 to-transparent p-10 rounded-2xl border border-primary/10">
-            <div className="inline-block mb-6 px-4 py-1 bg-primary/20 rounded-full text-sm font-semibold text-primary">
-              Limited Time: First 50 New Clients This Month
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">
-              Ready to join the property management revolution?
-            </h3>
-            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-              Start your risk-free 30-day trial today. No credit card required.
-            </p>
-            <Link
-              className="mt-6 inline-block px-8 py-3 bg-primary text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
-              to="/login"
-            >
-              Start Free Trial — Save 30% Today
-            </Link>
-            <p className="mt-4 text-sm text-muted-foreground">
-              <span className="font-medium">Hurry!</span> Special offer ends in
-              48 hours
-            </p>
-          </div>
-        </AnimatedElement>
       </div>
     </div>
   );

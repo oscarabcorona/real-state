@@ -13,10 +13,12 @@ import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import { AnimatedNumber } from "../../components/animated/AnimatedNumber";
 import { AnimatedText } from "../../components/animated/AnimatedText";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export function HeroSection() {
   const heroRef = useRef<HTMLImageElement>(null);
   const [scrollIndicator, setScrollIndicator] = useState(true);
+  const { t } = useTranslation();
 
   // Parallax effect
   useEffect(() => {
@@ -66,15 +68,15 @@ export function HeroSection() {
             <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-6 border border-white/20">
               <BrainCircuit className="size-4 text-indigo-200" />
               <span className="text-white/90 font-medium text-sm">
-                AI-Powered Property Management
+                {t("hero.badge")}
               </span>
             </div>
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl max-w-4xl mx-auto">
               <span className="block text-white">
-                <AnimatedText text="Smart Property" delay={0.5} />
+                <AnimatedText text={t("hero.title.part1")} delay={0.5} />
               </span>
               <AnimatedText
-                text="Management, Simplified"
+                text={t("hero.title.part2")}
                 delay={0.8}
                 className="text-accent text-3xl sm:text-4xl md:text-5xl"
               />
@@ -84,9 +86,7 @@ export function HeroSection() {
           {/* Centered subtitle */}
           <AnimatedElement animation="slideUp" delay={1}>
             <p className="mt-6 text-xl leading-relaxed text-indigo-100 max-w-2xl mx-auto">
-              Experience the future of property management. Our AI-driven
-              platform reduces costs by 40%, automates daily tasks, and provides
-              real-time insights for better decision-making.
+              {t("hero.subtitle")}
             </p>
           </AnimatedElement>
 
@@ -99,7 +99,7 @@ export function HeroSection() {
                 asChild
               >
                 <Link to="/login">
-                  <span>Start Free Trial</span>
+                  <span>{t("hero.cta.trial")}</span>
                   <Rocket className="ml-2 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -111,7 +111,7 @@ export function HeroSection() {
                     className="group border-white/30 bg-white/5 backdrop-blur-sm text-white hover:bg-white/15 hover:border-white/50 px-6 py-6 h-auto transition-all duration-300"
                   >
                     <PlayCircle className="mr-2" />
-                    <span>Watch Demo</span>
+                    <span>{t("hero.cta.demo")}</span>
                     <ChevronRight className="ml-2 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </DialogTrigger>
@@ -139,7 +139,7 @@ export function HeroSection() {
                   className="text-3xl font-bold text-white dark:text-white/90"
                 />
                 <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
-                  Client Satisfaction
+                  {t("hero.stats.satisfaction.label")}
                 </span>
               </div>
 
@@ -150,7 +150,7 @@ export function HeroSection() {
                   className="text-3xl font-bold text-white dark:text-white/90"
                 />
                 <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
-                  Units Managed
+                  {t("hero.stats.units.label")}
                 </span>
               </div>
 
@@ -161,7 +161,7 @@ export function HeroSection() {
                   className="text-3xl font-bold text-white dark:text-white/90"
                 />
                 <span className="mt-1 text-sm text-indigo-200 dark:text-indigo-300 font-medium">
-                  Cost Reduction
+                  {t("hero.stats.cost.label")}
                 </span>
               </div>
             </div>
@@ -192,7 +192,7 @@ export function HeroSection() {
                     {/* Caption */}
                     <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                       <p className="text-white font-medium">
-                        See how our AI transforms property management
+                        {t("hero.video.caption")}
                       </p>
                     </div>
                   </div>
@@ -217,7 +217,7 @@ export function HeroSection() {
       {scrollIndicator && (
         <AnimatedElement animation="fadeIn" delay={2}>
           <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center text-white/70 cursor-pointer">
-            <span className="text-sm font-medium mb-2">Scroll to explore</span>
+            <span className="text-sm font-medium mb-2">{t("hero.scroll")}</span>
             <ChevronDown className="animate-bounce" />
           </div>
         </AnimatedElement>

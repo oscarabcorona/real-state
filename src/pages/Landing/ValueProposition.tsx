@@ -14,29 +14,24 @@ import {
 import { AnimatedElement } from "../../components/animated/AnimatedElement";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const features = [
   {
     icon: ChartBar,
-    title: "Predictive Analytics",
-    description:
-      "Boost ROI by 32% with AI-powered market forecasting. Make smarter pricing decisions and identify high-yield investment opportunities before competitors.",
+    key: "analytics",
     color: "from-blue-600 to-cyan-500",
     preview: "/previews/analytics.mp4",
   },
   {
     icon: Zap,
-    title: "Automated Operations",
-    description:
-      "Save 20+ hours weekly with 85% of tasks automated. Eliminate manual work while improving tenant satisfaction by 40% through instant responsiveness.",
+    key: "automation",
     color: "from-violet-600 to-indigo-500",
     preview: "/previews/automation.mp4",
   },
   {
     icon: Clock,
-    title: "Real-Time Monitoring",
-    description:
-      "Prevent 93% of maintenance emergencies with predictive alerts. Access critical property metrics anywhere, anytime for complete peace of mind.",
+    key: "monitoring",
     color: "from-rose-500 to-pink-500",
     preview: "/previews/monitoring.mp4",
   },
@@ -46,60 +41,52 @@ const allFeatures = {
   analytics: [
     {
       icon: ChartBar,
-      title: "Predictive Analytics",
-      description: "Increase property value by 18% with data-driven decisions.",
+      key: "predictive",
     },
     {
       icon: BarChart2,
-      title: "Financial Reporting",
-      description:
-        "Cut accounting costs by 35% with automated financial insights.",
+      key: "financial",
     },
     {
       icon: TrendingUp,
-      title: "Market Intelligence",
-      description: "Stay ahead of competitors with real-time market trends.",
+      key: "market",
     },
   ],
   automation: [
     {
       icon: Zap,
-      title: "Automated Operations",
-      description: "Reduce manual tasks by 85%.",
+      key: "operations",
     },
     {
       icon: Settings,
-      title: "Smart Workflows",
-      description: "Customizable automation workflows for any process.",
+      key: "workflows",
     },
   ],
   management: [
     {
       icon: Building2,
-      title: "Property Management",
-      description: "Centralized property and tenant management.",
+      key: "property",
     },
     {
       icon: Users,
-      title: "Tenant Portal",
-      description: "Self-service portal for tenant requests.",
+      key: "portal",
     },
   ],
   security: [
     {
       icon: Shield,
-      title: "Advanced Security",
-      description: "Enterprise-grade security and compliance.",
+      key: "advanced",
     },
     {
       icon: MessageSquare,
-      title: "24/7 Support",
-      description: "Round-the-clock customer support.",
+      key: "support",
     },
   ],
 };
 
 export function ValueProposition() {
+  const { t } = useTranslation();
+
   return (
     <div className="py-24 relative overflow-hidden" id="features">
       {/* Background with improved visual effect */}
@@ -114,15 +101,13 @@ export function ValueProposition() {
         <AnimatedElement animation="slideUp">
           <div className="text-center">
             <h2 className="inline-flex items-center rounded-full bg-gradient-to-r from-primary/80 to-primary px-4 py-1.5 text-sm font-medium text-primary-foreground ring-1 ring-inset ring-primary/20">
-              Revolutionary Property Management
+              {t("valueProposition.badge")}
             </h2>
             <p className="mt-8 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
-              Triple Your ROI and Halve Your Workload
+              {t("valueProposition.title")}
             </p>
             <p className="mt-6 max-w-2xl mx-auto text-xl text-muted-foreground">
-              Join over 2,000 property managers who've transformed their
-              businesses using our AI-powered platform. Don't get left behind in
-              the new era of property management.
+              {t("valueProposition.subtitle")}
             </p>
           </div>
         </AnimatedElement>
@@ -131,7 +116,7 @@ export function ValueProposition() {
           <dl className="grid gap-10 md:grid-cols-3">
             {features.map((feature, index) => (
               <AnimatedElement
-                key={feature.title}
+                key={feature.key}
                 animation="slideLeft"
                 delay={0.2 * (index + 1)}
               >
@@ -149,15 +134,19 @@ export function ValueProposition() {
                         </div>
 
                         <p className="text-xl font-bold mb-3 text-foreground">
-                          {feature.title}
+                          {t(`valueProposition.features.${feature.key}.title`)}
                         </p>
 
                         <dd className="text-muted-foreground leading-relaxed">
-                          {feature.description}
+                          {t(
+                            `valueProposition.features.${feature.key}.description`
+                          )}
                         </dd>
 
                         <div className="mt-6 flex items-center text-primary">
-                          <span className="font-medium">Learn more</span>
+                          <span className="font-medium">
+                            {t("valueProposition.cta.learnMore")}
+                          </span>
                           <ChevronRightIcon className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-2" />
                         </div>
                       </div>
@@ -177,13 +166,15 @@ export function ValueProposition() {
                     </div>
                     <div className="p-8">
                       <h3 className="text-2xl font-bold text-foreground">
-                        {feature.title}
+                        {t(`valueProposition.features.${feature.key}.title`)}
                       </h3>
                       <p className="mt-3 text-muted-foreground text-lg">
-                        {feature.description}
+                        {t(
+                          `valueProposition.features.${feature.key}.description`
+                        )}
                       </p>
                       <Button className="mt-6" size="lg">
-                        Get Started
+                        {t("valueProposition.cta.getStarted")}
                         <ChevronRightIcon className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
@@ -203,26 +194,28 @@ export function ValueProposition() {
                   variant="outline"
                   className="border-primary/30 bg-transparent hover:bg-primary/5 px-8 py-6 h-auto text-base rounded-full"
                 >
-                  Discover How To Maximize Your Property Returns
+                  {t("valueProposition.allFeatures.cta")}
                   <ChevronRightIcon className="ml-2 h-4 w-4" />
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-5xl max-h-[85vh] overflow-y-auto bg-background/98 dark:bg-background/95 backdrop-blur-md border-muted/50">
                 <div className="p-8">
                   <h2 className="text-3xl font-bold mb-10 text-foreground">
-                    All Features
+                    {t("valueProposition.allFeatures.title")}
                   </h2>
                   <div className="grid gap-10 md:grid-cols-2">
                     {Object.entries(allFeatures).map(([category, items]) => (
                       <div key={category} className="space-y-6">
                         <h3 className="text-xl font-semibold capitalize text-foreground flex items-center">
                           <div className="h-1.5 w-6 rounded-full bg-primary mr-3"></div>
-                          {category}
+                          {t(
+                            `valueProposition.allFeatures.categories.${category}.title`
+                          )}
                         </h3>
                         <div className="space-y-5">
                           {items.map((item) => (
                             <div
-                              key={item.title}
+                              key={item.key}
                               className="flex items-start gap-4 p-4 rounded-xl hover:bg-muted/70 dark:hover:bg-muted/20 transition-colors border border-transparent hover:border-muted"
                             >
                               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 text-primary">
@@ -230,10 +223,14 @@ export function ValueProposition() {
                               </div>
                               <div>
                                 <h4 className="text-base font-semibold text-foreground">
-                                  {item.title}
+                                  {t(
+                                    `valueProposition.allFeatures.categories.${category}.items.${item.key}.title`
+                                  )}
                                 </h4>
                                 <p className="text-sm text-muted-foreground mt-1">
-                                  {item.description}
+                                  {t(
+                                    `valueProposition.allFeatures.categories.${category}.items.${item.key}.description`
+                                  )}
                                 </p>
                               </div>
                             </div>

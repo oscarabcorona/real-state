@@ -5,7 +5,6 @@ import {
   Building2,
   HelpCircle,
   ChevronRight,
-  Shield,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AnimatedElement } from "../../components/animated/AnimatedElement";
@@ -14,79 +13,36 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-type PlanFeature = string;
+import { useTranslation } from "react-i18next";
 
 interface Plan {
-  name: string;
-  price: string | "Custom";
-  description: string;
+  key: string;
   icon: typeof Building2 | typeof Zap;
-  features: PlanFeature[];
   popular?: boolean;
-  buttonText: string;
   buttonLink: string;
-  valueProp?: string;
-  promotion?: string;
 }
 
 const plans: Plan[] = [
   {
-    name: "Starter",
-    price: "$29",
-    description: "Perfect for independent landlords",
+    key: "starter",
     icon: Building2,
-    features: [
-      "Manage up to 10 properties",
-      "AI-powered tenant screening",
-      "Automated rent collection (saves 10hrs/month)",
-      "Maintenance ticketing & tracking",
-      "Monthly analytics reports & insights",
-      "Email & chat support (24-hour response)",
-    ],
-    valueProp: "Save 15+ hours monthly and reduce vacancies by 25%",
-    buttonText: "Start Free 30-Day Trial",
     buttonLink: "/signup",
   },
   {
-    name: "Professional",
-    price: "$99",
-    description: "For growing property businesses",
+    key: "professional",
     icon: Zap,
-    features: [
-      "Manage up to 50 properties",
-      "Advanced tenant screening & background checks",
-      "Automated rent collection with payment analytics",
-      "Priority maintenance workflow system",
-      "Weekly predictive analytics & ROI reports",
-      "Priority email & chat support (4-hour response)",
-    ],
-    valueProp: "Boost NOI by 32% and eliminate 85% of admin work",
     popular: true,
-    buttonText: "Start Free 30-Day Trial",
-    promotion: "Most Popular — 30% OFF for 3 months",
     buttonLink: "/signup",
   },
   {
-    name: "Enterprise",
-    price: "Custom",
-    description: "For large organizations",
+    key: "enterprise",
     icon: Building2,
-    features: [
-      "Unlimited properties",
-      "Custom tenant screening & approval workflows",
-      "Automated rent collection with advanced reporting",
-      "Predictive maintenance AI system",
-      "Daily analytics & custom reporting",
-      "24/7 dedicated support & account manager",
-    ],
-    valueProp: "Reduce operational costs by 40% while scaling efficiently",
-    buttonText: "Schedule Demo",
     buttonLink: "/contact",
   },
 ];
 
 function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
+  const { t } = useTranslation();
   const Icon = plan.icon;
   return (
     <AnimatedElement animation="slideUp" delay={delay}>
@@ -111,7 +67,7 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
         {plan.popular && (
           <div className="absolute top-6 right-6">
             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary text-white shadow-lg">
-              {plan.promotion || "Most Popular"}
+              {t(`pricing.plans.${plan.key}.promotion`)}
             </span>
           </div>
         )}
@@ -130,42 +86,44 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
                 <Icon className="h-6 w-6" />
               </div>
               <h3 className="text-2xl font-bold text-foreground">
-                {plan.name}
+                {t(`pricing.plans.${plan.key}.name`)}
               </h3>
             </div>
-            <p className="text-muted-foreground mt-2">{plan.description}</p>
+            <p className="text-muted-foreground mt-2">
+              {t(`pricing.plans.${plan.key}.description`)}
+            </p>
           </div>
 
           {/* Value proposition */}
-          {plan.valueProp && (
-            <div className="mb-6 p-3 bg-primary/5 border border-primary/10 rounded-lg text-sm">
-              <p className="font-medium text-primary">{plan.valueProp}</p>
-            </div>
-          )}
+          <div className="mb-6 p-3 bg-primary/5 border border-primary/10 rounded-lg text-sm">
+            <p className="font-medium text-primary">
+              {t(`pricing.plans.${plan.key}.valueProp`)}
+            </p>
+          </div>
 
           {/* Price display */}
           <div className="flex items-baseline mb-6">
-            {typeof plan.price === "string" && (
-              <>
-                <span
-                  className={`text-5xl font-extrabold tracking-tight ${
-                    plan.popular ? "text-primary" : "text-foreground"
-                  }`}
-                >
-                  {plan.price}
-                </span>
-                {plan.price !== "Custom" && (
-                  <span className="ml-2 text-muted-foreground text-lg">
-                    /month
-                  </span>
-                )}
-              </>
+            <span
+              className={`text-5xl font-extrabold tracking-tight ${
+                plan.popular ? "text-primary" : "text-foreground"
+              }`}
+            >
+              {t(`pricing.plans.${plan.key}.price`)}
+            </span>
+            {t(`pricing.plans.${plan.key}.price`) !== "Custom" && (
+              <span className="ml-2 text-muted-foreground text-lg">
+                {t("pricing.common.monthly")}
+              </span>
             )}
           </div>
 
           {/* Features list */}
           <ul className="space-y-4 mb-10">
-            {plan.features.map((feature) => (
+            {(
+              t(`pricing.plans.${plan.key}.features`, {
+                returnObjects: true,
+              }) as string[]
+            ).map((feature: string) => (
               <li
                 key={feature}
                 className="flex items-start gap-3 group/feature"
@@ -183,7 +141,7 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="w-64">
-                        Learn more about {feature.toLowerCase()}
+                        {t("pricing.common.learnMore")} {feature.toLowerCase()}
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -204,12 +162,12 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
                   : "bg-card text-foreground border border-muted hover:border-primary/30 hover:bg-primary/5"
               }`}
           >
-            {plan.buttonText}
+            {t(`pricing.plans.${plan.key}.buttonText`)}
             <ChevronRight className="ml-2 h-4 w-4" />
           </Link>
-          {plan.name !== "Enterprise" && (
+          {plan.key !== "enterprise" && (
             <p className="text-xs text-center text-muted-foreground mt-4">
-              No credit card required. 30-day free trial.
+              {t("pricing.common.trialNote")}
             </p>
           )}
         </div>
@@ -219,6 +177,7 @@ function PricingCard({ plan, delay }: { plan: Plan; delay: number }) {
 }
 
 export function PricingSection() {
+  const { t } = useTranslation();
   return (
     <section id="pricing" className="relative py-28 overflow-hidden">
       {/* Enhanced background */}
@@ -235,45 +194,24 @@ export function PricingSection() {
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 mb-4">
               <Star className="h-4 w-4 text-primary mr-2" />
               <span className="text-sm font-semibold text-primary">
-                ROI-FOCUSED PRICING
+                {t("pricing.badge")}
               </span>
             </div>
             <h2 className="mt-4 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-              Investment, Not Expense:{" "}
-              <span className="text-primary">10X ROI Guaranteed</span>
+              {t("pricing.title")}
             </h2>
             <p className="mt-6 text-xl text-muted-foreground max-w-2xl mx-auto">
-              Choose the plan that fits your portfolio. Every tier is designed
-              to deliver a minimum 10X return on your investment within the
-              first year.
+              {t("pricing.subtitle")}
             </p>
           </div>
         </AnimatedElement>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Pricing cards grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
-            <PricingCard
-              key={plan.name}
-              plan={plan}
-              delay={0.2 + index * 0.1}
-            />
+            <PricingCard key={plan.key} plan={plan} delay={0.2 * (index + 1)} />
           ))}
         </div>
-
-        {/* Money-back guarantee */}
-        <AnimatedElement animation="fadeIn" delay={0.6}>
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-2 p-3 rounded-xl bg-muted/50 mb-3">
-              <Shield className="h-5 w-5 text-primary" />
-              <span className="font-medium">90-Day Money-Back Guarantee</span>
-            </div>
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-              If you don't see a measurable improvement in your property
-              management efficiency and bottom line within 90 days, we'll refund
-              your subscription.
-            </p>
-          </div>
-        </AnimatedElement>
       </div>
     </section>
   );

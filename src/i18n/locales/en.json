@@ -1,0 +1,354 @@
+{
+    "common": {
+        "language": "Language",
+        "english": "English",
+        "spanish": "Spanish"
+    },
+    "nav": {
+        "home": "Home",
+        "features": "Features",
+        "pricing": "Pricing",
+        "contact": "Contact"
+    },
+    "hero": {
+        "badge": "AI-Powered Property Management",
+        "title": {
+            "part1": "Smart Property",
+            "part2": "Management, Simplified"
+        },
+        "subtitle": "Experience the future of property management. Our AI-driven platform reduces costs by 40%, automates daily tasks, and provides real-time insights for better decision-making.",
+        "cta": {
+            "trial": "Start Free Trial",
+            "demo": "Watch Demo"
+        },
+        "stats": {
+            "satisfaction": {
+                "value": "98%",
+                "label": "Client Satisfaction"
+            },
+            "units": {
+                "value": "75000+",
+                "label": "Units Managed"
+            },
+            "cost": {
+                "value": "40%",
+                "label": "Cost Reduction"
+            }
+        },
+        "video": {
+            "caption": "See how our AI transforms property management"
+        },
+        "scroll": "Scroll to explore"
+    },
+    "features": {
+        "title": "Features",
+        "subtitle": "Everything you need to manage your short-term rentals"
+    },
+    "pricing": {
+        "title": "Investment, Not Expense: 10X ROI Guaranteed",
+        "subtitle": "Choose the plan that fits your portfolio. Every tier is designed to deliver a minimum 10X return on your investment within the first year.",
+        "badge": "ROI-FOCUSED PRICING",
+        "plans": {
+            "starter": {
+                "name": "Starter",
+                "price": "$29",
+                "description": "Perfect for independent landlords",
+                "valueProp": "Save 15+ hours monthly and reduce vacancies by 25%",
+                "buttonText": "Start Free 30-Day Trial",
+                "features": [
+                    "Manage up to 10 properties",
+                    "AI-powered tenant screening",
+                    "Automated rent collection (saves 10hrs/month)",
+                    "Maintenance ticketing & tracking",
+                    "Monthly analytics reports & insights",
+                    "Email & chat support (24-hour response)"
+                ]
+            },
+            "professional": {
+                "name": "Professional",
+                "price": "$99",
+                "description": "For growing property businesses",
+                "valueProp": "Boost NOI by 32% and eliminate 85% of admin work",
+                "buttonText": "Start Free 30-Day Trial",
+                "promotion": "Most Popular — 30% OFF for 3 months",
+                "features": [
+                    "Manage up to 50 properties",
+                    "Advanced tenant screening & background checks",
+                    "Automated rent collection with payment analytics",
+                    "Priority maintenance workflow system",
+                    "Weekly predictive analytics & ROI reports",
+                    "Priority email & chat support (4-hour response)"
+                ]
+            },
+            "enterprise": {
+                "name": "Enterprise",
+                "price": "Custom",
+                "description": "For large organizations",
+                "valueProp": "Reduce operational costs by 40% while scaling efficiently",
+                "buttonText": "Schedule Demo",
+                "features": [
+                    "Unlimited properties",
+                    "Custom tenant screening & approval workflows",
+                    "Automated rent collection with advanced reporting",
+                    "Predictive maintenance AI system",
+                    "Daily analytics & custom reporting",
+                    "24/7 dedicated support & account manager"
+                ]
+            }
+        },
+        "common": {
+            "monthly": "/month",
+            "trialNote": "No credit card required. 30-day free trial.",
+            "learnMore": "Learn more about",
+            "mostPopular": "Most Popular"
+        }
+    },
+    "contact": {
+        "title": "Ready to Revolutionize Your Property Management?",
+        "subtitle": "Join 2,000+ property professionals who've already transformed their businesses with our AI-powered platform. Fill out the form to get started with your 30-day free trial.",
+        "badge": "START YOUR TRANSFORMATION TODAY",
+        "benefits": {
+            "lessor": {
+                "title": "How Property Owners Benefit:",
+                "items": [
+                    {
+                        "text": "Reduce management costs by up to 40%"
+                    },
+                    {
+                        "text": "Fill vacancies 64% faster"
+                    },
+                    {
+                        "text": "Automate 85% of daily tasks"
+                    },
+                    {
+                        "text": "Increase rental income by 15-25%"
+                    }
+                ]
+            },
+            "tenant": {
+                "title": "How Tenants Benefit:",
+                "items": [
+                    {
+                        "text": "Find your ideal property 3x faster"
+                    },
+                    {
+                        "text": "Simplified application process"
+                    },
+                    {
+                        "text": "24/7 maintenance request tracking"
+                    },
+                    {
+                        "text": "Virtual tours and instant responses"
+                    }
+                ]
+            }
+        },
+        "contactInfo": {
+            "phone": {
+                "title": "Need immediate assistance?",
+                "value": "Call us at (555) 123-4567"
+            },
+            "email": {
+                "title": "Have questions?",
+                "value": "Email us at support@propertyai.com"
+            }
+        },
+        "testimonial": {
+            "quote": "We've increased our annual revenue by $215,000 and cut operational costs by 42% in just 5 months. The ROI was almost immediate.",
+            "author": {
+                "name": "Robert Johnson",
+                "role": "Property Manager, NexGen Properties"
+            }
+        },
+        "form": {
+            "title": "Get Started Today",
+            "subtitle": "Limited spots available. Only {{count}} consultation slots remaining this week.",
+            "fields": {
+                "role": {
+                    "label": "I am a",
+                    "options": {
+                        "lessor": "Property Owner",
+                        "tenant": "Tenant"
+                    }
+                },
+                "name": {
+                    "label": "Full Name",
+                    "placeholder": "Enter your full name",
+                    "error": "Name must be at least 2 characters"
+                },
+                "email": {
+                    "label": "Email Address",
+                    "placeholder": "Enter your email",
+                    "error": "Invalid email address"
+                },
+                "phone": {
+                    "label": "Phone Number (Optional)",
+                    "placeholder": "Enter your phone number"
+                },
+                "propertyCount": {
+                    "label": "Number of Properties",
+                    "placeholder": "How many properties do you own?",
+                    "options": [
+                        "1-5",
+                        "6-20",
+                        "21-50",
+                        "50+"
+                    ]
+                },
+                "propertyType": {
+                    "label": "Property Type",
+                    "placeholder": "Select property type",
+                    "options": [
+                        "Single Family",
+                        "Multi Family",
+                        "Commercial",
+                        "Mixed Use"
+                    ]
+                },
+                "moveInDate": {
+                    "label": "Desired Move-in Date",
+                    "placeholder": "When would you like to move in?"
+                },
+                "budget": {
+                    "label": "Monthly Budget",
+                    "placeholder": "What's your monthly budget?"
+                },
+                "message": {
+                    "label": "Message",
+                    "placeholder": "Tell us about your needs...",
+                    "error": "Message must be at least 10 characters"
+                }
+            },
+            "submit": "Submit Request",
+            "submitting": "Submitting...",
+            "success": {
+                "lessor": "Thanks for reaching out! One of our property specialists will contact you within 2 business hours to discuss how we can maximize your property returns.",
+                "tenant": "Thanks for your interest! A rental specialist will contact you shortly to help find your perfect home."
+            }
+        }
+    },
+    "valueProposition": {
+        "badge": "Revolutionary Property Management",
+        "title": "Triple Your ROI and Halve Your Workload",
+        "subtitle": "Join over 2,000 property managers who've transformed their businesses using our AI-powered platform. Don't get left behind in the new era of property management.",
+        "features": {
+            "analytics": {
+                "title": "Predictive Analytics",
+                "description": "Boost ROI by 32% with AI-powered market forecasting. Make smarter pricing decisions and identify high-yield investment opportunities before competitors."
+            },
+            "automation": {
+                "title": "Automated Operations",
+                "description": "Save 20+ hours weekly with 85% of tasks automated. Eliminate manual work while improving tenant satisfaction by 40% through instant responsiveness."
+            },
+            "monitoring": {
+                "title": "Real-Time Monitoring",
+                "description": "Prevent 93% of maintenance emergencies with predictive alerts. Access critical property metrics anywhere, anytime for complete peace of mind."
+            }
+        },
+        "allFeatures": {
+            "title": "All Features",
+            "cta": "Discover How To Maximize Your Property Returns",
+            "categories": {
+                "analytics": {
+                    "title": "Analytics",
+                    "items": {
+                        "predictive": {
+                            "title": "Predictive Analytics",
+                            "description": "Increase property value by 18% with data-driven decisions."
+                        },
+                        "financial": {
+                            "title": "Financial Reporting",
+                            "description": "Cut accounting costs by 35% with automated financial insights."
+                        },
+                        "market": {
+                            "title": "Market Intelligence",
+                            "description": "Stay ahead of competitors with real-time market trends."
+                        }
+                    }
+                },
+                "automation": {
+                    "title": "Automation",
+                    "items": {
+                        "operations": {
+                            "title": "Automated Operations",
+                            "description": "Reduce manual tasks by 85%."
+                        },
+                        "workflows": {
+                            "title": "Smart Workflows",
+                            "description": "Customizable automation workflows for any process."
+                        }
+                    }
+                },
+                "management": {
+                    "title": "Management",
+                    "items": {
+                        "property": {
+                            "title": "Property Management",
+                            "description": "Centralized property and tenant management."
+                        },
+                        "portal": {
+                            "title": "Tenant Portal",
+                            "description": "Self-service portal for tenant requests."
+                        }
+                    }
+                },
+                "security": {
+                    "title": "Security",
+                    "items": {
+                        "advanced": {
+                            "title": "Advanced Security",
+                            "description": "Enterprise-grade security and compliance."
+                        },
+                        "support": {
+                            "title": "24/7 Support",
+                            "description": "Round-the-clock customer support."
+                        }
+                    }
+                }
+            }
+        },
+        "cta": {
+            "learnMore": "Learn more",
+            "getStarted": "Get Started"
+        }
+    },
+    "socialProof": {
+        "badge": "SUCCESS STORIES FROM INDUSTRY LEADERS",
+        "title": "Don't Take Our Word For It: See The Results For Yourself",
+        "subtitle": "These property professionals were struggling with the same challenges you face today. Here's how our solution transformed their businesses:",
+        "stats": {
+            "properties": {
+                "value": "50000+",
+                "label": "Properties Managed Successfully"
+            },
+            "roi": {
+                "value": "40%",
+                "label": "Average ROI Increase Year One"
+            },
+            "retention": {
+                "value": "98%",
+                "label": "Client Retention Rate"
+            }
+        },
+        "testimonials": {
+            "sarah": {
+                "name": "Sarah Wilson",
+                "role": "Director of Operations",
+                "company": "PropertyCo",
+                "quote": "We increased our annual revenue by $287,000 and cut operational costs by 35% within just 6 months. The tenant satisfaction scores jumped from 72% to 94%. This platform has completely transformed how we manage our 1,200+ units."
+            },
+            "tom": {
+                "name": "Tom Anderson",
+                "role": "Real Estate Investor",
+                "company": "Anderson Properties",
+                "quote": "I was skeptical at first, but the ROI was almost immediate. The automated compliance checks saved us $45,000 in potential legal fees in the first year alone. Now I can manage twice as many properties with half the staff."
+            },
+            "emily": {
+                "name": "Emily Chen",
+                "role": "Property Manager",
+                "company": "Urban Living",
+                "quote": "Tenant screening used to take us 3 days per applicant. Now it's 20 minutes with 200% more accuracy. We've reduced vacancy rates by 64% and bad tenant situations are virtually non-existent. Worth every penny."
+            }
+        }
+    }
+}

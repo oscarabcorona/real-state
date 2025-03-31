@@ -1,10 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { Building2, Menu, MessagesSquare } from "lucide-react";
+import { Building2, Globe, Menu, MessagesSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ModeToggle } from "@/components/ui/mode-toggle";
+import { useTranslation } from "react-i18next";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navigation = [
   { name: "Features", href: "#features", icon: Building2 },
@@ -15,6 +22,11 @@ const navigation = [
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const { t, i18n } = useTranslation();
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,20 +64,20 @@ export function Navbar() {
       )}
     >
       <nav className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           <a
             href="#"
-            className="relative flex items-center gap-2 text-xl font-bold transition-transform hover:scale-105"
+            className="relative flex items-center gap-2.5 text-xl font-bold transition-all duration-300 hover:scale-105 hover:opacity-90"
           >
-            <div className="relative size-8 overflow-hidden rounded-lg bg-primary">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary-foreground opacity-80" />
-              <span className="relative z-10 flex h-full items-center justify-center text-primary-foreground">
+            <div className="relative size-9 overflow-hidden rounded-xl bg-primary shadow-lg transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary-foreground opacity-80 transition-opacity duration-300 group-hover:opacity-90" />
+              <span className="relative z-10 flex h-full items-center justify-center text-lg font-bold text-primary-foreground">
                 S
               </span>
             </div>
             <span
               className={cn(
-                "transition-colors",
+                "transition-all duration-300",
                 isScrolled ? "text-foreground" : "text-white"
               )}
             >
@@ -74,26 +86,30 @@ export function Navbar() {
           </a>
 
           {/* Desktop navigation */}
-          <div className="hidden md:flex md:gap-4">
+          <div className="hidden md:flex md:gap-6">
             {navigation.map((item) => (
               <a
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "group relative px-3 py-2 text-sm font-medium transition-all duration-300 ease-out hover:-translate-y-0.5",
+                  "group relative px-3 py-2 text-sm font-medium transition-all duration-300",
                   isScrolled
-                    ? "text-foreground hover:text-primary"
-                    : "text-white hover:text-white",
-                  activeSection === item.href.replace("#", "") && "text-primary"
+                    ? "text-foreground/80 hover:text-primary"
+                    : "text-white/90 hover:text-white",
+                  activeSection === item.href.replace("#", "") &&
+                    "text-primary font-semibold"
                 )}
               >
-                {item.name}
+                <span className="relative transition-all duration-300 group-hover:-translate-y-0.5 inline-block">
+                  {item.name}
+                </span>
                 <span
                   className={cn(
-                    "absolute bottom-0 left-0 h-0.5 w-full origin-left scale-x-0 rounded-full bg-primary transition-transform duration-300 ease-out",
-                    "group-hover:scale-x-100",
-                    activeSection === item.href.replace("#", "") &&
-                      "scale-x-100"
+                    "absolute bottom-0 left-0 h-0.5 w-full origin-left scale-x-0 rounded-full bg-primary transition-all duration-300 ease-out",
+                    "group-hover:scale-x-100 group-hover:opacity-100",
+                    activeSection === item.href.replace("#", "")
+                      ? "scale-x-100 opacity-100"
+                      : "opacity-0"
                   )}
                 />
               </a>
@@ -101,20 +117,78 @@ export function Navbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "flex items-center gap-2 px-3 transition-all duration-300",
+                  isScrolled
+                    ? "text-foreground/80 hover:text-primary hover:bg-primary/10"
+                    : "text-white/90 hover:text-white hover:bg-white/10",
+                  "hover:scale-105"
+                )}
+              >
+                <Globe className="size-4 transition-transform duration-300 group-hover:rotate-12" />
+                <span className="text-sm font-medium">
+                  {i18n.language === "en" ? "EN" : "ES"}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuItem
+                onClick={() => changeLanguage("en")}
+                className={cn(
+                  "flex items-center gap-2 transition-colors duration-300",
+                  "hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary",
+                  i18n.language === "en" && "bg-accent"
+                )}
+              >
+                {t("common.english")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => changeLanguage("es")}
+                className={cn(
+                  "flex items-center gap-2 transition-colors duration-300",
+                  "hover:bg-primary/10 hover:text-primary focus:bg-primary/10 focus:text-primary",
+                  i18n.language === "es" && "bg-accent"
+                )}
+              >
+                {t("common.spanish")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <ModeToggle
             className={cn(
-              "transition-colors",
-              isScrolled ? "text-foreground" : "text-white"
+              "transition-all duration-300 hover:scale-105",
+              isScrolled
+                ? "text-foreground/80 hover:text-primary hover:bg-primary/10"
+                : "text-white/90 hover:text-white hover:bg-white/10"
             )}
           />
-          <div className="hidden md:flex md:gap-2">
+
+          <div className="hidden md:flex md:gap-3">
             <Button
-              variant={isScrolled ? "outline" : "secondary"}
+              variant="ghost"
               size="sm"
-              className="transition-all duration-300 hover:scale-105"
+              className={cn(
+                "transition-all duration-300 hover:scale-105",
+                isScrolled
+                  ? "text-foreground/80 hover:text-primary hover:bg-primary/10"
+                  : "text-white/90 hover:text-white hover:bg-white/10"
+              )}
             >
               <Link to="/login">Sign in</Link>
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              className="transition-all duration-300 hover:scale-105 hover:shadow-lg hover:opacity-90 shadow-md"
+            >
+              <Link to="/register">Get Started</Link>
             </Button>
           </div>
 
@@ -125,9 +199,9 @@ export function Navbar() {
                 <Button
                   variant={isScrolled ? "outline" : "secondary"}
                   size="icon"
-                  className="size-8"
+                  className="size-9 transition-all duration-300 hover:scale-105"
                 >
-                  <Menu className="size-4" />
+                  <Menu className="size-5 transition-transform duration-300 hover:rotate-12" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
@@ -141,9 +215,9 @@ export function Navbar() {
                       <a
                         key={item.name}
                         href={item.href}
-                        className="flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                        className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
-                        <item.icon className="size-4" />
+                        <item.icon className="size-4 transition-transform duration-300 group-hover:rotate-12" />
                         {item.name}
                       </a>
                     ))}
@@ -151,11 +225,11 @@ export function Navbar() {
                   <div className="mt-auto flex flex-col gap-2 pt-6">
                     <Button
                       variant="ghost"
-                      className="w-full justify-start gap-2"
+                      className="w-full justify-start gap-2 text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                     >
                       Sign in
                     </Button>
-                    <Button className="w-full justify-start gap-2">
+                    <Button className="w-full justify-center gap-2 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg hover:opacity-90">
                       Get Started
                     </Button>
                   </div>

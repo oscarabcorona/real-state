@@ -1,0 +1,346 @@
+{
+    "common": {
+        "language": "Idioma",
+        "english": "Inglés",
+        "spanish": "Español"
+    },
+    "nav": {
+        "home": "Inicio",
+        "features": "Características",
+        "pricing": "Precios",
+        "contact": "Contacto"
+    },
+    "hero": {
+        "badge": "Gestión de Propiedades con IA",
+        "title": {
+            "part1": "Gestión Inteligente",
+            "part2": "de Propiedades, Simplificada"
+        },
+        "subtitle": "Experimente el futuro de la gestión de propiedades. Nuestra plataforma impulsada por IA reduce costos en un 40%, automatiza tareas diarias y proporciona información en tiempo real para una mejor toma de decisiones.",
+        "cta": {
+            "trial": "Comenzar Prueba Gratuita",
+            "demo": "Ver Demostración"
+        },
+        "stats": {
+            "satisfaction": {
+                "value": "98%",
+                "label": "Satisfacción del Cliente"
+            },
+            "units": {
+                "value": "75000+",
+                "label": "Unidades Gestionadas"
+            },
+            "cost": {
+                "value": "40%",
+                "label": "Reducción de Costos"
+            }
+        },
+        "video": {
+            "caption": "Vea cómo nuestra IA transforma la gestión de propiedades"
+        },
+        "scroll": "Desplácese para explorar"
+    },
+    "features": {
+        "title": "Características",
+        "subtitle": "Todo lo que necesitas para gestionar tus alquileres de corta duración"
+    },
+    "pricing": {
+        "title": "Inversión, No Gasto: 10X ROI Garantizado",
+        "subtitle": "Elija el plan que se ajuste a su cartera. Cada nivel está diseñado para entregar un retorno mínimo de 10X sobre su inversión en el primer año.",
+        "badge": "PRECIOS ORIENTADOS AL ROI",
+        "plans": {
+            "starter": {
+                "name": "Inicial",
+                "price": "$29",
+                "description": "Perfecto para propietarios independientes",
+                "valueProp": "Ahorre 15+ horas mensuales y reduzca las vacantes en un 25%",
+                "buttonText": "Comenzar Prueba Gratuita de 30 Días",
+                "features": [
+                    "Gestionar hasta 10 propiedades",
+                    "Selección de inquilinos con IA",
+                    "Cobro automático de alquiler (ahorra 10hrs/mes)",
+                    "Sistema de tickets y seguimiento de mantenimiento",
+                    "Informes y análisis mensuales",
+                    "Soporte por email y chat (respuesta en 24 horas)"
+                ]
+            },
+            "professional": {
+                "name": "Profesional",
+                "price": "$99",
+                "description": "Para negocios inmobiliarios en crecimiento",
+                "valueProp": "Aumente el NOI en un 32% y elimine el 85% del trabajo administrativo",
+                "buttonText": "Comenzar Prueba Gratuita de 30 Días",
+                "promotion": "Más Popular — 30% DE DESCUENTO por 3 meses",
+                "features": [
+                    "Gestionar hasta 50 propiedades",
+                    "Selección avanzada de inquilinos y verificaciones de antecedentes",
+                    "Cobro automático de alquiler con análisis de pagos",
+                    "Sistema prioritario de flujo de trabajo de mantenimiento",
+                    "Informes semanales de análisis predictivo y ROI",
+                    "Soporte prioritario por email y chat (respuesta en 4 horas)"
+                ]
+            },
+            "enterprise": {
+                "name": "Empresarial",
+                "price": "Personalizado",
+                "description": "Para grandes organizaciones",
+                "valueProp": "Reduzca los costos operativos en un 40% mientras escala eficientemente",
+                "buttonText": "Programar Demostración",
+                "features": [
+                    "Propiedades ilimitadas",
+                    "Flujos de trabajo personalizados de selección y aprobación de inquilinos",
+                    "Cobro automático de alquiler con informes avanzados",
+                    "Sistema de mantenimiento predictivo con IA",
+                    "Análisis diario e informes personalizados",
+                    "Soporte dedicado 24/7 y gestor de cuenta"
+                ]
+            }
+        },
+        "common": {
+            "monthly": "/mes",
+            "trialNote": "No se requiere tarjeta de crédito. Prueba gratuita de 30 días.",
+            "learnMore": "Más información sobre",
+            "mostPopular": "Más Popular"
+        }
+    },
+    "contact": {
+        "title": "¿Listo para Revolucionar su Gestión de Propiedades?",
+        "subtitle": "Únase a más de 2,000 profesionales inmobiliarios que ya han transformado sus negocios con nuestra plataforma impulsada por IA. Complete el formulario para comenzar su prueba gratuita de 30 días.",
+        "badge": "INICIE SU TRANSFORMACIÓN HOY",
+        "benefits": {
+            "lessor": {
+                "title": "Cómo se Benefician los Propietarios:",
+                "items": [
+                    {
+                        "text": "Reduzca los costos de gestión hasta en un 40%"
+                    },
+                    {
+                        "text": "Ocupe vacantes un 64% más rápido"
+                    },
+                    {
+                        "text": "Automatice el 85% de las tareas diarias"
+                    },
+                    {
+                        "text": "Aumente los ingresos por alquiler entre un 15-25%"
+                    }
+                ]
+            },
+            "tenant": {
+                "title": "Cómo se Benefician los Inquilinos:",
+                "items": [
+                    {
+                        "text": "Encuentre su propiedad ideal 3 veces más rápido"
+                    },
+                    {
+                        "text": "Proceso de solicitud simplificado"
+                    },
+                    {
+                        "text": "Seguimiento de solicitudes de mantenimiento 24/7"
+                    },
+                    {
+                        "text": "Tours virtuales y respuestas instantáneas"
+                    }
+                ]
+            }
+        },
+        "contactInfo": {
+            "phone": {
+                "title": "¿Necesita asistencia inmediata?",
+                "value": "Llámenos al (555) 123-4567"
+            },
+            "email": {
+                "title": "¿Tiene preguntas?",
+                "value": "Envíenos un correo a support@propertyai.com"
+            }
+        },
+        "testimonial": {
+            "quote": "Hemos aumentado nuestros ingresos anuales en $215,000 y reducido los costos operativos en un 42% en solo 5 meses. El ROI fue casi inmediato.",
+            "author": {
+                "name": "Robert Johnson",
+                "role": "Gestor de Propiedades, NexGen Properties"
+            }
+        },
+        "form": {
+            "title": "Comience Hoy",
+            "subtitle": "Plazas limitadas. Solo quedan {{count}} espacios de consulta esta semana.",
+            "fields": {
+                "role": {
+                    "label": "Soy un",
+                    "options": {
+                        "lessor": "Propietario",
+                        "tenant": "Inquilino"
+                    },
+                    "descriptions": {
+                        "lessor": "Busco optimizar mi propiedad",
+                        "tenant": "Busco una propiedad"
+                    }
+                },
+                "name": {
+                    "label": "Nombre Completo",
+                    "placeholder": "Ingrese su nombre completo"
+                },
+                "email": {
+                    "label": "Correo Electrónico",
+                    "placeholder": "Ingrese su correo electrónico"
+                },
+                "moveInDate": {
+                    "label": "Fecha Deseada de Entrada"
+                },
+                "budget": {
+                    "label": "Presupuesto Mensual",
+                    "placeholder": "¿Cuál es su presupuesto mensual?"
+                },
+                "propertyCount": {
+                    "label": "Número de Propiedades",
+                    "placeholder": "¿Cuántas propiedades posee?"
+                },
+                "propertyType": {
+                    "label": "Tipo de Propiedad",
+                    "placeholder": "Seleccione el tipo de propiedad"
+                },
+                "message": {
+                    "label": "Mensaje",
+                    "placeholder": {
+                        "lessor": "Cuéntenos sobre sus propiedades y desafíos de gestión...",
+                        "tenant": "Cuéntenos lo que está buscando en su próximo hogar..."
+                    }
+                },
+                "submit": {
+                    "loading": "Procesando...",
+                    "lessor": "Comience a Optimizar sus Propiedades",
+                    "tenant": "Encuentre su Hogar Perfecto"
+                },
+                "success": {
+                    "message": "¡Solicitud enviada con éxito!",
+                    "lessor": "¡Gracias por contactarnos! Uno de nuestros especialistas en propiedades se pondrá en contacto con usted dentro de las próximas 2 horas hábiles para discutir cómo podemos maximizar los retornos de su propiedad.",
+                    "tenant": "¡Gracias por su interés! Un especialista en alquileres se pondrá en contacto con usted pronto para ayudarle a encontrar su hogar perfecto."
+                },
+                "error": "Algo salió mal. Por favor, inténtelo de nuevo."
+            }
+        }
+    },
+    "valueProposition": {
+        "badge": "Gestión de Propiedades Revolucionaria",
+        "title": "Triplique su ROI y Reduzca su Carga de Trabajo",
+        "subtitle": "Únase a más de 2,000 gestores de propiedades que han transformado sus negocios usando nuestra plataforma impulsada por IA. No se quede atrás en la nueva era de la gestión de propiedades.",
+        "features": {
+            "analytics": {
+                "title": "Análisis Predictivo",
+                "description": "Aumente su ROI en un 32% con pronósticos de mercado impulsados por IA. Tome decisiones de precios más inteligentes e identifique oportunidades de inversión de alto rendimiento antes que la competencia."
+            },
+            "automation": {
+                "title": "Operaciones Automatizadas",
+                "description": "Ahorre más de 20 horas semanales con 85% de tareas automatizadas. Elimine el trabajo manual mientras mejora la satisfacción de los inquilinos en un 40% a través de respuestas instantáneas."
+            },
+            "monitoring": {
+                "title": "Monitoreo en Tiempo Real",
+                "description": "Prevenga el 93% de las emergencias de mantenimiento con alertas predictivas. Acceda a métricas críticas de propiedades en cualquier lugar y momento para una tranquilidad total."
+            }
+        },
+        "allFeatures": {
+            "title": "Todas las Características",
+            "cta": "Descubra Cómo Maximizar sus Retornos de Propiedades",
+            "categories": {
+                "analytics": {
+                    "title": "Análisis",
+                    "items": {
+                        "predictive": {
+                            "title": "Análisis Predictivo",
+                            "description": "Aumente el valor de su propiedad en un 18% con decisiones basadas en datos."
+                        },
+                        "financial": {
+                            "title": "Informes Financieros",
+                            "description": "Reduzca los costos contables en un 35% con información financiera automatizada."
+                        },
+                        "market": {
+                            "title": "Inteligencia de Mercado",
+                            "description": "Manténgase adelante de la competencia con tendencias de mercado en tiempo real."
+                        }
+                    }
+                },
+                "automation": {
+                    "title": "Automatización",
+                    "items": {
+                        "operations": {
+                            "title": "Operaciones Automatizadas",
+                            "description": "Reduzca tareas manuales en un 85%."
+                        },
+                        "workflows": {
+                            "title": "Flujos de Trabajo Inteligentes",
+                            "description": "Flujos de trabajo de automatización personalizables para cualquier proceso."
+                        }
+                    }
+                },
+                "management": {
+                    "title": "Gestión",
+                    "items": {
+                        "property": {
+                            "title": "Gestión de Propiedades",
+                            "description": "Gestión centralizada de propiedades e inquilinos."
+                        },
+                        "portal": {
+                            "title": "Portal de Inquilinos",
+                            "description": "Portal de autoservicio para solicitudes de inquilinos."
+                        }
+                    }
+                },
+                "security": {
+                    "title": "Seguridad",
+                    "items": {
+                        "advanced": {
+                            "title": "Seguridad Avanzada",
+                            "description": "Seguridad y cumplimiento de nivel empresarial."
+                        },
+                        "support": {
+                            "title": "Soporte 24/7",
+                            "description": "Atención al cliente las 24 horas."
+                        }
+                    }
+                }
+            }
+        },
+        "cta": {
+            "learnMore": "Más información",
+            "getStarted": "Comenzar"
+        }
+    },
+    "socialProof": {
+        "badge": "HISTORIAS DE ÉXITO DE LÍDERES DE LA INDUSTRIA",
+        "title": "No Tome Nuestra Palabra: Vea Los Resultados Por Usted Mismo",
+        "subtitle": "Estos profesionales inmobiliarios enfrentaban los mismos desafíos que usted enfrenta hoy. Así es como nuestra solución transformó sus negocios:",
+        "stats": {
+            "properties": {
+                "value": "50000+",
+                "label": "Propiedades Gestionadas con Éxito"
+            },
+            "roi": {
+                "value": "40%",
+                "label": "Aumento Promedio del ROI en el Primer Año"
+            },
+            "retention": {
+                "value": "98%",
+                "label": "Tasa de Retención de Clientes"
+            }
+        },
+        "testimonials": {
+            "sarah": {
+                "name": "Sarah Wilson",
+                "role": "Directora de Operaciones",
+                "company": "PropertyCo",
+                "quote": "Aumentamos nuestros ingresos anuales en $287,000 y redujimos los costos operativos en un 35% en solo 6 meses. Las puntuaciones de satisfacción de los inquilinos saltaron del 72% al 94%. Esta plataforma ha transformado completamente cómo gestionamos nuestras más de 1,200 unidades."
+            },
+            "tom": {
+                "name": "Tom Anderson",
+                "role": "Inversor Inmobiliario",
+                "company": "Anderson Properties",
+                "quote": "Al principio era escéptico, pero el ROI fue casi inmediato. Las verificaciones automatizadas de cumplimiento nos ahorraron $45,000 en honorarios legales potenciales solo en el primer año. Ahora puedo gestionar el doble de propiedades con la mitad del personal."
+            },
+            "emily": {
+                "name": "Emily Chen",
+                "role": "Gestora de Propiedades",
+                "company": "Urban Living",
+                "quote": "La selección de inquilinos nos tomaba 3 días por solicitante. Ahora son 20 minutos con un 200% más de precisión. Hemos reducido las tasas de vacantes en un 64% y las situaciones con inquilinos problemáticos son prácticamente inexistentes. Vale cada centavo."
+            }
+        }
+    }
+}
