@@ -350,5 +350,84 @@
                 "quote": "Tenant screening used to take us 3 days per applicant. Now it's 20 minutes with 200% more accuracy. We've reduced vacancy rates by 64% and bad tenant situations are virtually non-existent. Worth every penny."
             }
         }
+    },
+    "faq": {
+        "badge": "Answering Your Questions",
+        "title": "Common Questions About Transforming Your Property Business",
+        "subtitle": "Get answers to the questions property professionals ask before achieving average ROI increases of 40%.",
+        "stillHaveQuestions": "Still have questions? Talk to an expert",
+        "search": {
+            "placeholder": "Search for questions..."
+        },
+        "categories": {
+            "general": "General",
+            "pricing": "Pricing",
+            "security": "Security"
+        },
+        "noResults": {
+            "title": "No questions found",
+            "description": "We couldn't find any questions matching \"{{query}}\" in this category",
+            "action": "Clear search"
+        },
+        "questions": {
+            "general": [
+                {
+                    "question": "How quickly will I see ROI after implementing your platform?",
+                    "answer": "Most clients see measurable ROI within the first 30 days. On average, property managers report a 40% reduction in administrative tasks and a 32% increase in rental income within 90 days. Our onboarding team will work with you to identify your biggest opportunities for immediate financial gains."
+                },
+                {
+                    "question": "What makes your AI property management different from competitors?",
+                    "answer": "Unlike traditional property management software that simply digitizes paperwork, our AI analyzes real-time market data, tenant behavior, and maintenance patterns to provide predictive insights. It's like having a team of data scientists and property experts working for you 24/7. This intelligent approach helps reduce costs by 40% and increase property ROI by up to 25% - results our competitors simply can't match."
+                },
+                {
+                    "question": "How easy is it to switch from my current system?",
+                    "answer": "Remarkably easy. Our data migration team handles everything - typically completing full transitions in under 5 days with zero downtime. We've built automated import tools for all major property management platforms, and offer a white-glove service where we manually transfer any custom data. 97% of clients rate our onboarding process as 'exceptionally smooth'."
+                },
+                {
+                    "question": "How long does implementation and training take?",
+                    "answer": "Most users are up and running in less than a day. Our intuitive interface requires minimal training, and we provide comprehensive video tutorials and documentation. For our Professional and Enterprise plans, we include personalized onboarding sessions to ensure you're maximizing value from day one."
+                }
+            ],
+            "pricing": [
+                {
+                    "question": "What happens after my free trial ends?",
+                    "answer": "You'll receive a notification 7 days before your trial ends with a summary of your achieved results. You can then choose a plan that fits your needs or schedule a call with our team to discuss custom options. There are no automatic charges, and you can export your data anytime. If you decide to subscribe, we'll apply any special promotional discounts you qualified for during signup."
+                },
+                {
+                    "question": "Do you guarantee results?",
+                    "answer": "Yes. We offer a 90-day money-back guarantee. If you don't see measurable improvements in your property management efficiency and profitability within 90 days of proper platform usage, we'll refund your subscription. We can make this guarantee because 98.7% of our clients achieve or exceed their ROI targets."
+                },
+                {
+                    "question": "Is your platform suitable for small landlords with just a few properties?",
+                    "answer": "Absolutely! Our Starter plan is specifically designed for independent landlords with up to 10 properties. Many of our most enthusiastic clients started with just 2-3 properties and saw significant time savings and income improvement. The platform scales with your growth, so you only pay for what you need."
+                }
+            ],
+            "security": [
+                {
+                    "question": "Is my data secure with your platform?",
+                    "answer": "Absolutely. We use bank-level 256-bit encryption, comply with PCI DSS standards, and have regular third-party security audits. Your data is stored in redundant, geo-distributed data centers with 99.99% uptime. We're also SOC 2 Type II certified, which means our security practices have been rigorously verified by independent auditors."
+                }
+            ]
+        },
+        "whyChooseUs": {
+            "title": "Why Property Managers Choose Our Platform",
+            "benefits": [
+                "90-day money-back guarantee",
+                "No credit card required for trial",
+                "Free data migration & setup",
+                "Dedicated implementation manager",
+                "24/7 customer support",
+                "Regular platform updates",
+                "Proven ROI with case studies",
+                "Industry-leading security"
+            ]
+        },
+        "cta": {
+            "title": "Ready to transform your property management?",
+            "subtitle": "Join thousands of property professionals who are already saving time, reducing costs, and maximizing returns with our platform.",
+            "trial": "Start Your Free Trial",
+            "demo": "Schedule a Demo",
+            "offer": "Limited offer: Get 30% off your first 3 months when you sign up today"
+        }
     }
 }

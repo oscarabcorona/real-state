@@ -342,5 +342,84 @@
                 "quote": "La selección de inquilinos nos tomaba 3 días por solicitante. Ahora son 20 minutos con un 200% más de precisión. Hemos reducido las tasas de vacantes en un 64% y las situaciones con inquilinos problemáticos son prácticamente inexistentes. Vale cada centavo."
             }
         }
+    },
+    "faq": {
+        "badge": "Respondiendo a Sus Preguntas",
+        "title": "Preguntas Frecuentes Sobre la Transformación de su Negocio Inmobiliario",
+        "subtitle": "Obtenga respuestas a las preguntas que los profesionales inmobiliarios hacen antes de lograr aumentos promedio del 40% en el ROI.",
+        "stillHaveQuestions": "¿Aún tiene preguntas? Hable con un experto",
+        "search": {
+            "placeholder": "Buscar preguntas..."
+        },
+        "categories": {
+            "general": "General",
+            "pricing": "Precios",
+            "security": "Seguridad"
+        },
+        "noResults": {
+            "title": "No se encontraron preguntas",
+            "description": "No pudimos encontrar preguntas que coincidan con \"{{query}}\" en esta categoría",
+            "action": "Limpiar búsqueda"
+        },
+        "questions": {
+            "general": [
+                {
+                    "question": "¿Qué tan rápido veré el ROI después de implementar su plataforma?",
+                    "answer": "La mayoría de los clientes ven un ROI medible dentro de los primeros 30 días. En promedio, los administradores de propiedades reportan una reducción del 40% en tareas administrativas y un aumento del 32% en ingresos por alquiler dentro de los 90 días. Nuestro equipo de implementación trabajará con usted para identificar sus mayores oportunidades de ganancias financieras inmediatas."
+                },
+                {
+                    "question": "¿Qué hace que su gestión inmobiliaria con IA sea diferente de la competencia?",
+                    "answer": "A diferencia del software tradicional de gestión inmobiliaria que simplemente digitaliza el papeleo, nuestra IA analiza datos del mercado en tiempo real, comportamiento de inquilinos y patrones de mantenimiento para proporcionar insights predictivos. Es como tener un equipo de científicos de datos y expertos inmobiliarios trabajando para usted 24/7. Este enfoque inteligente ayuda a reducir costos en un 40% y aumentar el ROI de la propiedad hasta en un 25% - resultados que nuestra competencia simplemente no puede igualar."
+                },
+                {
+                    "question": "¿Qué tan fácil es cambiar desde mi sistema actual?",
+                    "answer": "Notablemente fácil. Nuestro equipo de migración de datos se encarga de todo - típicamente completando las transiciones completas en menos de 5 días sin tiempo de inactividad. Hemos construido herramientas de importación automatizadas para todas las principales plataformas de gestión inmobiliaria, y ofrecemos un servicio premium donde transferimos manualmente cualquier dato personalizado. El 97% de los clientes califica nuestro proceso de incorporación como 'excepcionalmente fluido'."
+                },
+                {
+                    "question": "¿Cuánto tiempo toma la implementación y capacitación?",
+                    "answer": "La mayoría de los usuarios están operativos en menos de un día. Nuestra interfaz intuitiva requiere un entrenamiento mínimo, y proporcionamos tutoriales en video y documentación completa. Para nuestros planes Professional y Enterprise, incluimos sesiones de incorporación personalizadas para asegurar que esté maximizando el valor desde el primer día."
+                }
+            ],
+            "pricing": [
+                {
+                    "question": "¿Qué sucede después de que termina mi prueba gratuita?",
+                    "answer": "Recibirá una notificación 7 días antes de que termine su prueba con un resumen de los resultados alcanzados. Luego puede elegir un plan que se ajuste a sus necesidades o programar una llamada con nuestro equipo para discutir opciones personalizadas. No hay cargos automáticos, y puede exportar sus datos en cualquier momento. Si decide suscribirse, aplicaremos cualquier descuento promocional especial para el que calificó durante el registro."
+                },
+                {
+                    "question": "¿Garantizan resultados?",
+                    "answer": "Sí. Ofrecemos una garantía de devolución de dinero de 90 días. Si no ve mejoras medibles en su eficiencia y rentabilidad de gestión inmobiliaria dentro de los 90 días de uso adecuado de la plataforma, le reembolsaremos su suscripción. Podemos hacer esta garantía porque el 98.7% de nuestros clientes alcanzan o superan sus objetivos de ROI."
+                },
+                {
+                    "question": "¿Su plataforma es adecuada para pequeños propietarios con solo algunas propiedades?",
+                    "answer": "¡Absolutamente! Nuestro plan Starter está específicamente diseñado para propietarios independientes con hasta 10 propiedades. Muchos de nuestros clientes más entusiastas comenzaron con solo 2-3 propiedades y vieron un ahorro significativo de tiempo y mejora en los ingresos. La plataforma escala con su crecimiento, por lo que solo paga por lo que necesita."
+                }
+            ],
+            "security": [
+                {
+                    "question": "¿Están seguros mis datos en su plataforma?",
+                    "answer": "Absolutamente. Utilizamos encriptación de 256 bits de nivel bancario, cumplimos con los estándares PCI DSS y tenemos auditorías de seguridad regulares por terceros. Sus datos se almacenan en centros de datos redundantes y geo-distribuidos con un tiempo de actividad del 99.99%. También estamos certificados SOC 2 Tipo II, lo que significa que nuestras prácticas de seguridad han sido rigurosamente verificadas por auditores independientes."
+                }
+            ]
+        },
+        "whyChooseUs": {
+            "title": "Por Qué los Administradores de Propiedades Eligen Nuestra Plataforma",
+            "benefits": [
+                "Garantía de devolución de dinero de 90 días",
+                "No se requiere tarjeta de crédito para la prueba",
+                "Migración y configuración gratuita",
+                "Gerente de implementación dedicado",
+                "Soporte al cliente 24/7",
+                "Actualizaciones regulares de la plataforma",
+                "ROI comprobado con casos de estudio",
+                "Seguridad líder en la industria"
+            ]
+        },
+        "cta": {
+            "title": "¿Listo para transformar su gestión inmobiliaria?",
+            "subtitle": "Únase a miles de profesionales inmobiliarios que ya están ahorrando tiempo, reduciendo costos y maximizando retornos con nuestra plataforma.",
+            "trial": "Comience Su Prueba Gratuita",
+            "demo": "Programe una Demo",
+            "offer": "Oferta limitada: Obtenga 30% de descuento en sus primeros 3 meses al registrarse hoy"
+        }
     }
 }
