@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navigation = [
-  { name: "Features", href: "#features", icon: Building2 },
-  { name: "Pricing", href: "#pricing", icon: Building2 },
-  { name: "Contact", href: "#contact", icon: MessagesSquare },
+  { name: "nav.features", href: "#features", icon: Building2 },
+  { name: "nav.pricing", href: "#pricing", icon: Building2 },
+  { name: "nav.contact", href: "#contact", icon: MessagesSquare },
 ];
 
 export function Navbar() {
@@ -101,7 +101,7 @@ export function Navbar() {
                 )}
               >
                 <span className="relative transition-all duration-300 group-hover:-translate-y-0.5 inline-block">
-                  {item.name}
+                  {t(item.name)}
                 </span>
                 <span
                   className={cn(
@@ -181,14 +181,14 @@ export function Navbar() {
                   : "text-white/90 hover:text-white hover:bg-white/10"
               )}
             >
-              <Link to="/login">Sign in</Link>
+              <Link to="/login">{t("nav.signIn")}</Link>
             </Button>
             <Button
               variant="default"
               size="sm"
               className="transition-all duration-300 hover:scale-105 hover:shadow-lg hover:opacity-90 shadow-md"
             >
-              <Link to="/register">Get Started</Link>
+              <Link to="/register">{t("nav.getStarted")}</Link>
             </Button>
           </div>
 
@@ -202,7 +202,7 @@ export function Navbar() {
                   className="size-9 transition-all duration-300 hover:scale-105"
                 >
                   <Menu className="size-5 transition-transform duration-300 hover:rotate-12" />
-                  <span className="sr-only">Toggle menu</span>
+                  <span className="sr-only">{t("nav.toggleMenu")}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent
@@ -218,7 +218,7 @@ export function Navbar() {
                         className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                       >
                         <item.icon className="size-4 transition-transform duration-300 group-hover:rotate-12" />
-                        {item.name}
+                        {t(item.name)}
                       </a>
                     ))}
                   </div>
@@ -227,10 +227,10 @@ export function Navbar() {
                       variant="ghost"
                       className="w-full justify-start gap-2 text-muted-foreground transition-all duration-300 hover:bg-primary/10 hover:text-primary hover:translate-x-1"
                     >
-                      Sign in
+                      {t("nav.signIn")}
                     </Button>
                     <Button className="w-full justify-center gap-2 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg hover:opacity-90">
-                      Get Started
+                      {t("nav.getStarted")}
                     </Button>
                   </div>
                 </div>

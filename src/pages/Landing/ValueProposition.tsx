@@ -249,16 +249,16 @@ export function ValueProposition() {
         <AnimatedElement animation="fadeIn" delay={1.0}>
           <div className="mt-12 mx-auto max-w-2xl border border-primary/30 bg-primary/5 rounded-xl p-6 text-center">
             <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
-              Limited Time Offer
+              {t("valueProposition.limitedOffer.badge")}
             </p>
             <h3 className="text-xl font-bold mb-3">
-              Get 30% Off Your First 3 Months
+              {t("valueProposition.limitedOffer.title")}
             </h3>
             <p className="text-muted-foreground mb-4">
-              Plus free onboarding and data migration worth $1,500
+              {t("valueProposition.limitedOffer.subtitle")}
             </p>
             <Button size="sm" className="bg-primary hover:bg-primary/90">
-              Claim Offer Now
+              {t("valueProposition.limitedOffer.button")}
             </Button>
           </div>
         </AnimatedElement>

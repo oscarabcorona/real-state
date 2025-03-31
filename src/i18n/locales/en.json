@@ -8,7 +8,10 @@
         "home": "Home",
         "features": "Features",
         "pricing": "Pricing",
-        "contact": "Contact"
+        "contact": "Contact",
+        "signIn": "Sign in",
+        "getStarted": "Get Started",
+        "toggleMenu": "Toggle menu"
     },
     "hero": {
         "badge": "AI-Powered Property Management",
@@ -250,19 +253,19 @@
             "cta": "Discover How To Maximize Your Property Returns",
             "categories": {
                 "analytics": {
-                    "title": "Analytics",
+                    "title": "Analytics & Insights",
                     "items": {
                         "predictive": {
                             "title": "Predictive Analytics",
-                            "description": "Increase property value by 18% with data-driven decisions."
+                            "description": "AI-powered market forecasting and trend analysis"
                         },
                         "financial": {
-                            "title": "Financial Reporting",
-                            "description": "Cut accounting costs by 35% with automated financial insights."
+                            "title": "Financial Analytics",
+                            "description": "Comprehensive financial reporting and ROI tracking"
                         },
                         "market": {
                             "title": "Market Intelligence",
-                            "description": "Stay ahead of competitors with real-time market trends."
+                            "description": "Real-time market data and competitive analysis"
                         }
                     }
                 },
@@ -270,46 +273,52 @@
                     "title": "Automation",
                     "items": {
                         "operations": {
-                            "title": "Automated Operations",
-                            "description": "Reduce manual tasks by 85%."
+                            "title": "Smart Operations",
+                            "description": "Automated task management and workflow optimization"
                         },
                         "workflows": {
-                            "title": "Smart Workflows",
-                            "description": "Customizable automation workflows for any process."
+                            "title": "Custom Workflows",
+                            "description": "Tailored automation rules for your specific needs"
                         }
                     }
                 },
                 "management": {
-                    "title": "Management",
+                    "title": "Property Management",
                     "items": {
                         "property": {
                             "title": "Property Management",
-                            "description": "Centralized property and tenant management."
+                            "description": "Complete property lifecycle management system"
                         },
                         "portal": {
                             "title": "Tenant Portal",
-                            "description": "Self-service portal for tenant requests."
+                            "description": "Self-service portal for tenants and owners"
                         }
                     }
                 },
                 "security": {
-                    "title": "Security",
+                    "title": "Security & Support",
                     "items": {
                         "advanced": {
                             "title": "Advanced Security",
-                            "description": "Enterprise-grade security and compliance."
+                            "description": "Enterprise-grade security and data protection"
                         },
                         "support": {
                             "title": "24/7 Support",
-                            "description": "Round-the-clock customer support."
+                            "description": "Round-the-clock technical and customer support"
                         }
                     }
                 }
             }
         },
         "cta": {
-            "learnMore": "Learn more",
+            "learnMore": "Learn More",
             "getStarted": "Get Started"
+        },
+        "limitedOffer": {
+            "badge": "Limited Time Offer",
+            "title": "Get 30% Off Your First 3 Months",
+            "subtitle": "Plus free onboarding and data migration worth $1,500",
+            "button": "Claim Offer Now"
         }
     },
     "socialProof": {
@@ -491,6 +500,24 @@
             "customers": "2,000+ Happy Customers",
             "rating": "4.9/5 Star Rating",
             "award": "PropTech Innovation Award 2023"
+        }
+    },
+    "auth": {
+        "signIn": {
+            "emailLabel": "Email address",
+            "passwordLabel": "Password",
+            "buttonLabel": "Sign in",
+            "loadingButtonLabel": "Signing in...",
+            "linkText": "Don't have an account? Sign up",
+            "confirmationText": "Check your email for the confirmation link"
+        },
+        "signUp": {
+            "emailLabel": "Email address",
+            "passwordLabel": "Create a password",
+            "buttonLabel": "Sign up",
+            "loadingButtonLabel": "Signing up...",
+            "linkText": "Already have an account? Sign in",
+            "confirmationText": "Check your email for the confirmation link"
         }
     }
 }

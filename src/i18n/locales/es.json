@@ -8,7 +8,10 @@
         "home": "Inicio",
         "features": "Características",
         "pricing": "Precios",
-        "contact": "Contacto"
+        "contact": "Contacto",
+        "signIn": "Iniciar sesión",
+        "getStarted": "Comenzar",
+        "toggleMenu": "Alternar menú"
     },
     "hero": {
         "badge": "Gestión de Propiedades con IA",
@@ -242,19 +245,19 @@
             "cta": "Descubra Cómo Maximizar sus Retornos de Propiedades",
             "categories": {
                 "analytics": {
-                    "title": "Análisis",
+                    "title": "Análisis e Información",
                     "items": {
                         "predictive": {
                             "title": "Análisis Predictivo",
-                            "description": "Aumente el valor de su propiedad en un 18% con decisiones basadas en datos."
+                            "description": "Pronósticos de mercado y análisis de tendencias impulsados por IA"
                         },
                         "financial": {
-                            "title": "Informes Financieros",
-                            "description": "Reduzca los costos contables en un 35% con información financiera automatizada."
+                            "title": "Análisis Financiero",
+                            "description": "Informes financieros completos y seguimiento de ROI"
                         },
                         "market": {
                             "title": "Inteligencia de Mercado",
-                            "description": "Manténgase adelante de la competencia con tendencias de mercado en tiempo real."
+                            "description": "Datos de mercado en tiempo real y análisis competitivo"
                         }
                     }
                 },
@@ -262,46 +265,52 @@
                     "title": "Automatización",
                     "items": {
                         "operations": {
-                            "title": "Operaciones Automatizadas",
-                            "description": "Reduzca tareas manuales en un 85%."
+                            "title": "Operaciones Inteligentes",
+                            "description": "Gestión automatizada de tareas y optimización de flujos de trabajo"
                         },
                         "workflows": {
-                            "title": "Flujos de Trabajo Inteligentes",
-                            "description": "Flujos de trabajo de automatización personalizables para cualquier proceso."
+                            "title": "Flujos de Trabajo Personalizados",
+                            "description": "Reglas de automatización adaptadas a sus necesidades específicas"
                         }
                     }
                 },
                 "management": {
-                    "title": "Gestión",
+                    "title": "Gestión de Propiedades",
                     "items": {
                         "property": {
                             "title": "Gestión de Propiedades",
-                            "description": "Gestión centralizada de propiedades e inquilinos."
+                            "description": "Sistema completo de gestión del ciclo de vida de propiedades"
                         },
                         "portal": {
                             "title": "Portal de Inquilinos",
-                            "description": "Portal de autoservicio para solicitudes de inquilinos."
+                            "description": "Portal de autoservicio para inquilinos y propietarios"
                         }
                     }
                 },
                 "security": {
-                    "title": "Seguridad",
+                    "title": "Seguridad y Soporte",
                     "items": {
                         "advanced": {
                             "title": "Seguridad Avanzada",
-                            "description": "Seguridad y cumplimiento de nivel empresarial."
+                            "description": "Seguridad y protección de datos de nivel empresarial"
                         },
                         "support": {
                             "title": "Soporte 24/7",
-                            "description": "Atención al cliente las 24 horas."
+                            "description": "Soporte técnico y al cliente las 24 horas"
                         }
                     }
                 }
             }
         },
         "cta": {
-            "learnMore": "Más información",
+            "learnMore": "Más Información",
             "getStarted": "Comenzar"
+        },
+        "limitedOffer": {
+            "badge": "Oferta por Tiempo Limitado",
+            "title": "Obtenga 30% de Descuento en sus Primeros 3 Meses",
+            "subtitle": "Más incorporación gratuita y migración de datos por valor de $1,500",
+            "button": "Reclamar Oferta Ahora"
         }
     },
     "socialProof": {
@@ -483,6 +492,24 @@
             "customers": "Más de 2,000 Clientes Satisfechos",
             "rating": "Calificación 4.9/5 Estrellas",
             "award": "Premio a la Innovación PropTech 2023"
+        }
+    },
+    "auth": {
+        "signIn": {
+            "emailLabel": "Correo electrónico",
+            "passwordLabel": "Contraseña",
+            "buttonLabel": "Iniciar sesión",
+            "loadingButtonLabel": "Iniciando sesión...",
+            "linkText": "¿No tienes cuenta? Regístrate",
+            "confirmationText": "Revisa tu correo para el enlace de confirmación"
+        },
+        "signUp": {
+            "emailLabel": "Correo electrónico",
+            "passwordLabel": "Crear contraseña",
+            "buttonLabel": "Registrarse",
+            "loadingButtonLabel": "Registrando...",
+            "linkText": "¿Ya tienes cuenta? Inicia sesión",
+            "confirmationText": "Revisa tu correo para el enlace de confirmación"
         }
     }
 }
