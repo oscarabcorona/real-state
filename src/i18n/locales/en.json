@@ -429,5 +429,68 @@
             "demo": "Schedule a Demo",
             "offer": "Limited offer: Get 30% off your first 3 months when you sign up today"
         }
+    },
+    "footer": {
+        "company": {
+            "title": "Company",
+            "about": "About Us",
+            "careers": "Careers",
+            "press": "Press",
+            "news": "News",
+            "media": "Media Kit",
+            "contact": "Contact"
+        },
+        "product": {
+            "title": "Product",
+            "features": "Features",
+            "pricing": "Pricing",
+            "security": "Security",
+            "enterprise": "Enterprise",
+            "customers": "Customers",
+            "changelog": "Changelog"
+        },
+        "resources": {
+            "title": "Resources",
+            "documentation": "Documentation",
+            "guides": "Guides",
+            "support": "Support",
+            "api": "API Reference",
+            "community": "Community",
+            "status": "System Status"
+        },
+        "legal": {
+            "title": "Legal",
+            "privacy": "Privacy Policy",
+            "terms": "Terms of Service",
+            "cookies": "Cookie Policy",
+            "licenses": "Licenses",
+            "settings": "Settings"
+        },
+        "newsletter": {
+            "title": "Subscribe to our newsletter",
+            "description": "Get the latest news and updates from our team.",
+            "placeholder": "Enter your email",
+            "button": "Subscribe",
+            "success": "Thanks for subscribing!",
+            "error": "Please enter a valid email"
+        },
+        "social": {
+            "title": "Follow us",
+            "twitter": "Twitter",
+            "facebook": "Facebook",
+            "instagram": "Instagram",
+            "linkedin": "LinkedIn",
+            "youtube": "YouTube"
+        },
+        "copyright": {
+            "text": "© 2024 Real State. All rights reserved.",
+            "rights": "All rights reserved."
+        },
+        "trust": {
+            "encryption": "256-bit SSL Encryption",
+            "customers": "2,000+ Happy Customers",
+            "rating": "4.9/5 Star Rating",
+            "award": "PropTech Innovation Award 2023"
+        }
     }
 }

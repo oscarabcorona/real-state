@@ -421,5 +421,68 @@
             "demo": "Programe una Demo",
             "offer": "Oferta limitada: Obtenga 30% de descuento en sus primeros 3 meses al registrarse hoy"
         }
+    },
+    "footer": {
+        "company": {
+            "title": "Empresa",
+            "about": "Sobre Nosotros",
+            "careers": "Carreras",
+            "press": "Prensa",
+            "news": "Noticias",
+            "media": "Kit de Medios",
+            "contact": "Contacto"
+        },
+        "product": {
+            "title": "Producto",
+            "features": "Características",
+            "pricing": "Precios",
+            "security": "Seguridad",
+            "enterprise": "Empresas",
+            "customers": "Clientes",
+            "changelog": "Registro de Cambios"
+        },
+        "resources": {
+            "title": "Recursos",
+            "documentation": "Documentación",
+            "guides": "Guías",
+            "support": "Soporte",
+            "api": "Referencia API",
+            "community": "Comunidad",
+            "status": "Estado del Sistema"
+        },
+        "legal": {
+            "title": "Legal",
+            "privacy": "Política de Privacidad",
+            "terms": "Términos de Servicio",
+            "cookies": "Política de Cookies",
+            "licenses": "Licencias",
+            "settings": "Configuración"
+        },
+        "newsletter": {
+            "title": "Suscríbete a nuestro boletín",
+            "description": "Recibe las últimas noticias y actualizaciones de nuestro equipo.",
+            "placeholder": "Ingresa tu correo electrónico",
+            "button": "Suscribirse",
+            "success": "¡Gracias por suscribirte!",
+            "error": "Por favor ingresa un correo válido"
+        },
+        "social": {
+            "title": "Síguenos",
+            "twitter": "Twitter",
+            "facebook": "Facebook",
+            "instagram": "Instagram",
+            "linkedin": "LinkedIn",
+            "youtube": "YouTube"
+        },
+        "copyright": {
+            "text": "© 2024 Real State. Todos los derechos reservados.",
+            "rights": "Todos los derechos reservados."
+        },
+        "trust": {
+            "encryption": "Encriptación SSL de 256 bits",
+            "customers": "Más de 2,000 Clientes Satisfechos",
+            "rating": "Calificación 4.9/5 Estrellas",
+            "award": "Premio a la Innovación PropTech 2023"
+        }
     }
 }
