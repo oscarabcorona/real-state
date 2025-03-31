@@ -6,7 +6,7 @@ import { AuthUI } from "./auth-ui";
 import { useAuthLogic } from "../../hooks/auth/useAuthLogic";
 import { useRoleSelection } from "../../hooks/auth/useRoleSelection";
 
-export function LoginForm() {
+export function LoginForm({ view }: { view: "sign_in" | "sign_up" }) {
   const {
     session,
     error,
@@ -59,7 +59,7 @@ export function LoginForm() {
         </Alert>
       )}
 
-      <AuthUI theme={theme} />
+      <AuthUI theme={theme} view={view} />
     </div>
   );
 }

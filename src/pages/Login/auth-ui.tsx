@@ -3,9 +3,10 @@ import { supabase } from "@/lib/supabase";
 
 interface AuthUIProps {
   theme: string;
+  view: "sign_in" | "sign_up";
 }
 
-export function AuthUI({ theme }: AuthUIProps) {
+export function AuthUI({ theme, view }: AuthUIProps) {
   // Define a custom theme for the Auth UI
   const customTheme = {
     default: {
@@ -91,7 +92,7 @@ export function AuthUI({ theme }: AuthUIProps) {
       redirectTo={window.location.origin + "/auth/callback"}
       theme={theme === "dark" ? "dark" : "default"}
       socialLayout="horizontal"
-      view="sign_in"
+      view={view}
       localization={{
         variables: {
           sign_in: {

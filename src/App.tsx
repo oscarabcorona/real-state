@@ -9,7 +9,8 @@ import { DashboardLessor } from "./pages/DashboardLessor";
 import { DashboardTenant } from "./pages/DashboardTenant";
 import { Documents } from "./pages/Documents";
 import { Landing } from "./pages/Landing";
-import { Login } from "./pages/Login";
+import { Login } from "./pages/Auth/Login";
+import { Register } from "./pages/Auth/Register";
 import { Marketplace } from "./pages/Marketplace";
 import { Notifications } from "./pages/Notifications";
 import { Payments } from "./pages/Payments";
@@ -56,6 +57,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/properties" element={<PublicProperties />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route
             path="/dashboard"
