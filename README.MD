@@ -25,4 +25,8 @@ npx supabase gen types typescript --project-id "$PROJECT_REF" --schema public > 
 npx supabase gen types typescript --local > src/types/database.types.ts
 ```
 
+# Functions
+```sh
+supabase functions serve --env-file ./supabase/functions/.env
+```
 ````

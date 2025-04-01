@@ -1,7 +1,21 @@
-import { AlertTriangle, CreditCard, DollarSign, Shield } from "lucide-react";
+import {
+  AlertTriangle,
+  CreditCard,
+  DollarSign,
+  Shield,
+  UserCircle,
+} from "lucide-react";
 import type { DocumentRequirement } from "./types";
 
 export const DOCUMENT_REQUIREMENTS: DocumentRequirement[] = [
+  {
+    type: "id_document",
+    label: "Government ID",
+    description:
+      "Valid government-issued photo ID (driver's license, passport, etc.)",
+    required: true,
+    icon: <UserCircle className="h-5 w-5" />,
+  },
   {
     type: "credit_report",
     label: "Credit Report",

@@ -1,23 +1,17 @@
 export interface Document {
   id: string;
   user_id: string;
-  property_id?: string;
   title: string;
   type: "credit_report" | "criminal_report" | "eviction_report" | "income_verification" | "id_document" | "lease" | "other";
   file_path: string;
-  status: "pending" | "signed" | "rejected" | "draft";
-  verified: boolean;
-  verification_date?: string;
-  rejection_reason?: string;
-  notes?: string;
+  status: "pending" | "verified" | "rejected";
+  property_id?: string;
   created_at: string;
-  updated_at?: string;
-  score?: number;
-  report_data?: Record<string, string>;
-  verified_by?: string;
-  property?: {
-    name: string;
-  };
+  updated_at: string;
+  ocr_status?: "pending" | "completed" | "failed";
+  ocr_error?: string;
+  ocr_completed_at?: string;
+  report_data?: Record<string, string | number | boolean | null>;
 }
 
 export interface Property {
@@ -38,4 +32,12 @@ export interface DocumentRequirement {
   description: string;
   required: boolean;
   icon: React.ReactNode;
+}
+
+export interface UploadDocumentData {
+  userId: string;
+  title: string;
+  type: Document["type"];
+  file: File;
+  propertyId?: string;
 }

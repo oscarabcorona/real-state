@@ -73,7 +73,7 @@ export async function fetchTenantProperties(userId: string) {
 export async function uploadDocument(
   documentData: UploadDocumentData,
   onProgressUpdate?: (progress: number) => void
-): Promise<void> {
+): Promise<Document> {
   const { userId, title, type, file, propertyId } = documentData;
 
   try {
@@ -95,7 +95,7 @@ export async function uploadDocument(
     }
 
     // Create document record in database
-    const { error: dbError } = await supabase.from("documents").insert([
+    const { data, error: dbError } = await supabase.from("documents").insert([
       {
         user_id: userId,
         type: type,
@@ -105,11 +105,41 @@ export async function uploadDocument(
         verified: false,
         property_id: propertyId || null,
       },
-    ]);
+    ]).select().single();
 
     if (dbError) throw dbError;
+    if (!data) throw new Error("Failed to create document record");
+
+    return {
+      ...data,
+      type: validateDocumentType(data.type),
+      status: (data.status || "pending") as Document["status"],
+      created_at: data.created_at || new Date().toISOString(),
+      updated_at: data.updated_at,
+      verified: data.verified || false,
+    } as Document;
   } catch (error) {
     console.error("Error uploading document:", error);
+    throw error;
+  }
+}
+
+/**
+ * Update a document's data
+ */
+export async function updateDocument(
+  id: string,
+  updates: Partial<Document>
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("documents")
+      .update(updates)
+      .eq("id", id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error updating document:", error);
     throw error;
   }
 }
