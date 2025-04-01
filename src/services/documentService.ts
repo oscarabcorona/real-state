@@ -15,7 +15,8 @@ function validateDocumentType(type: string): Document["type"] {
     "credit_report": "credit_report",
     "income_verification": "income_verification", 
     "criminal_report": "criminal_report",
-    "eviction_report": "eviction_report"
+    "eviction_report": "eviction_report",
+    "id_document": "id_document",
   };
 
   return validTypes[type] || "other";

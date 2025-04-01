@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
 import * as documentService from "../../services/documentService";
-import * as ocrService from "../../services/ocrService";
 import { DOCUMENT_REQUIREMENTS } from "./const";
 import { FileUploadInput } from "./FileUploadInput";
 import { StatusIndicator } from "./status-indicator";
@@ -25,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../components/ui/alert-dialog";
+import { supabase } from "../../lib/supabase";
 
 interface UploadState {
   progress: Record<string, number>;
@@ -54,6 +54,7 @@ export function Documents() {
     if (user) {
       fetchDocuments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -105,82 +106,92 @@ export function Documents() {
   };
 
   const handleUpload = async (file: File, requirement: DocumentRequirement) => {
-    if (!user) return;
-
     try {
-      // Set initial progress
-      setUploadState((prev) => ({
-        ...prev,
-        progress: { ...prev.progress, [requirement.type]: 0 },
-        errors: { ...prev.errors, [requirement.type]: null },
-      }));
+      // Upload file to storage
+      const filePath = `${requirement.type}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from("tenant_documents")
+        .upload(filePath, file);
 
-      // Start progress animation
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Create document record
+      const { data: uploadedDoc, error: createError } = await supabase
+        .from("documents")
+        .insert({
+          title: file.name,
+          type: requirement.type,
+          file_path: filePath,
+          status: "pending",
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        throw createError;
+      }
+
+      // Start progress simulation
+      let progress = 0;
       const progressInterval = setInterval(() => {
+        progress += 5;
+        if (progress >= 90) {
+          clearInterval(progressInterval);
+        }
         setUploadState((prev) => ({
           ...prev,
-          progress: {
-            ...prev.progress,
-            [requirement.type]:
-              prev.progress[requirement.type] >= 90
-                ? 90
-                : (prev.progress[requirement.type] || 0) + 10,
-          },
+          progress: { ...prev.progress, [requirement.type]: progress },
         }));
       }, 500);
 
-      // Upload document
-      const uploadedDoc = await documentService.uploadDocument({
-        userId: user.id,
-        title: requirement.label,
-        type: requirement.type,
-        file: file,
-        propertyId: "", // Optional for now
-      });
-
-      // Set initial OCR status
-      await documentService.updateDocument(uploadedDoc.id, {
-        ocr_status: "pending",
-      });
-
-      // Perform OCR analysis
       try {
-        const ocrResult = await ocrService.analyzeDocument(
-          uploadedDoc.file_path,
-          requirement.type
-        );
+        // Call OCR Edge Function
+        const { data: ocrResult, error: ocrError } =
+          await supabase.functions.invoke("ocr", {
+            body: {
+              filePath,
+              options: {
+                temperature: 0.1,
+                maxTokens: 1024,
+              },
+            },
+          });
 
-        if (ocrResult.error) {
-          throw new Error(ocrResult.error);
+        if (ocrError) {
+          throw ocrError;
         }
 
-        // Parse the OCR result
-        let parsedResult;
-        try {
-          parsedResult = JSON.parse(ocrResult.content);
-        } catch (parseError) {
-          console.error("Error parsing OCR result:", parseError);
-          throw new Error("Failed to parse OCR results");
+        if (!ocrResult.success) {
+          throw new Error(ocrResult.error || "OCR processing failed");
         }
 
         // Update document with OCR results
-        await documentService.updateDocument(uploadedDoc.id, {
-          ocr_status: "completed",
-          ocr_completed_at: new Date().toISOString(),
-          report_data: parsedResult,
-        });
+        await supabase
+          .from("documents")
+          .update({
+            ocr_status: "completed",
+            ocr_completed_at: new Date().toISOString(),
+            report_data: ocrResult.ocr_results,
+          })
+          .eq("id", uploadedDoc.id);
 
         // Refresh documents list
         fetchDocuments();
       } catch (ocrError) {
         console.error("OCR Error:", ocrError);
-        await documentService.updateDocument(uploadedDoc.id, {
-          ocr_status: "failed",
-          ocr_error:
-            ocrError instanceof Error
-              ? ocrError.message
-              : "OCR processing failed",
-        });
+        await supabase
+          .from("documents")
+          .update({
+            ocr_status: "failed",
+            ocr_error:
+              ocrError instanceof Error
+                ? ocrError.message
+                : "OCR processing failed",
+          })
+          .eq("id", uploadedDoc.id);
       }
 
       clearInterval(progressInterval);
