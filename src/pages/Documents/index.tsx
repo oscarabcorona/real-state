@@ -6,8 +6,25 @@ import { DOCUMENT_REQUIREMENTS } from "./const";
 import { FileUploadInput } from "./FileUploadInput";
 import { StatusIndicator } from "./status-indicator";
 import { Button } from "../../components/ui/button";
-import { Filter } from "lucide-react";
-import type { Document, DocumentRequirement } from "./types";
+import { Filter, Trash2, Eye } from "lucide-react";
+import type { Document, DocumentRequirement, DocumentFilters } from "./types";
+import { FilterDialog } from "./components/FilterDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 
 interface UploadState {
   progress: Record<string, number>;
@@ -17,10 +34,20 @@ interface UploadState {
 export function Documents() {
   const { user } = useAuthStore();
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadState, setUploadState] = useState<UploadState>({
     progress: {},
     errors: {},
+  });
+  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
+  const [deleteDocument, setDeleteDocument] = useState<Document | null>(null);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [currentFilters, setCurrentFilters] = useState<DocumentFilters>({
+    type: "",
+    status: "",
+    dateRange: "",
+    verified: "",
   });
 
   useEffect(() => {
@@ -28,6 +55,12 @@ export function Documents() {
       fetchDocuments();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Apply filters whenever documents or filters change
+    const filtered = documentService.filterDocuments(documents, currentFilters);
+    setFilteredDocuments(filtered);
+  }, [documents, currentFilters]);
 
   const fetchDocuments = async () => {
     if (!user) return;
@@ -40,6 +73,35 @@ export function Documents() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteDocument) return;
+
+    try {
+      await documentService.deleteDocument(
+        deleteDocument.id,
+        deleteDocument.file_path
+      );
+      setDocuments(documents.filter((doc) => doc.id !== deleteDocument.id));
+      setDeleteDocument(null);
+    } catch (error) {
+      console.error("Error deleting document:", error);
+    }
+  };
+
+  const handlePreview = async (document: Document) => {
+    try {
+      const blob = await documentService.downloadDocument(document.file_path);
+      const url = URL.createObjectURL(blob);
+      setPreviewDocument({ ...document, previewUrl: url });
+    } catch (error) {
+      console.error("Error previewing document:", error);
+    }
+  };
+
+  const handleApplyFilters = (filters: DocumentFilters) => {
+    setCurrentFilters(filters);
   };
 
   const handleUpload = async (file: File, requirement: DocumentRequirement) => {
@@ -166,6 +228,7 @@ export function Documents() {
           variant="outline"
           size="default"
           className="flex items-center gap-2"
+          onClick={() => setFilterDialogOpen(true)}
         >
           <Filter className="h-4 w-4" />
           Filters
@@ -174,7 +237,9 @@ export function Documents() {
 
       <div className="grid gap-6">
         {DOCUMENT_REQUIREMENTS.map((requirement) => {
-          const document = documents.find((d) => d.type === requirement.type);
+          const document = filteredDocuments.find(
+            (d) => d.type === requirement.type
+          );
           const progress = uploadState.progress[requirement.type] || 0;
           const error = uploadState.errors[requirement.type];
 
@@ -212,6 +277,27 @@ export function Documents() {
                     />
                   </div>
 
+                  {document && (
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePreview(document)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setDeleteDocument(document)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  )}
+
                   {document?.ocr_status === "completed" &&
                     document.report_data && (
                       <div className="mt-4 p-4 bg-muted rounded-lg">
@@ -229,6 +315,53 @@ export function Documents() {
           );
         })}
       </div>
+
+      {/* Preview Dialog */}
+      <Dialog
+        open={!!previewDocument}
+        onOpenChange={() => setPreviewDocument(null)}
+      >
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{previewDocument?.title}</DialogTitle>
+          </DialogHeader>
+          {previewDocument?.previewUrl && (
+            <iframe
+              src={previewDocument.previewUrl}
+              className="w-full h-[600px]"
+              title={previewDocument.title}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!deleteDocument}
+        onOpenChange={() => setDeleteDocument(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this document? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Filter Dialog */}
+      <FilterDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={currentFilters}
+      />
     </div>
   );
 }

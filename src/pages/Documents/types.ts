@@ -12,6 +12,7 @@ export interface Document {
   ocr_error?: string;
   ocr_completed_at?: string;
   report_data?: Record<string, string | number | boolean | null>;
+  previewUrl?: string;
 }
 
 export interface Property {
