@@ -2,6 +2,7 @@ import { Outlet, Link } from "react-router-dom";
 import { Command } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useBreadcrumb } from "../hooks/use-breadcrumb";
+import { LanguageSelector } from "./LanguageSelector";
 
 import {
   Sidebar,
@@ -93,6 +94,9 @@ export function Layout() {
                 ))}
               </BreadcrumbList>
             </Breadcrumb>
+          </div>
+          <div className="ml-auto flex items-center gap-4 px-4">
+            <LanguageSelector />
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 pt-0">
