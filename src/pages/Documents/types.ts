@@ -1,3 +1,5 @@
+export type Country = "USA" | "GUATEMALA" | "CANADA" | "MEXICO";
+
 export interface Document {
   id: string;
   user_id: string;
@@ -13,6 +15,7 @@ export interface Document {
   ocr_completed_at?: string;
   report_data?: Record<string, string | number | boolean | null>;
   previewUrl?: string;
+  country: Country;
 }
 
 export interface Property {
@@ -25,6 +28,7 @@ export interface DocumentFilters {
   status: string;
   dateRange: string;
   verified: string;
+  country: Country;
 }
 
 export interface DocumentRequirement {
@@ -33,6 +37,7 @@ export interface DocumentRequirement {
   description: string;
   required: boolean;
   icon: React.ReactNode;
+  country: Country;
 }
 
 export interface UploadDocumentData {
@@ -41,4 +46,5 @@ export interface UploadDocumentData {
   type: Document["type"];
   file: File;
   propertyId?: string;
+  country: Country;
 }

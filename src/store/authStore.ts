@@ -1,13 +1,29 @@
 import { create } from 'zustand';
 import { AuthState, WorkspaceType } from '../types/auth';
 import { supabase } from '../lib/supabase';
+import type { Country } from '@/pages/Documents/types';
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+// Map of country codes to our Country type
+const COUNTRY_MAPPINGS: Record<string, Country> = {
+  'US': 'USA',
+  'GT': 'GUATEMALA',
+  'CA': 'CANADA',
+  'MX': 'MEXICO'
+};
+
+interface LocationState {
+  country: Country;
+  isLoading: boolean;
+}
+
+export const useAuthStore = create<AuthState & LocationState>((set, get) => ({
   user: null,
   workspace: null,
   workspaces: [],
   loading: true,
   error: null,
+  country: 'USA',
+  isLoading: true,
 
   initialize: async () => {
     try {
@@ -53,6 +69,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           } else if (workspaces.length > 0) {
             // Try to find default workspace first
             activeWorkspace = workspaces.find(w => w.is_default) || workspaces[0];
+          }
+
+          // Get user's location
+          if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                try {
+                  const { latitude, longitude } = position.coords;
+                  // Use reverse geocoding to get country code
+                  const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+                  );
+                  const data = await response.json();
+                  const countryCode = data.address.country_code.toUpperCase();
+                  
+                  // Map country code to our Country type
+                  const mappedCountry = COUNTRY_MAPPINGS[countryCode] || 'USA';
+                  set({ country: mappedCountry, isLoading: false });
+                } catch (error) {
+                  console.error('Error getting country from location:', error);
+                  // Fallback to USA if there's an error
+                  set({ country: 'USA', isLoading: false });
+                }
+              },
+              (error) => {
+                console.error('Error getting location:', error);
+                // Fallback to USA if user denies location access
+                set({ country: 'USA', isLoading: false });
+              }
+            );
+          } else {
+            // Fallback to USA if geolocation is not supported
+            set({ country: 'USA', isLoading: false });
           }
 
           set({ 

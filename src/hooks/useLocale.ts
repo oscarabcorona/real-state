@@ -4,10 +4,11 @@ import {
   formatDate,
   formatNumber,
   getCurrencySymbol,
-  getCountryFromLocale,
   getCurrencyFromCountry,
 } from '@/lib/formatting';
 import { useEffect } from 'react';
+import type { Country } from '@/pages/Documents/types';
+import { useAuthStore } from '@/store/authStore';
 
 const LANGUAGE_MAPPINGS = {
   'en-US': 'en-US',
@@ -15,8 +16,17 @@ const LANGUAGE_MAPPINGS = {
   'es': 'es'
 } as const;
 
+// Map of country codes to our Country type
+const COUNTRY_MAPPINGS: Record<string, Country> = {
+  'US': 'USA',
+  'GT': 'GUATEMALA',
+  'CA': 'CANADA',
+  'MX': 'MEXICO'
+};
+
 export const useLocale = () => {
   const { i18n } = useTranslation();
+  const { country, isLoading } = useAuthStore();
   
   useEffect(() => {
     const savedLocale = localStorage.getItem('i18nextLng');
@@ -36,7 +46,6 @@ export const useLocale = () => {
 
   const currentLocale = i18n.language;
   const mappedLocale = LANGUAGE_MAPPINGS[currentLocale as keyof typeof LANGUAGE_MAPPINGS] || 'en-US';
-  const country = getCountryFromLocale(mappedLocale);
   const currency = getCurrencyFromCountry(country);
 
   const changeLocale = (newLocale: string) => {
@@ -49,6 +58,7 @@ export const useLocale = () => {
     locale: mappedLocale,
     country,
     currency,
+    isLoading,
     changeLocale,
     formatCurrency: (amount: number) => formatCurrency(amount, currency),
     formatDate,
