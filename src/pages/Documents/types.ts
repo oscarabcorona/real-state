@@ -17,6 +17,9 @@ export interface Document {
   file_path: string;
   status: "pending" | "verified" | "rejected";
   property_id?: string;
+  property?: {
+    name: string;
+  };
   created_at: string;
   updated_at: string;
   ocr_status?: "pending" | "completed" | "failed";
@@ -25,6 +28,10 @@ export interface Document {
   report_data?: Record<string, string | number | boolean | null>;
   previewUrl?: string;
   country: Country;
+  notes?: string;
+  verification_date?: string;
+  rejection_reason?: string;
+  verified?: boolean;
 }
 
 export interface Property {

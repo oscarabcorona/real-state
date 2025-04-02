@@ -9,6 +9,7 @@ import { Trash2, Eye, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Document, DocumentFilters } from "./types";
 import { FilterDialog } from "./components/FilterDialog";
+import { PreviewModal } from "./components/PreviewModal";
 import { Progress } from "../../components/ui/progress";
 import {
   Tooltip,
@@ -34,6 +35,11 @@ export function Documents() {
   const { user } = useAuthStore();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(
+    null
+  );
+  const [verificationNote, setVerificationNote] = useState("");
+  const [processingDocument, setProcessingDocument] = useState(false);
   const [uploadState, setUploadState] = useState<UploadState>({
     progress: {},
     errors: {},
@@ -50,6 +56,8 @@ export function Documents() {
     () => getDocumentRequirements(filters.country),
     [filters.country]
   );
+
+  const isTenant = user?.role === "tenant";
 
   // Calculate completion status for each document type
   const documentStatus = useMemo(() => {
@@ -153,6 +161,65 @@ export function Documents() {
     } catch (error) {
       console.error("Error deleting document:", error);
       toast.error("Failed to delete document");
+    }
+  };
+
+  const handlePreview = (document: Document) => {
+    setSelectedDocument(document);
+  };
+
+  const handleClosePreview = () => {
+    setSelectedDocument(null);
+    setVerificationNote("");
+  };
+
+  const handleVerify = async (document: Document) => {
+    try {
+      setProcessingDocument(true);
+      await documentService.verifyDocument(document.id, verificationNote);
+      await loadDocuments();
+      toast.success("Document verified successfully");
+      handleClosePreview();
+    } catch (error) {
+      console.error("Error verifying document:", error);
+      toast.error("Failed to verify document");
+    } finally {
+      setProcessingDocument(false);
+    }
+  };
+
+  const handleReject = async (document: Document) => {
+    try {
+      setProcessingDocument(true);
+      await documentService.updateDocument(document.id, {
+        status: "rejected",
+        notes: verificationNote,
+      });
+      await loadDocuments();
+      toast.success("Document rejected");
+      handleClosePreview();
+    } catch (error) {
+      console.error("Error rejecting document:", error);
+      toast.error("Failed to reject document");
+    } finally {
+      setProcessingDocument(false);
+    }
+  };
+
+  const handleDownload = async (filePath: string, fileName: string) => {
+    try {
+      const blob = await documentService.downloadDocument(filePath);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Error downloading document:", error);
+      toast.error("Failed to download document");
     }
   };
 
@@ -368,6 +435,7 @@ export function Documents() {
                               variant="outline"
                               size="sm"
                               className="flex-1 bg-white hover:bg-gray-50/50 border border-gray-200 text-gray-700 hover:text-gray-900 shadow-sm transition-all duration-200 hover:border-gray-300 active:bg-gray-100 text-xs h-8"
+                              onClick={() => handlePreview(doc)}
                             >
                               <Eye className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
                               Preview
@@ -392,6 +460,22 @@ export function Documents() {
           </div>
         </div>
       </div>
+
+      {selectedDocument && (
+        <PreviewModal
+          document={selectedDocument}
+          verificationNote={verificationNote}
+          rejectionReason=""
+          onVerificationNoteChange={setVerificationNote}
+          onVerify={handleVerify}
+          onReject={handleReject}
+          onDownload={handleDownload}
+          onDelete={handleDelete}
+          onClose={handleClosePreview}
+          processingDocument={processingDocument}
+          isTenant={isTenant}
+        />
+      )}
     </div>
   );
 }

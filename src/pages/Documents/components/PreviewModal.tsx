@@ -24,6 +24,7 @@ interface PreviewModalProps {
   onDelete: (id: string, filePath: string) => void;
   onClose: () => void;
   processingDocument: boolean;
+  isTenant: boolean;
 }
 
 export const PreviewModal: React.FC<PreviewModalProps> = ({
@@ -36,6 +37,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
   onDelete,
   onClose,
   processingDocument,
+  isTenant,
 }) => {
   return (
     <Dialog open onOpenChange={() => onClose()}>
@@ -66,10 +68,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
                 Status
               </dt>
               <dd>
-                <StatusIndicator
-                  status={document.status}
-                  verified={document.verified}
-                />
+                <StatusIndicator status={document.status} />
               </dd>
             </div>
             <div>
@@ -119,7 +118,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
           </dl>
         </Card>
 
-        {document.status === "pending" && (
+        {!isTenant && document.status === "pending" && (
           <>
             <Separator className="my-4" />
             <div className="space-y-4">
@@ -170,7 +169,7 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
           </>
         )}
 
-        <Separator className="my-4" />
+        {!isTenant && <Separator className="my-4" />}
 
         <div className="flex justify-end gap-3">
           <Button
@@ -186,22 +185,24 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
             <Download className="h-4 w-4" />
             Download
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              if (
-                confirm(
-                  "Are you sure you want to delete this document? This action cannot be undone."
-                )
-              ) {
-                onDelete(document.id, document.file_path);
-              }
-            }}
-            className="gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
+          {!isTenant && (
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (
+                  confirm(
+                    "Are you sure you want to delete this document? This action cannot be undone."
+                  )
+                ) {
+                  onDelete(document.id, document.file_path);
+                }
+              }}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
