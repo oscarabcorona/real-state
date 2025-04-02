@@ -1,32 +1,29 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "../../store/authStore";
 import * as documentService from "../../services/documentService";
 import { getDocumentRequirements } from "./const";
 import { FileUploadInput } from "./FileUploadInput";
 import { StatusIndicator } from "./status-indicator";
 import { Button } from "../../components/ui/button";
-import { Trash2, Eye, AlertCircle } from "lucide-react";
+import { Trash2, Eye, AlertCircle, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
-import type { Document, DocumentFilters, Country } from "./types";
+import type { Document, DocumentFilters } from "./types";
 import { FilterDialog } from "./components/FilterDialog";
-import { useLocale } from "../../hooks/useLocale";
+import { Progress } from "../../components/ui/progress";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../components/ui/tooltip";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../../components/ui/alert-dialog";
-import { Alert, AlertDescription } from "../../components/ui/alert";
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "../../components/ui/card";
 
 interface UploadState {
   progress: Record<string, number>;
@@ -34,371 +31,369 @@ interface UploadState {
 }
 
 export function Documents() {
-  const { user, country, isLoading: isLocationLoading } = useAuthStore();
-  const { isLoading: isLocaleLoading } = useLocale();
+  const { user } = useAuthStore();
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [uploadState, setUploadState] = useState<UploadState>({
     progress: {},
     errors: {},
   });
-  const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
-  const [deleteDocument, setDeleteDocument] = useState<Document | null>(null);
-  const [currentFilters, setCurrentFilters] = useState<DocumentFilters>({
+  const [filters, setFilters] = useState<DocumentFilters>({
     type: "all",
     status: "all",
     dateRange: "all",
     verified: "all",
-    country: country as Country,
+    country: "GUATEMALA",
   });
 
-  // Memoize filtered documents to prevent unnecessary recalculations
-  const filteredDocuments = useMemo(
-    () => documentService.filterDocuments(documents, currentFilters),
-    [documents, currentFilters]
+  const requirements = useMemo(
+    () => getDocumentRequirements(filters.country),
+    [filters.country]
   );
 
-  // Memoize document requirements to prevent unnecessary recalculations
-  const documentRequirements = useMemo(
-    () => getDocumentRequirements(country as Country),
-    [country]
-  );
+  // Calculate completion status for each document type
+  const documentStatus = useMemo(() => {
+    const status: Record<string, { uploaded: boolean; verified: boolean }> = {};
+    requirements.forEach((req) => {
+      const doc = documents.find((d) => d.type === req.type);
+      status[req.type] = {
+        uploaded: !!doc,
+        verified: doc?.status === "verified",
+      };
+    });
+    return status;
+  }, [documents, requirements]);
 
-  // Memoize the documents to display based on filters
-  const documentsToDisplay = useMemo(() => {
-    if (currentFilters.type === "all") {
-      return documentRequirements.map((req) => {
-        const doc = filteredDocuments.find((d) => d.type === req.type);
-        return {
-          ...req,
-          document: doc,
-        };
-      });
-    }
-    return documentRequirements
-      .filter((req) => req.type === currentFilters.type)
-      .map((req) => {
-        const doc = filteredDocuments.find((d) => d.type === req.type);
-        return {
-          ...req,
-          document: doc,
-        };
-      });
-  }, [documentRequirements, filteredDocuments, currentFilters]);
-
-  // Memoize fetch documents function
-  const fetchDocuments = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const docs = await documentService.fetchUserDocuments(user.id);
-      setDocuments(docs);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to fetch documents"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  // Calculate overall progress
+  const overallProgress = useMemo(() => {
+    const total = requirements.length;
+    const uploaded = Object.values(documentStatus).filter(
+      (s) => s.uploaded
+    ).length;
+    const verified = Object.values(documentStatus).filter(
+      (s) => s.verified
+    ).length;
+    return {
+      uploaded: Math.round((uploaded / total) * 100),
+      verified: Math.round((verified / total) * 100),
+    };
+  }, [documentStatus, requirements]);
 
   useEffect(() => {
-    if (user) {
-      fetchDocuments();
+    if (user?.id) {
+      loadDocuments();
     }
-  }, [user, fetchDocuments]);
+  }, [user?.id]);
 
-  // Memoize handlers to prevent unnecessary rerenders
-  const handleDelete = useCallback(async () => {
-    if (!deleteDocument) return;
+  const loadDocuments = async () => {
+    try {
+      setIsLoading(true);
+      const docs = await documentService.fetchUserDocuments(user!.id);
+      setDocuments(docs);
+    } catch (error) {
+      console.error("Error loading documents:", error);
+      toast.error("Failed to load documents");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpload = async (type: Document["type"], file: File) => {
+    if (!user) return;
 
     try {
-      await documentService.deleteDocument(
-        deleteDocument.id,
-        deleteDocument.file_path
+      setUploadState((prev) => ({
+        ...prev,
+        progress: { ...prev.progress, [type]: 0 },
+        errors: { ...prev.errors, [type]: undefined },
+      }));
+
+      const doc = await documentService.uploadDocument(
+        {
+          userId: user.id,
+          type,
+          title: file.name,
+          file,
+        },
+        (progress) =>
+          setUploadState((prev) => ({
+            ...prev,
+            progress: { ...prev.progress, [type]: progress },
+          }))
       );
-      setDocuments((prev) =>
-        prev.filter((doc) => doc.id !== deleteDocument.id)
-      );
-      setDeleteDocument(null);
+
+      setDocuments((prev) => [doc, ...prev]);
+      toast.success("Document uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading document:", error);
+      setUploadState((prev) => ({
+        ...prev,
+        errors: {
+          ...prev.errors,
+          [type]:
+            error instanceof Error
+              ? error.message
+              : "Failed to upload document",
+        },
+      }));
+      toast.error("Failed to upload document", {
+        action: {
+          label: "Try Again",
+          onClick: () => handleUpload(type, file),
+        },
+      });
+    }
+  };
+
+  const handleDelete = async (id: string, filePath: string) => {
+    try {
+      await documentService.deleteDocument(id, filePath);
+      setDocuments((prev) => prev.filter((doc) => doc.id !== id));
+      toast.success("Document deleted successfully");
     } catch (error) {
       console.error("Error deleting document:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to delete document"
-      );
+      toast.error("Failed to delete document");
     }
-  }, [deleteDocument]);
-
-  const handlePreview = useCallback(async (document: Document) => {
-    try {
-      const blob = await documentService.downloadDocument(document.file_path);
-      const url = URL.createObjectURL(blob);
-      setPreviewDocument({ ...document, previewUrl: url });
-    } catch (error) {
-      console.error("Error previewing document:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to preview document"
-      );
-    }
-  }, []);
-
-  const handleApplyFilters = useCallback((filters: DocumentFilters) => {
-    setCurrentFilters(filters);
-  }, []);
-
-  // Memoize error message formatter
-  const formatErrorMessage = useCallback((error: string) => {
-    if (error.includes("File size")) {
-      return {
-        title: "File too large",
-        description: "Please upload a smaller file (max 10MB).",
-      };
-    }
-    if (error.includes("File type")) {
-      return {
-        title: "Invalid file type",
-        description: "Please upload a supported file format (PDF, JPG, PNG).",
-      };
-    }
-    if (error.includes("network")) {
-      return {
-        title: "Network error",
-        description: "Please check your connection and try again.",
-      };
-    }
-    if (error.includes("permission")) {
-      return {
-        title: "Permission denied",
-        description: "You don't have permission to upload this file.",
-      };
-    }
-    return {
-      title: "Upload failed",
-      description: error,
-    };
-  }, []);
-
-  const handleUpload = useCallback(
-    async (file: File, type: string) => {
-      if (!user) return;
-
-      try {
-        setUploadState((prev) => ({
-          ...prev,
-          errors: { ...prev.errors, [type]: undefined },
-        }));
-
-        const document = await documentService.uploadDocument(
-          {
-            userId: user.id,
-            title: file.name,
-            type: type as Document["type"],
-            file,
-          },
-          (progress) => {
-            setUploadState((prev) => ({
-              ...prev,
-              progress: { ...prev.progress, [type]: progress },
-            }));
-          }
-        );
-
-        setDocuments((prev) => [...prev, document]);
-        setUploadState((prev) => ({
-          ...prev,
-          progress: { ...prev.progress, [type]: 0 },
-        }));
-      } catch (error) {
-        console.error("Error uploading document:", error);
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to upload document";
-        setUploadState((prev) => ({
-          ...prev,
-          errors: { ...prev.errors, [type]: errorMessage },
-        }));
-
-        const { title, description } = formatErrorMessage(errorMessage);
-        toast.error(title, {
-          description,
-          action: {
-            label: "Try Again",
-            onClick: () => handleUpload(file, type),
-          },
-        });
-      }
-    },
-    [user, formatErrorMessage]
-  );
-
-  // Show loading state while initializing
-  if (isLocaleLoading || isLocationLoading) {
-    return (
-      <div className="container mx-auto py-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </div>
-    );
-  }
+  };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold">Documents</h1>
-          <p className="text-sm text-muted-foreground">
-            Upload and manage your required documents for {country}
-          </p>
-        </div>
-        <FilterDialog
-          onApplyFilters={handleApplyFilters}
-          currentFilters={currentFilters}
-        />
-      </div>
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
-        {loading ? (
-          <div className="col-span-full flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div className="flex flex-col min-h-screen w-full">
+      <div className="flex-1 w-full bg-background">
+        <div className="w-full h-full px-4 py-6 md:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl md:text-2xl font-bold tracking-tight truncate">
+                Documents
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground mt-1">
+                Upload and manage your required documents for {filters.country}
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <FilterDialog
+                currentFilters={filters}
+                onApplyFilters={setFilters}
+              />
+            </div>
           </div>
-        ) : (
-          documentsToDisplay.map(
-            ({ type, label, description, icon, document }) => {
-              const progress = uploadState.progress[type] || 0;
-              const error = uploadState.errors[type];
 
-              return (
-                <div
-                  key={type}
-                  className="rounded-lg border bg-card text-card-foreground shadow-sm"
-                >
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <h3 className="text-sm font-medium leading-none">
-                          {label}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {description}
-                        </p>
-                      </div>
-                      <div className="rounded-full bg-primary/10 p-2">
-                        {icon}
-                      </div>
-                    </div>
-
-                    {document ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <StatusIndicator status={document.status} />
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(document.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => handlePreview(document)}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            Preview
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="flex-1"
-                            onClick={() => setDeleteDocument(document)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </Button>
-                        </div>
-
-                        {document?.ocr_status === "completed" &&
-                          document.report_data && (
-                            <div className="mt-3 p-3 bg-muted rounded-lg">
-                              <h4 className="text-sm font-medium mb-1">
-                                Extracted Information
-                              </h4>
-                              <div className="text-xs max-h-32 overflow-y-auto">
-                                <pre className="whitespace-pre-wrap">
-                                  {JSON.stringify(
-                                    document.report_data,
-                                    null,
-                                    2
-                                  )}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-                      </div>
-                    ) : (
-                      <FileUploadInput
-                        type={type}
-                        onUpload={(file) => handleUpload(file, type)}
-                        progress={progress}
-                        error={error}
-                      />
-                    )}
+          {/* Progress Overview */}
+          <Card className="mb-6">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg md:text-xl">
+                Document Completion Progress
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Track your document submission status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-medium">
+                      Documents Uploaded
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {overallProgress.uploaded}%
+                    </span>
                   </div>
+                  <Progress value={overallProgress.uploaded} className="h-2" />
                 </div>
-              );
-            }
-          )
-        )}
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-medium">
+                      Documents Verified
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {overallProgress.verified}%
+                    </span>
+                  </div>
+                  <Progress value={overallProgress.verified} className="h-2" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-5 lg:gap-6 auto-rows-fr">
+            {isLoading
+              ? [...Array(5)].map((_, i) => (
+                  <Card key={i} className="animate-pulse flex flex-col min-w-0">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start space-x-3">
+                        <div className="p-3 bg-muted rounded-lg w-10 h-10 flex-shrink-0" />
+                        <div className="space-y-2 flex-1 min-w-0">
+                          <div className="h-5 w-32 bg-muted rounded" />
+                          <div className="h-4 w-40 bg-muted rounded" />
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pb-4 flex-1">
+                      <div className="h-24 bg-muted rounded-lg" />
+                    </CardContent>
+                  </Card>
+                ))
+              : requirements.map((requirement) => {
+                  const doc = documents.find(
+                    (d) => d.type === requirement.type
+                  );
+                  const status = documentStatus[requirement.type];
+                  const uploadProgress =
+                    uploadState.progress[requirement.type] || 0;
+                  const error = uploadState.errors[requirement.type];
+
+                  return (
+                    <Card
+                      key={requirement.type}
+                      className={`group relative transition-all duration-200 hover:shadow-md flex flex-col h-full ${
+                        status.verified
+                          ? "border-green-200 bg-green-50/50 hover:border-green-300"
+                          : status.uploaded
+                          ? "border-blue-200 bg-blue-50/50 hover:border-blue-300"
+                          : "hover:border-gray-300"
+                      }`}
+                    >
+                      <CardHeader className="pb-3 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div
+                              className={`p-2.5 rounded-lg transition-colors flex-shrink-0 ${
+                                status.verified
+                                  ? "bg-green-100 text-green-700"
+                                  : status.uploaded
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              {requirement.icon}
+                            </div>
+                            <div className="min-w-0">
+                              <CardTitle className="text-base font-semibold truncate">
+                                {requirement.label}
+                              </CardTitle>
+                              <CardDescription className="text-sm mt-1 line-clamp-2">
+                                {requirement.description}
+                              </CardDescription>
+                            </div>
+                          </div>
+                          {status.verified ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-1.5 rounded-full bg-green-100 flex-shrink-0">
+                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Document verified</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : status.uploaded ? (
+                            <div className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium flex-shrink-0">
+                              Pending
+                            </div>
+                          ) : null}
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="flex-1">
+                        {doc ? (
+                          <div className="flex flex-col space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm/6 font-medium text-gray-900">
+                                Document
+                              </span>
+                              <StatusIndicator status={doc.status} />
+                            </div>
+                            <ul
+                              role="list"
+                              className="divide-y divide-gray-100 rounded-md border border-gray-200"
+                            >
+                              <li className="flex items-center justify-between py-3 px-4 text-sm/6">
+                                <div className="flex w-0 flex-1 items-center">
+                                  <div className="ml-1 flex min-w-0 flex-1 gap-2">
+                                    <span className="truncate font-medium">
+                                      {doc.title}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="ml-4 shrink-0">
+                                  <span className="text-xs text-gray-500 whitespace-nowrap">
+                                    {new Date(
+                                      doc.created_at
+                                    ).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </li>
+                            </ul>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <FileUploadInput
+                              type={requirement.type}
+                              onUpload={(file) =>
+                                handleUpload(requirement.type, file)
+                              }
+                              progress={uploadProgress}
+                              error={error}
+                            />
+                            {uploadProgress > 0 && uploadProgress < 100 && (
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between text-xs text-gray-600">
+                                  <span>Uploading...</span>
+                                  <span>{uploadProgress}%</span>
+                                </div>
+                                <Progress
+                                  value={uploadProgress}
+                                  className="h-1 bg-gray-100"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </CardContent>
+
+                      {error ? (
+                        <CardFooter className="bg-red-50 border-t border-red-100 p-3">
+                          <div className="flex items-center text-red-700 text-sm gap-2">
+                            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                            <span className="line-clamp-2 flex-1">{error}</span>
+                          </div>
+                        </CardFooter>
+                      ) : doc ? (
+                        <CardFooter className="border-t bg-gray-50/50 p-3">
+                          <div className="flex gap-2 w-full">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 bg-white hover:bg-gray-50/50 border border-gray-200 text-gray-700 hover:text-gray-900 shadow-sm transition-all duration-200 hover:border-gray-300 active:bg-gray-100 text-xs h-8"
+                            >
+                              <Eye className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                              Preview
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 bg-white hover:bg-red-50 border border-gray-200 text-gray-700 hover:text-red-600 shadow-sm transition-all duration-200 hover:border-red-200 active:bg-red-100/50 group text-xs h-8"
+                              onClick={() =>
+                                doc.id && handleDelete(doc.id, doc.file_path)
+                              }
+                            >
+                              <Trash2 className="h-3.5 w-3.5 mr-1.5 flex-shrink-0 group-hover:text-red-600" />
+                              Delete
+                            </Button>
+                          </div>
+                        </CardFooter>
+                      ) : null}
+                    </Card>
+                  );
+                })}
+          </div>
+        </div>
       </div>
-
-      {/* Preview Dialog */}
-      <Dialog
-        open={!!previewDocument}
-        onOpenChange={() => setPreviewDocument(null)}
-      >
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{previewDocument?.title}</DialogTitle>
-          </DialogHeader>
-          {previewDocument?.previewUrl && (
-            <iframe
-              src={previewDocument.previewUrl}
-              className="w-full h-[600px]"
-              title={previewDocument.title}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={!!deleteDocument}
-        onOpenChange={() => setDeleteDocument(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Document</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this document? This action cannot
-              be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
+
+export default Documents;

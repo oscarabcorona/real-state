@@ -13,10 +13,15 @@ interface UploadDocumentData {
 function validateDocumentType(type: string): Document["type"] {
   const validTypes: Record<string, Document["type"]> = {
     "credit_report": "credit_report",
-    "income_verification": "income_verification", 
     "criminal_report": "criminal_report",
     "eviction_report": "eviction_report",
-    "id_document": "id_document",
+    "income_verification": "income_verification",
+    "id_document": "government_id",
+    "government_id": "government_id",
+    "lease": "lease",
+    "other": "other",
+    "bank_statements": "bank_statements",
+    "employment_letter": "employment_letter"
   };
 
   return validTypes[type] || "other";

@@ -5,6 +5,8 @@ import {
   Shield,
   UserCircle,
   File,
+  Building2,
+  Wallet,
 } from "lucide-react";
 import type { DocumentRequirement, Country } from "./types";
 
@@ -13,7 +15,7 @@ const createDocumentRequirements = (
 ): DocumentRequirement[] => {
   const baseRequirements: DocumentRequirement[] = [
     {
-      type: "id_document",
+      type: "government_id",
       label:
         country === "GUATEMALA"
           ? "Identificación Oficial (ID)"
@@ -51,21 +53,38 @@ const createDocumentRequirements = (
       icon: <Shield className="h-5 w-5" />,
       country,
     },
-    {
+  ];
+
+  // Add income verification based on country
+  if (country === "GUATEMALA") {
+    baseRequirements.push(
+      {
+        type: "bank_statements",
+        label: "Estados de Cuenta Bancarios",
+        description: "Últimos 3 estados de cuenta bancarios",
+        required: true,
+        icon: <Wallet className="h-5 w-5" />,
+        country,
+      },
+      {
+        type: "employment_letter",
+        label: "Carta de Trabajo",
+        description: "Carta de trabajo con salario y antigüedad",
+        required: true,
+        icon: <Building2 className="h-5 w-5" />,
+        country,
+      }
+    );
+  } else {
+    baseRequirements.push({
       type: "income_verification",
-      label:
-        country === "GUATEMALA"
-          ? "Verificación de Ingresos"
-          : "Income Verification",
-      description:
-        country === "GUATEMALA"
-          ? "Últimos 3 estados de cuenta bancarios, Carta de trabajo con salario y antigüedad"
-          : "Proof of income and employment",
+      label: "Income Verification",
+      description: "Proof of income and employment",
       required: true,
       icon: <DollarSign className="h-5 w-5" />,
       country,
-    },
-  ];
+    });
+  }
 
   // Add country-specific requirements
   if (country === "USA") {
@@ -79,18 +98,17 @@ const createDocumentRequirements = (
     });
   }
 
-  // Add the "other" document type
-  baseRequirements.push({
-    type: "other",
-    label: country === "GUATEMALA" ? "Otros Documentos" : "Other Documents",
-    description:
-      country === "GUATEMALA"
-        ? "Documentos adicionales de respaldo"
-        : "Additional supporting documents",
-    required: false,
-    icon: <File className="h-5 w-5" />,
-    country,
-  });
+  // Add the "other" document type only for non-Guatemala countries
+  if (country !== "GUATEMALA") {
+    baseRequirements.push({
+      type: "other",
+      label: "Other Documents",
+      description: "Additional supporting documents",
+      required: false,
+      icon: <File className="h-5 w-5" />,
+      country,
+    });
+  }
 
   return baseRequirements;
 };

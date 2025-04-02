@@ -14,6 +14,15 @@
 ALTER TABLE documents
 ADD COLUMN IF NOT EXISTS country text CHECK (country IN ('USA', 'CANADA', 'MEXICO', 'GUATEMALA'));
 
+-- First, drop the existing constraint
+ALTER TABLE documents
+DROP CONSTRAINT IF EXISTS documents_type_check;
+
+-- Now update any existing documents with old types
+UPDATE documents
+SET type = 'government_id'
+WHERE type = 'id_document';
+
 -- Create document requirements table
 CREATE TABLE document_requirements (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -34,17 +43,18 @@ INSERT INTO document_requirements (country, document_type, description) VALUES
 ('USA', 'criminal_report', 'National criminal background verification'),
 ('USA', 'eviction_report', 'Nationwide eviction history report'),
 ('USA', 'income_verification', 'Proof of income and employment'),
+('USA', 'lease', 'Lease agreement document'),
+('USA', 'other', 'Additional supporting documents'),
 
 -- Guatemala Requirements
 ('GUATEMALA', 'government_id', 'Identificación Oficial (ID)'),
 ('GUATEMALA', 'credit_report', 'Reporte de crédito'),
-('GUATEMALA', 'income_verification', 'Últimos 3 estados de cuenta bancarios, Carta de trabajo con salario y antigüedad'),
-('GUATEMALA', 'criminal_report', 'Antecedentes penales y policiacos');
+('GUATEMALA', 'criminal_report', 'Antecedentes penales y policiacos'),
+('GUATEMALA', 'bank_statements', 'Últimos 3 estados de cuenta bancarios'),
+('GUATEMALA', 'employment_letter', 'Carta de trabajo con salario y antigüedad'),
+('GUATEMALA', 'lease', 'Contrato de arrendamiento');
 
--- Update document types constraint
-ALTER TABLE documents
-DROP CONSTRAINT IF EXISTS documents_type_check;
-
+-- Now add the new constraint with all possible document types
 ALTER TABLE documents
 ADD CONSTRAINT documents_type_check
 CHECK (type IN (
@@ -54,18 +64,24 @@ CHECK (type IN (
   'eviction_report',
   'income_verification',
   'lease',
-  'other'
+  'other',
+  'bank_statements',
+  'employment_letter',
+  'id_document'  -- Keep for backward compatibility
 ));
 
 -- Add comment explaining document types
 COMMENT ON COLUMN documents.type IS 'Document types:
-- government_id: Government-issued ID document
+- government_id: Government-issued ID document (new)
+- id_document: Government-issued ID document (legacy)
 - credit_report: Credit report from authorized provider
 - criminal_report: Criminal background check
-- eviction_report: Eviction history report
-- income_verification: Proof of income and employment
+- eviction_report: Eviction history report (USA only)
+- income_verification: Proof of income and employment (non-Guatemala)
+- bank_statements: Bank account statements (Guatemala only)
+- employment_letter: Employment verification letter (Guatemala only)
 - lease: Lease agreement document
-- other: Other document types';
+- other: Other document types (not available for Guatemala)';
 
 -- Create index for faster queries on country
 CREATE INDEX IF NOT EXISTS idx_documents_country ON documents(country);

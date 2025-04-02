@@ -4,7 +4,16 @@ export interface Document {
   id: string;
   user_id: string;
   title: string;
-  type: "credit_report" | "criminal_report" | "eviction_report" | "income_verification" | "id_document" | "lease" | "other";
+  type: 
+    | "credit_report" 
+    | "criminal_report" 
+    | "eviction_report" 
+    | "income_verification" 
+    | "government_id" 
+    | "lease" 
+    | "other"
+    | "bank_statements"
+    | "employment_letter";
   file_path: string;
   status: "pending" | "verified" | "rejected";
   property_id?: string;
