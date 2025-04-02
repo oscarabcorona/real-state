@@ -6,6 +6,7 @@ import { FileUploadInput } from "./FileUploadInput";
 import { StatusIndicator } from "./status-indicator";
 import { Button } from "../../components/ui/button";
 import { Filter, Trash2, Eye, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import type {
   Document,
   DocumentRequirement,
@@ -133,10 +134,51 @@ export function Documents() {
     setCurrentFilters(filters);
   }, []);
 
+  // Memoize error message formatter
+  const formatErrorMessage = useCallback((error: string) => {
+    if (error.includes("File size")) {
+      return {
+        title: "File too large",
+        description: "Please upload a smaller file (max 10MB).",
+      };
+    }
+    if (error.includes("File type")) {
+      return {
+        title: "Invalid file type",
+        description: "Please upload a supported file format (PDF, JPG, PNG).",
+      };
+    }
+    if (error.includes("network")) {
+      return {
+        title: "Network error",
+        description: "Please check your connection and try again.",
+      };
+    }
+    if (error.includes("permission")) {
+      return {
+        title: "Permission denied",
+        description: "You don't have permission to upload this file.",
+      };
+    }
+    return {
+      title: "Upload failed",
+      description: error,
+    };
+  }, []);
+
   const handleUpload = useCallback(
     async (file: File, requirement: DocumentRequirement) => {
       try {
         setError(null);
+        // Set uploading state and clear previous error
+        setUploadState((prev) => ({
+          ...prev,
+          errors: {
+            ...prev.errors,
+            [requirement.type]: undefined,
+          },
+        }));
+
         // Upload file to storage
         const filePath = `${(await supabase.auth.getUser()).data.user?.id}/${
           requirement.type
@@ -243,22 +285,31 @@ export function Documents() {
         }, 1000);
       } catch (error) {
         console.error("Upload Error:", error);
-        setError(
-          error instanceof Error ? error.message : "Failed to upload document"
-        );
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to upload document";
+        const formattedError = formatErrorMessage(errorMessage);
+
+        // Show toast with detailed error and retry action
+        toast.error(formattedError.title, {
+          description: formattedError.description,
+          action: {
+            label: "Try Again",
+            onClick: () => handleUpload(file, requirement),
+          },
+          duration: 5000,
+        });
+
+        // Update error state for visual feedback
         setUploadState((prev) => ({
           ...prev,
           errors: {
             ...prev.errors,
-            [requirement.type]:
-              error instanceof Error
-                ? error.message
-                : "Failed to upload document",
+            [requirement.type]: errorMessage,
           },
         }));
       }
     },
-    [fetchDocuments]
+    [fetchDocuments, formatErrorMessage]
   );
 
   // Show loading state while initializing
@@ -337,7 +388,7 @@ export function Documents() {
                         onRemove={() => {}}
                         isUploading={progress > 0}
                         uploadProgress={progress}
-                        error={error || undefined}
+                        error={error}
                         currentFile={
                           document?.file_path
                             ? new File([], document.file_path)

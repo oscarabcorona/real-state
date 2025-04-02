@@ -7,7 +7,6 @@ import {
   getCurrencyFromCountry,
 } from '@/lib/formatting';
 import { useEffect } from 'react';
-import type { Country } from '@/pages/Documents/types';
 import { useAuthStore } from '@/store/authStore';
 
 const LANGUAGE_MAPPINGS = {
@@ -15,14 +14,7 @@ const LANGUAGE_MAPPINGS = {
   'en': 'en-US',
   'es': 'es'
 } as const;
-
-// Map of country codes to our Country type
-const COUNTRY_MAPPINGS: Record<string, Country> = {
-  'US': 'USA',
-  'GT': 'GUATEMALA',
-  'CA': 'CANADA',
-  'MX': 'MEXICO'
-};
+ 
 
 export const useLocale = () => {
   const { i18n } = useTranslation();

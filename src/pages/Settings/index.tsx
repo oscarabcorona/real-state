@@ -10,7 +10,6 @@ import { ProfileSettings } from "./ProfileSettings";
 import { PasswordSettings } from "./PasswordSettings";
 import { fetchUserProfile } from "../../services/userSettingsService";
 import { Settings as SettingsIcon, Key } from "lucide-react";
-import { Toaster } from "sonner";
 
 export function Settings() {
   const { user } = useAuthStore();
@@ -142,8 +141,6 @@ export function Settings() {
           )}
         </div>
       </div>
-
-      <Toaster position="top-right" closeButton />
     </div>
   );
 }
