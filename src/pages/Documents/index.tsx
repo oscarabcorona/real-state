@@ -350,9 +350,9 @@ export function Documents() {
         </Alert>
       )}
 
-      <div className="grid gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-min">
         {loading ? (
-          <div className="flex items-center justify-center h-32">
+          <div className="col-span-full flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
@@ -366,71 +366,77 @@ export function Documents() {
             return (
               <div
                 key={requirement.type}
-                className="rounded-lg border bg-white p-6"
+                className="rounded-lg border bg-white p-4 flex flex-col h-full"
               >
-                <div className="flex items-start gap-4">
-                  <div className="h-12 w-12 rounded-lg bg-[#EEF4FF] flex items-center justify-center">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-[#EEF4FF] flex items-center justify-center shrink-0">
                     {requirement.icon}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium">{requirement.label}</h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-medium truncate">
+                        {requirement.label}
+                      </h3>
                       {document && <StatusIndicator status={document.status} />}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                       {requirement.description}
                     </p>
-
-                    <div className="mt-4">
-                      <FileUploadInput
-                        requirement={requirement}
-                        onUpload={(file) => handleUpload(file, requirement)}
-                        onRemove={() => {}}
-                        isUploading={progress > 0}
-                        uploadProgress={progress}
-                        error={error}
-                        currentFile={
-                          document?.file_path
-                            ? new File([], document.file_path)
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    {document && (
-                      <div className="mt-4 flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePreview(document)}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          Preview
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setDeleteDocument(document)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </Button>
-                      </div>
-                    )}
-
-                    {document?.ocr_status === "completed" &&
-                      document.report_data && (
-                        <div className="mt-4 p-4 bg-muted rounded-lg">
-                          <h4 className="text-sm font-medium mb-2">
-                            Extracted Information
-                          </h4>
-                          <pre className="text-xs whitespace-pre-wrap">
-                            {JSON.stringify(document.report_data, null, 2)}
-                          </pre>
-                        </div>
-                      )}
                   </div>
                 </div>
+
+                <div className="mt-3">
+                  <FileUploadInput
+                    requirement={requirement}
+                    onUpload={(file) => handleUpload(file, requirement)}
+                    onRemove={() => {}}
+                    isUploading={progress > 0}
+                    uploadProgress={progress}
+                    error={error}
+                    currentFile={
+                      document?.file_path
+                        ? new File([], document.file_path)
+                        : undefined
+                    }
+                  />
+                </div>
+
+                {document && (
+                  <div className="mt-3 flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handlePreview(document)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Preview
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setDeleteDocument(document)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
+                )}
+
+                {document?.ocr_status === "completed" &&
+                  document.report_data && (
+                    <div className="mt-3 p-3 bg-muted rounded-lg">
+                      <h4 className="text-sm font-medium mb-1">
+                        Extracted Information
+                      </h4>
+                      <div className="text-xs max-h-32 overflow-y-auto">
+                        <pre className="whitespace-pre-wrap">
+                          {JSON.stringify(document.report_data, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
               </div>
             );
           })
