@@ -237,15 +237,15 @@ export async function rejectDocument(id: string, reason: string): Promise<void> 
 export function filterDocuments(documents: Document[], filters: DocumentFilters): Document[] {
   let filtered = [...documents];
 
-  if (filters.type) {
+  if (filters.type && filters.type !== "all") {
     filtered = filtered.filter((doc) => doc.type === filters.type);
   }
 
-  if (filters.status) {
+  if (filters.status && filters.status !== "all") {
     filtered = filtered.filter((doc) => doc.status === filters.status);
   }
 
-  if (filters.dateRange) {
+  if (filters.dateRange && filters.dateRange !== "all") {
     const now = new Date();
     const past = new Date();
     switch (filters.dateRange) {
@@ -262,9 +262,9 @@ export function filterDocuments(documents: Document[], filters: DocumentFilters)
     filtered = filtered.filter((doc) => new Date(doc.created_at) >= past);
   }
 
-  if (filters.verified) {
+  if (filters.verified && filters.verified !== "all") {
     filtered = filtered.filter((doc) =>
-      filters.verified === "verified" ? doc.verified : !doc.verified
+      filters.verified === "verified" ? doc.status === "verified" : doc.status !== "verified"
     );
   }
 

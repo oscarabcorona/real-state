@@ -5,14 +5,9 @@ import { getDocumentRequirements } from "./const";
 import { FileUploadInput } from "./FileUploadInput";
 import { StatusIndicator } from "./status-indicator";
 import { Button } from "../../components/ui/button";
-import { Filter, Trash2, Eye, AlertCircle } from "lucide-react";
+import { Trash2, Eye, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import type {
-  Document,
-  DocumentRequirement,
-  DocumentFilters,
-  Country,
-} from "./types";
+import type { Document, DocumentFilters, Country } from "./types";
 import { FilterDialog } from "./components/FilterDialog";
 import { useLocale } from "../../hooks/useLocale";
 import {
@@ -31,7 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../../components/ui/alert-dialog";
-import { supabase } from "../../lib/supabase";
 import { Alert, AlertDescription } from "../../components/ui/alert";
 
 interface UploadState {
@@ -51,14 +45,19 @@ export function Documents() {
   });
   const [previewDocument, setPreviewDocument] = useState<Document | null>(null);
   const [deleteDocument, setDeleteDocument] = useState<Document | null>(null);
-  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<DocumentFilters>({
-    type: "",
-    status: "",
-    dateRange: "",
-    verified: "",
+    type: "all",
+    status: "all",
+    dateRange: "all",
+    verified: "all",
     country: country as Country,
   });
+
+  // Memoize filtered documents to prevent unnecessary recalculations
+  const filteredDocuments = useMemo(
+    () => documentService.filterDocuments(documents, currentFilters),
+    [documents, currentFilters]
+  );
 
   // Memoize document requirements to prevent unnecessary recalculations
   const documentRequirements = useMemo(
@@ -66,11 +65,27 @@ export function Documents() {
     [country]
   );
 
-  // Memoize filtered documents to prevent unnecessary recalculations
-  const filteredDocuments = useMemo(
-    () => documentService.filterDocuments(documents, currentFilters),
-    [documents, currentFilters]
-  );
+  // Memoize the documents to display based on filters
+  const documentsToDisplay = useMemo(() => {
+    if (currentFilters.type === "all") {
+      return documentRequirements.map((req) => {
+        const doc = filteredDocuments.find((d) => d.type === req.type);
+        return {
+          ...req,
+          document: doc,
+        };
+      });
+    }
+    return documentRequirements
+      .filter((req) => req.type === currentFilters.type)
+      .map((req) => {
+        const doc = filteredDocuments.find((d) => d.type === req.type);
+        return {
+          ...req,
+          document: doc,
+        };
+      });
+  }, [documentRequirements, filteredDocuments, currentFilters]);
 
   // Memoize fetch documents function
   const fetchDocuments = useCallback(async () => {
@@ -167,149 +182,55 @@ export function Documents() {
   }, []);
 
   const handleUpload = useCallback(
-    async (file: File, requirement: DocumentRequirement) => {
+    async (file: File, type: string) => {
+      if (!user) return;
+
       try {
-        setError(null);
-        // Set uploading state and clear previous error
         setUploadState((prev) => ({
           ...prev,
-          errors: {
-            ...prev.errors,
-            [requirement.type]: undefined,
-          },
+          errors: { ...prev.errors, [type]: undefined },
         }));
 
-        // Upload file to storage
-        const filePath = `${(await supabase.auth.getUser()).data.user?.id}/${
-          requirement.type
-        }/${Date.now()}-${file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from("tenant_documents")
-          .upload(filePath, file);
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        // Create document record
-        const { data: uploadedDoc, error: createError } = await supabase
-          .from("documents")
-          .insert({
+        const document = await documentService.uploadDocument(
+          {
+            userId: user.id,
             title: file.name,
-            type: requirement.type,
-            file_path: filePath,
-            status: "pending",
-            user_id: (await supabase.auth.getUser()).data.user?.id,
-            country: requirement.country,
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          throw createError;
-        }
-
-        // Start progress simulation
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-          progress += 5;
-          if (progress >= 90) {
-            clearInterval(progressInterval);
+            type: type as Document["type"],
+            file,
+          },
+          (progress) => {
+            setUploadState((prev) => ({
+              ...prev,
+              progress: { ...prev.progress, [type]: progress },
+            }));
           }
-          setUploadState((prev) => ({
-            ...prev,
-            progress: { ...prev.progress, [requirement.type]: progress },
-          }));
-        }, 500);
+        );
 
-        try {
-          // Call OCR Edge Function
-          const { data: ocrResult, error: ocrError } =
-            await supabase.functions.invoke("ocr", {
-              body: {
-                filePath,
-                options: {
-                  temperature: 0.1,
-                  maxTokens: 1024,
-                },
-              },
-            });
-
-          if (ocrError) {
-            throw ocrError;
-          }
-
-          if (!ocrResult.success) {
-            throw new Error(ocrResult.error || "OCR processing failed");
-          }
-
-          // Update document with OCR results
-          await supabase
-            .from("documents")
-            .update({
-              ocr_status: "completed",
-              ocr_completed_at: new Date().toISOString(),
-              report_data: ocrResult.ocr_results,
-            })
-            .eq("id", uploadedDoc.id);
-
-          // Refresh documents list
-          fetchDocuments();
-        } catch (ocrError) {
-          console.error("OCR Error:", ocrError);
-          await supabase
-            .from("documents")
-            .update({
-              ocr_status: "failed",
-              ocr_error:
-                ocrError instanceof Error
-                  ? ocrError.message
-                  : "OCR processing failed",
-            })
-            .eq("id", uploadedDoc.id);
-          throw ocrError;
-        }
-
-        clearInterval(progressInterval);
+        setDocuments((prev) => [...prev, document]);
         setUploadState((prev) => ({
           ...prev,
-          progress: { ...prev.progress, [requirement.type]: 100 },
+          progress: { ...prev.progress, [type]: 0 },
         }));
-
-        // Reset progress after a delay
-        setTimeout(() => {
-          setUploadState((prev) => ({
-            ...prev,
-            progress: { ...prev.progress, [requirement.type]: 0 },
-          }));
-        }, 1000);
       } catch (error) {
-        console.error("Upload Error:", error);
+        console.error("Error uploading document:", error);
         const errorMessage =
           error instanceof Error ? error.message : "Failed to upload document";
-        const formattedError = formatErrorMessage(errorMessage);
-
-        // Show toast with detailed error and retry action
-        toast.error(formattedError.title, {
-          description: formattedError.description,
-          action: {
-            label: "Try Again",
-            onClick: () => handleUpload(file, requirement),
-          },
-          duration: 5000,
-        });
-
-        // Update error state for visual feedback
         setUploadState((prev) => ({
           ...prev,
-          errors: {
-            ...prev.errors,
-            [requirement.type]: errorMessage,
-          },
+          errors: { ...prev.errors, [type]: errorMessage },
         }));
+
+        const { title, description } = formatErrorMessage(errorMessage);
+        toast.error(title, {
+          description,
+          action: {
+            label: "Try Again",
+            onClick: () => handleUpload(file, type),
+          },
+        });
       }
     },
-    [fetchDocuments, formatErrorMessage]
+    [user, formatErrorMessage]
   );
 
   // Show loading state while initializing
@@ -332,15 +253,10 @@ export function Documents() {
             Upload and manage your required documents for {country}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="default"
-          className="flex items-center gap-2"
-          onClick={() => setFilterDialogOpen(true)}
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-        </Button>
+        <FilterDialog
+          onApplyFilters={handleApplyFilters}
+          currentFilters={currentFilters}
+        />
       </div>
 
       {error && (
@@ -356,90 +272,92 @@ export function Documents() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
-          documentRequirements.map((requirement) => {
-            const document = filteredDocuments.find(
-              (d) => d.type === requirement.type
-            );
-            const progress = uploadState.progress[requirement.type] || 0;
-            const error = uploadState.errors[requirement.type];
+          documentsToDisplay.map(
+            ({ type, label, description, icon, document }) => {
+              const progress = uploadState.progress[type] || 0;
+              const error = uploadState.errors[type];
 
-            return (
-              <div
-                key={requirement.type}
-                className="rounded-lg border bg-white p-4 flex flex-col h-full"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-[#EEF4FF] flex items-center justify-center shrink-0">
-                    {requirement.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-medium truncate">
-                        {requirement.label}
-                      </h3>
-                      {document && <StatusIndicator status={document.status} />}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                      {requirement.description}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <FileUploadInput
-                    requirement={requirement}
-                    onUpload={(file) => handleUpload(file, requirement)}
-                    onRemove={() => {}}
-                    isUploading={progress > 0}
-                    uploadProgress={progress}
-                    error={error}
-                    currentFile={
-                      document?.file_path
-                        ? new File([], document.file_path)
-                        : undefined
-                    }
-                  />
-                </div>
-
-                {document && (
-                  <div className="mt-3 flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handlePreview(document)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Preview
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => setDeleteDocument(document)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete
-                    </Button>
-                  </div>
-                )}
-
-                {document?.ocr_status === "completed" &&
-                  document.report_data && (
-                    <div className="mt-3 p-3 bg-muted rounded-lg">
-                      <h4 className="text-sm font-medium mb-1">
-                        Extracted Information
-                      </h4>
-                      <div className="text-xs max-h-32 overflow-y-auto">
-                        <pre className="whitespace-pre-wrap">
-                          {JSON.stringify(document.report_data, null, 2)}
-                        </pre>
+              return (
+                <div
+                  key={type}
+                  className="rounded-lg border bg-card text-card-foreground shadow-sm"
+                >
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <h3 className="text-sm font-medium leading-none">
+                          {label}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {description}
+                        </p>
+                      </div>
+                      <div className="rounded-full bg-primary/10 p-2">
+                        {icon}
                       </div>
                     </div>
-                  )}
-              </div>
-            );
-          })
+
+                    {document ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <StatusIndicator status={document.status} />
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(document.created_at).toLocaleDateString()}
+                          </span>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handlePreview(document)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Preview
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => setDeleteDocument(document)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </Button>
+                        </div>
+
+                        {document?.ocr_status === "completed" &&
+                          document.report_data && (
+                            <div className="mt-3 p-3 bg-muted rounded-lg">
+                              <h4 className="text-sm font-medium mb-1">
+                                Extracted Information
+                              </h4>
+                              <div className="text-xs max-h-32 overflow-y-auto">
+                                <pre className="whitespace-pre-wrap">
+                                  {JSON.stringify(
+                                    document.report_data,
+                                    null,
+                                    2
+                                  )}
+                                </pre>
+                              </div>
+                            </div>
+                          )}
+                      </div>
+                    ) : (
+                      <FileUploadInput
+                        type={type}
+                        onUpload={(file) => handleUpload(file, type)}
+                        progress={progress}
+                        error={error}
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            }
+          )
         )}
       </div>
 
@@ -481,14 +399,6 @@ export function Documents() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Filter Dialog */}
-      <FilterDialog
-        open={filterDialogOpen}
-        onOpenChange={setFilterDialogOpen}
-        onApplyFilters={handleApplyFilters}
-        currentFilters={currentFilters}
-      />
     </div>
   );
 }

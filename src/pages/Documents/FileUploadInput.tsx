@@ -1,10 +1,4 @@
-import {
-  Upload,
-  X,
-  Image as ImageIcon,
-  FileText,
-  AlertCircle,
-} from "lucide-react";
+import { Upload, AlertCircle } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -13,23 +7,17 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { DocumentRequirement } from "./types";
 
 interface FileUploadInputProps {
-  requirement: DocumentRequirement;
+  type: DocumentRequirement["type"];
   onUpload: (file: File) => void;
-  onRemove: () => void;
-  isUploading: boolean;
-  uploadProgress: number;
+  progress: number;
   error?: string;
-  currentFile?: File;
 }
 
 export function FileUploadInput({
-  requirement,
+  type,
   onUpload,
-  onRemove,
-  isUploading,
-  uploadProgress,
+  progress,
   error,
-  currentFile,
 }: FileUploadInputProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -55,7 +43,7 @@ export function FileUploadInput({
   };
 
   const handleFileSelect = (file: File) => {
-    if (requirement.type === "id_document") {
+    if (type === "id_document") {
       // Validate ID document
       if (!file.type.startsWith("image/")) {
         alert("Please upload an image file for ID document");
@@ -99,71 +87,51 @@ export function FileUploadInput({
           ref={fileInputRef}
           type="file"
           className="hidden"
-          accept={requirement.type === "id_document" ? "image/*" : undefined}
           onChange={handleFileInputChange}
+          accept={type === "id_document" ? "image/*" : ".pdf,.jpg,.jpeg,.png"}
         />
-
-        {currentFile ? (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              {currentFile.type.startsWith("image/") ? (
-                <ImageIcon className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <FileText className="h-5 w-5 text-muted-foreground" />
-              )}
-              <div>
-                <p className="text-sm font-medium">{currentFile.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {(currentFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onRemove}
-              disabled={isUploading}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+        <div className="flex flex-col items-center justify-center gap-2 text-center">
+          <div className="rounded-full bg-primary/10 p-2">
+            <Upload className="h-5 w-5 text-primary" />
           </div>
-        ) : (
-          <div className="text-center">
-            <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-2 text-sm font-medium">{requirement.label}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {requirement.description}
+          <div className="space-y-1">
+            <p className="text-sm font-medium">
+              {progress > 0 ? "Uploading..." : "Upload Document"}
             </p>
+            <p className="text-xs text-muted-foreground">
+              {type === "id_document"
+                ? "Upload an image file (max 5MB)"
+                : "Upload a PDF or image file (max 10MB)"}
+            </p>
+          </div>
+          {!progress && (
             <Button
               variant="outline"
-              className="mt-4"
+              size="sm"
               onClick={handleClick}
-              disabled={isUploading}
+              className="mt-2"
             >
               Select File
             </Button>
-            <p className="mt-2 text-xs text-muted-foreground">
-              or drag and drop
-            </p>
-          </div>
-        )}
-
-        {isUploading && (
-          <div className="mt-4">
-            <Progress value={uploadProgress} className="h-2" />
-            <p className="mt-1 text-xs text-muted-foreground text-center">
-              Uploading... {uploadProgress}%
-            </p>
-          </div>
-        )}
-
-        {error && (
-          <Alert variant="destructive" className="mt-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+          )}
+        </div>
       </div>
+
+      {progress > 0 && (
+        <div className="mt-4 space-y-2">
+          <Progress value={progress} className="h-2" />
+          <p className="text-xs text-muted-foreground text-center">
+            {progress}% uploaded
+          </p>
+        </div>
+      )}
+
+      {error && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }
