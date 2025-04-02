@@ -5,12 +5,22 @@ import { getDocumentRequirements } from "./const";
 import { FileUploadInput } from "./FileUploadInput";
 import { StatusIndicator } from "./status-indicator";
 import { Button } from "../../components/ui/button";
-import { Trash2, Eye, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Trash2, Eye, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { Document, DocumentFilters } from "./types";
 import { FilterDialog } from "./components/FilterDialog";
 import { PreviewModal } from "./components/PreviewModal";
 import { Progress } from "../../components/ui/progress";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../components/ui/alert-dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -31,6 +41,12 @@ interface UploadState {
   errors: Record<string, string | undefined>;
 }
 
+interface DeleteState {
+  documentId: string | null;
+  filePath: string | null;
+  isDeleting: boolean;
+}
+
 export function Documents() {
   const { user } = useAuthStore();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -40,6 +56,11 @@ export function Documents() {
   );
   const [verificationNote, setVerificationNote] = useState("");
   const [processingDocument, setProcessingDocument] = useState(false);
+  const [deleteState, setDeleteState] = useState<DeleteState>({
+    documentId: null,
+    filePath: null,
+    isDeleting: false,
+  });
   const [uploadState, setUploadState] = useState<UploadState>({
     progress: {},
     errors: {},
@@ -155,13 +176,40 @@ export function Documents() {
 
   const handleDelete = async (id: string, filePath: string) => {
     try {
+      setDeleteState((prev) => ({ ...prev, isDeleting: true }));
       await documentService.deleteDocument(id, filePath);
+
+      // Find the document to get its type before removing it
+      const deletedDoc = documents.find((doc) => doc.id === id);
+
+      // Remove document from the list
       setDocuments((prev) => prev.filter((doc) => doc.id !== id));
+
+      // Reset upload progress and errors for the deleted document type
+      if (deletedDoc) {
+        setUploadState((prev) => ({
+          progress: {
+            ...prev.progress,
+            [deletedDoc.type]: 0,
+          },
+          errors: {
+            ...prev.errors,
+            [deletedDoc.type]: undefined,
+          },
+        }));
+      }
+
       toast.success("Document deleted successfully");
+      setDeleteState({ documentId: null, filePath: null, isDeleting: false });
     } catch (error) {
       console.error("Error deleting document:", error);
       toast.error("Failed to delete document");
+      setDeleteState((prev) => ({ ...prev, isDeleting: false }));
     }
+  };
+
+  const handleDeleteClick = (id: string, filePath: string) => {
+    setDeleteState({ documentId: id, filePath, isDeleting: false });
   };
 
   const handlePreview = (document: Document) => {
@@ -445,11 +493,21 @@ export function Documents() {
                               size="sm"
                               className="flex-1 bg-white hover:bg-red-50 border border-gray-200 text-gray-700 hover:text-red-600 shadow-sm transition-all duration-200 hover:border-red-200 active:bg-red-100/50 group text-xs h-8"
                               onClick={() =>
-                                doc.id && handleDelete(doc.id, doc.file_path)
+                                doc.id &&
+                                handleDeleteClick(doc.id, doc.file_path)
                               }
+                              disabled={deleteState.isDeleting}
                             >
-                              <Trash2 className="h-3.5 w-3.5 mr-1.5 flex-shrink-0 group-hover:text-red-600" />
-                              Delete
+                              {deleteState.isDeleting &&
+                              deleteState.documentId === doc.id ? (
+                                <Loader2 className="h-3.5 w-3.5 mr-1.5 flex-shrink-0 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3.5 w-3.5 mr-1.5 flex-shrink-0 group-hover:text-red-600" />
+                              )}
+                              {deleteState.isDeleting &&
+                              deleteState.documentId === doc.id
+                                ? "Deleting..."
+                                : "Delete"}
                             </Button>
                           </div>
                         </CardFooter>
@@ -476,6 +534,51 @@ export function Documents() {
           isTenant={isTenant}
         />
       )}
+
+      <AlertDialog
+        open={!!deleteState.documentId}
+        onOpenChange={(open) => {
+          if (!open)
+            setDeleteState({
+              documentId: null,
+              filePath: null,
+              isDeleting: false,
+            });
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this document? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteState.isDeleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteState.documentId && deleteState.filePath) {
+                  handleDelete(deleteState.documentId, deleteState.filePath);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteState.isDeleting}
+            >
+              {deleteState.isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
