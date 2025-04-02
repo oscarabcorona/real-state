@@ -43,31 +43,59 @@ IMPORTANT:
 - If the image is not a valid ID document or is of poor quality, set is_valid to false`;
 
 Deno.serve(async (req) => {
-  const requestId = crypto.randomUUID()
-  console.log(`[${requestId}] New request received`)
-  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { 
-      headers: corsHeaders,
-      status: 204
+    return new Response(null, { 
+      status: 204,
+      headers: corsHeaders 
     })
   }
-  
-  let supabase;
-  let filePath: string | undefined;
-  
+
   try {
     // Parse request body
-    const body = await req.json()
-    filePath = body.filePath
-    const options = body.options
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error('Error parsing request body:', e);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid JSON in request body' 
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
-    console.log(`[${requestId}] Request parsed:`, { filePath, options })
+    if (!body || typeof body !== 'object') {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Request body must be a JSON object' 
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
 
-    // Validate required fields
+    const { filePath, options } = body;
+
     if (!filePath) {
-      throw new Error('File path is required')
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'File path is required' 
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Get environment variables
@@ -75,55 +103,51 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
-    if (!apiKey) {
-      throw new Error('GROQ_API_KEY is not set')
-    }
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set')
+    if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Required environment variables are not set' 
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Create Supabase client
-    supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Generate a signed URL that's valid for 1 hour
     const { data: signedUrlData, error: signedUrlError } = await supabase
       .storage
       .from('tenant_documents')
-      .createSignedUrl(filePath, 3600) // 1 hour expiration
+      .createSignedUrl(filePath, 3600)
 
-    if (signedUrlError) {
-      console.error(`[${requestId}] Signed URL error:`, signedUrlError)
-      throw new Error(`Failed to generate signed URL: ${signedUrlError.message}`)
-    }
-
-    if (!signedUrlData?.signedUrl) {
-      throw new Error('No signed URL generated')
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to generate signed URL: ${signedUrlError?.message || 'No signed URL generated'}` 
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     // Initialize Groq client
-    const groq = new Groq({
-      apiKey: apiKey,
-    })
-
-    console.log(`[${requestId}] Making Groq API call with model: llama-3.2-90b-vision-preview`)
-    const startTime = Date.now()
+    const groq = new Groq({ apiKey })
     
     const chatCompletion = await groq.chat.completions.create({
       messages: [
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: ID_ANALYSIS_PROMPT
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: signedUrlData.signedUrl
-              }
-            }
+            { type: "text", text: ID_ANALYSIS_PROMPT },
+            { type: "image_url", image_url: { url: signedUrlData.signedUrl } }
           ]
         }
       ],
@@ -136,11 +160,7 @@ Deno.serve(async (req) => {
       response_format: { type: "json_object" }
     })
 
-    const endTime = Date.now()
-    console.log(`[${requestId}] Groq API call completed in ${endTime - startTime}ms`)
-
-    // Parse the OCR response
-    const content = JSON.parse(chatCompletion.choices[0].message.content);
+    const content = JSON.parse(chatCompletion.choices[0].message.content)
     
     // Update the document with OCR results
     const { error: updateError } = await supabase
@@ -151,52 +171,40 @@ Deno.serve(async (req) => {
         ocr_completed_at: new Date().toISOString(),
         ocr_error: null
       })
-      .eq('file_path', filePath);
+      .eq('file_path', filePath)
 
     if (updateError) {
-      console.error(`[${requestId}] Update error:`, updateError)
-      throw new Error(`Failed to save OCR results: ${updateError.message}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to save OCR results: ${updateError.message}` 
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
-    
+
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, data: content }),
       { 
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders
-        } 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
 
   } catch (error) {
-    console.error(`[${requestId}] Error processing request:`, error)
-    
-    // Update document with error status if we have a filePath and supabase client
-    if (supabase && filePath) {
-      try {
-        await supabase
-          .from('documents')
-          .update({
-            ocr_status: 'failed',
-            ocr_error: error instanceof Error ? error.message : "Failed to analyze image",
-            ocr_completed_at: new Date().toISOString()
-          })
-          .eq('file_path', filePath);
-      } catch (updateError) {
-        console.error(`[${requestId}] Failed to update error status:`, updateError);
-      }
-    }
+    console.error('Error:', error)
     
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Failed to analyze image"
+      JSON.stringify({ 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to process request' 
       }),
       { 
         status: 400,
-        headers: { 
-          "Content-Type": "application/json",
-          ...corsHeaders
-        } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }

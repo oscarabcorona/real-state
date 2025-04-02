@@ -25,7 +25,28 @@ export interface Document {
   ocr_status?: "pending" | "completed" | "failed";
   ocr_error?: string;
   ocr_completed_at?: string;
-  report_data?: Record<string, string | number | boolean | null>;
+  ocr_results?: {
+    document_type?: string;
+    full_name?: string;
+    date_of_birth?: string;
+    document_number?: string;
+    expiration_date?: string;
+    address?: {
+      street?: string;
+      city?: string;
+      state?: string;
+      zip_code?: string;
+      country?: string;
+    };
+    additional_info?: {
+      sex?: string;
+      height?: string;
+      weight?: string;
+      eye_color?: string;
+      hair_color?: string;
+    };
+    is_valid?: boolean;
+  };
   previewUrl?: string;
   country: Country;
   notes?: string;

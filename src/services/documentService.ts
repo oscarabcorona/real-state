@@ -110,11 +110,56 @@ export async function uploadDocument(
         status: "pending",
         verified: false,
         property_id: propertyId || null,
+        ocr_status: "pending",
       },
     ]).select().single();
 
     if (dbError) throw dbError;
     if (!data) throw new Error("Failed to create document record");
+
+    // Call OCR function for ID documents
+    if (type === "government_id") {
+      try {
+        // Add a small delay to ensure the document is fully uploaded
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        console.log("Invoking OCR function with filePath:", filePath);
+        
+        const { error: ocrError } = await supabase.functions.invoke('ocr', {
+          body: {
+            filePath: filePath,
+            options: {
+              temperature: 0,
+              maxTokens: 1024
+            }
+          }
+        });
+
+        if (ocrError) {
+          console.error("OCR processing error:", ocrError);
+          // Update document with error status
+          await supabase
+            .from('documents')
+            .update({
+              ocr_status: 'failed',
+              ocr_error: ocrError.message || 'Failed to process document',
+              ocr_completed_at: new Date().toISOString()
+            })
+            .eq('file_path', filePath);
+        }
+      } catch (ocrError) {
+        console.error("Failed to invoke OCR function:", ocrError);
+        // Update document with error status
+        await supabase
+          .from('documents')
+          .update({
+            ocr_status: 'failed',
+            ocr_error: ocrError instanceof Error ? ocrError.message : 'Failed to process document',
+            ocr_completed_at: new Date().toISOString()
+          })
+          .eq('file_path', filePath);
+      }
+    }
 
     return {
       ...data,
@@ -296,4 +341,95 @@ export function validateDocumentFile(file: File): { valid: boolean; error?: stri
   }
 
   return { valid: true };
+}
+
+/**
+ * Upload a document and process it with OCR if it's a government ID
+ */
+export async function uploadAndProcessDocument(
+  file: File,
+  userId: string,
+  type: Document["type"] = "government_id"
+): Promise<Document> {
+  try {
+    // 1. Upload the file to storage
+    const fileExt = file.name.split(".").pop()?.toLowerCase();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("tenant_documents")
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    // 2. Create document record
+    const { data: document, error: dbError } = await supabase
+      .from("documents")
+      .insert([
+        {
+          user_id: userId,
+          type: type,
+          title: file.name.split(".")[0],
+          file_path: filePath,
+          status: "pending",
+          verified: false,
+          ocr_status: "pending",
+        },
+      ])
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+    if (!document) throw new Error("Failed to create document record");
+
+    // 3. If it's a government ID, process with OCR
+    if (type === "government_id") {
+      try {
+        // Add a small delay to ensure the document is fully uploaded
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        console.log("Invoking OCR function with filePath:", filePath);
+        
+        const { error: ocrError } = await supabase.functions.invoke('ocr', {
+          body: {
+            filePath: filePath,
+            options: {
+              temperature: 0,
+              maxTokens: 1024
+            }
+          }
+        });
+
+        if (ocrError) {
+          console.error("OCR processing error:", ocrError);
+          // Update document with error status
+          await supabase
+            .from('documents')
+            .update({
+              ocr_status: 'failed',
+              ocr_error: ocrError.message || 'Failed to process document',
+              ocr_completed_at: new Date().toISOString()
+            })
+            .eq('file_path', filePath);
+        }
+      } catch (ocrError) {
+        console.error("Failed to invoke OCR function:", ocrError);
+        // Update document with error status
+        await supabase
+          .from('documents')
+          .update({
+            ocr_status: 'failed',
+            ocr_error: ocrError instanceof Error ? ocrError.message : 'Failed to process document',
+            ocr_completed_at: new Date().toISOString()
+          })
+          .eq('file_path', filePath);
+      }
+    }
+
+    return document as Document;
+  } catch (error) {
+    console.error("Error uploading and processing document:", error);
+    throw error;
+  }
 }

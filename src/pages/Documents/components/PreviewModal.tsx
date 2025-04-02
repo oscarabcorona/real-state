@@ -144,6 +144,101 @@ export const PreviewModal: React.FC<PreviewModalProps> = ({
                 </dd>
               </div>
             )}
+            {document.ocr_status && (
+              <div className="col-span-2">
+                <dt className="text-sm font-medium text-gray-500">
+                  OCR Status
+                </dt>
+                <dd className="text-sm">
+                  {document.ocr_status === "pending" && (
+                    <span className="text-yellow-600 bg-yellow-50 px-2 py-1 rounded">
+                      Processing...
+                    </span>
+                  )}
+                  {document.ocr_status === "completed" && (
+                    <span className="text-green-600 bg-green-50 px-2 py-1 rounded">
+                      Completed
+                    </span>
+                  )}
+                  {document.ocr_status === "failed" && (
+                    <span className="text-red-600 bg-red-50 px-2 py-1 rounded">
+                      Failed
+                    </span>
+                  )}
+                </dd>
+              </div>
+            )}
+            {document.ocr_error && (
+              <div className="col-span-2">
+                <dt className="text-sm font-medium text-gray-500">OCR Error</dt>
+                <dd className="text-sm text-red-600 bg-red-50 p-2 rounded mt-1">
+                  {document.ocr_error}
+                </dd>
+              </div>
+            )}
+            {document.ocr_results && (
+              <div className="col-span-2">
+                <dt className="text-sm font-medium text-gray-500">
+                  OCR Results
+                </dt>
+                <dd className="text-sm bg-muted p-2 rounded mt-1 space-y-2">
+                  {document.ocr_results.document_type && (
+                    <div>
+                      <span className="font-medium">Document Type:</span>{" "}
+                      {document.ocr_results.document_type}
+                    </div>
+                  )}
+                  {document.ocr_results.full_name && (
+                    <div>
+                      <span className="font-medium">Full Name:</span>{" "}
+                      {document.ocr_results.full_name}
+                    </div>
+                  )}
+                  {document.ocr_results.date_of_birth && (
+                    <div>
+                      <span className="font-medium">Date of Birth:</span>{" "}
+                      {document.ocr_results.date_of_birth}
+                    </div>
+                  )}
+                  {document.ocr_results.document_number && (
+                    <div>
+                      <span className="font-medium">Document Number:</span>{" "}
+                      {document.ocr_results.document_number}
+                    </div>
+                  )}
+                  {document.ocr_results.expiration_date && (
+                    <div>
+                      <span className="font-medium">Expiration Date:</span>{" "}
+                      {document.ocr_results.expiration_date}
+                    </div>
+                  )}
+                  {document.ocr_results.address && (
+                    <div>
+                      <span className="font-medium">Address:</span>{" "}
+                      {[
+                        document.ocr_results.address.street,
+                        document.ocr_results.address.city,
+                        document.ocr_results.address.state,
+                        document.ocr_results.address.zip_code,
+                        document.ocr_results.address.country,
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </div>
+                  )}
+                  {document.ocr_results.is_valid !== undefined && (
+                    <div>
+                      <span className="font-medium">Valid Document:</span>{" "}
+                      {document.ocr_results.is_valid ? (
+                        <span className="text-green-600">Yes</span>
+                      ) : (
+                        <span className="text-red-600">No</span>
+                      )}
+                    </div>
+                  )}
+                </dd>
+              </div>
+            )}
           </dl>
         </Card>
 
