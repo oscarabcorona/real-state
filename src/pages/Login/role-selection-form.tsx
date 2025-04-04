@@ -27,28 +27,29 @@ export function RoleSelectionForm({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Complete Your Account
-        </h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="text-2xl font-bold">Complete Your Account</h1>
+        <p className="text-sm text-muted-foreground">
           Select your role to continue
         </p>
       </div>
 
       {error && (
-        <Alert variant="destructive">
+        <Alert
+          variant="destructive"
+          className="animate-in fade-in-50 duration-300"
+        >
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div className="space-y-3">
           <RadioGroup
             value={selectedRole}
             onValueChange={setSelectedRole}
-            className="gap-4"
+            className="gap-3"
           >
-            <div className="flex items-start space-x-2 rounded-md border p-3">
+            <div className="flex items-start space-x-2 rounded-md border p-3 hover:border-primary/50 transition-colors cursor-pointer">
               <RadioGroupItem value="tenant" id="tenant" />
               <div className="flex flex-col gap-1">
                 <Label htmlFor="tenant" className="font-medium cursor-pointer">
@@ -60,7 +61,7 @@ export function RoleSelectionForm({
               </div>
             </div>
 
-            <div className="flex items-start space-x-2 rounded-md border p-3">
+            <div className="flex items-start space-x-2 rounded-md border p-3 hover:border-primary/50 transition-colors cursor-pointer">
               <RadioGroupItem value="lessor" id="lessor" />
               <div className="flex flex-col gap-1 w-full">
                 <Label htmlFor="lessor" className="font-medium cursor-pointer">
@@ -72,13 +73,18 @@ export function RoleSelectionForm({
 
                 {selectedRole === "lessor" && (
                   <div className="mt-3">
-                    <Label htmlFor="workspace-name">Workspace Name</Label>
+                    <Label
+                      htmlFor="workspace-name"
+                      className="text-sm font-medium"
+                    >
+                      Workspace Name
+                    </Label>
                     <Input
                       id="workspace-name"
                       value={workspaceName}
                       onChange={(e) => setWorkspaceName(e.target.value)}
                       placeholder="My Properties"
-                      className="mt-1"
+                      className="mt-1.5 h-10"
                     />
                   </div>
                 )}
@@ -87,7 +93,15 @@ export function RoleSelectionForm({
           </RadioGroup>
         </div>
 
-        <Button type="submit" disabled={isLoading || !selectedRole}>
+        <Button
+          type="submit"
+          className="w-full h-10"
+          disabled={
+            isLoading ||
+            !selectedRole ||
+            (selectedRole === "lessor" && !workspaceName.trim())
+          }
+        >
           {isLoading ? "Processing..." : "Complete Setup"}
         </Button>
       </form>

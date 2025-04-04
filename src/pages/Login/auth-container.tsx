@@ -1,12 +1,11 @@
-import { useTheme } from "@/components/ui/theme-provider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RoleSelectionForm } from "./role-selection-form";
 import { LoadingIndicator } from "./loading-indicator";
-import { AuthUI } from "./auth-ui";
+import { AuthForm } from "@/components/ui/auth-form";
 import { useAuthLogic } from "../../hooks/auth/useAuthLogic";
 import { useRoleSelection } from "../../hooks/auth/useRoleSelection";
 
-export function LoginForm({ view }: { view: "sign_in" | "sign_up" }) {
+export function AuthContainer({ view }: { view: "sign_in" | "sign_up" }) {
   const {
     session,
     error,
@@ -25,41 +24,43 @@ export function LoginForm({ view }: { view: "sign_in" | "sign_up" }) {
     setIsLoading,
   });
 
-  const { theme } = useTheme();
-
   // Render appropriate UI based on state
   if (showRoleSelection) {
     return (
-      <RoleSelectionForm
-        error={error}
-        isLoading={isLoading}
-        onSubmit={handleRoleSubmit}
-      />
+      <div className="w-full max-w-md mx-auto">
+        <RoleSelectionForm
+          error={error}
+          isLoading={isLoading}
+          onSubmit={handleRoleSubmit}
+        />
+      </div>
     );
   }
 
   if (session || isLoading) {
-    return <LoadingIndicator />;
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <LoadingIndicator />
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Welcome to Real Estate Management
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Sign in or create an account to continue
-        </p>
-      </div>
-
+    <div className="w-full">
       {error && (
-        <Alert variant="destructive">
+        <Alert
+          variant="destructive"
+          className="mb-6 animate-in fade-in-50 duration-300"
+        >
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      <AuthUI theme={theme} view={view} />
+      <AuthForm
+        view={view}
+        title="Welcome to Real Estate Management"
+        subtitle="Sign in or create an account to continue"
+      />
     </div>
   );
 }
