@@ -368,7 +368,7 @@ export function Documents() {
                           : "hover:border-gray-300"
                       }`}
                     >
-                      <CardHeader className="pb-3 space-y-3">
+                      <CardHeader className="pb-3 space-y-3 block">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3 min-w-0">
                             <div
