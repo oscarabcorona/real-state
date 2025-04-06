@@ -1,7 +1,7 @@
 import React from "react";
 import { Clock, CheckCircle, Upload } from "lucide-react";
-import { Document } from "../types";
-import { DOCUMENT_REQUIREMENTS } from "../const";
+import { Document, Country } from "../types";
+import { getDocumentRequirements } from "../const";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,20 +16,27 @@ import {
 interface DocumentRequirementsProps {
   documents: Document[];
   onUpload: (type: Document["type"]) => void;
+  country: Country;
 }
 
 export const DocumentRequirements: React.FC<DocumentRequirementsProps> = ({
   documents,
   onUpload,
+  country = "USA", // Default to USA for backward compatibility
 }) => {
+  // Get document requirements for the specified country
+  const documentRequirements = getDocumentRequirements(country);
+
   return (
     <div className="mb-8">
       <h2 className="text-2xl font-semibold tracking-tight mb-6">
         Required Documents
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {DOCUMENT_REQUIREMENTS.map((req) => {
-          const doc = documents.find((d) => d.type === req.type);
+        {documentRequirements.map((req) => {
+          const doc = documents.find(
+            (d) => d.type === req.type && (d.country === country || !d.country)
+          );
           const isComplete = doc?.verified;
           const isPending = doc?.status === "pending";
           const isRejected = doc?.status === "rejected";

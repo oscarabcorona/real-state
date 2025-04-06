@@ -1,30 +1,27 @@
-import { Upload, AlertCircle } from "lucide-react";
+import { Upload, X, FileText } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { DocumentRequirement } from "./types";
 
 interface FileUploadInputProps {
-  type: DocumentRequirement["type"];
-  onUpload: (file: File) => void;
-  progress: number;
-  error?: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  selectedFile: File | null;
 }
 
 export function FileUploadInput({
-  type,
-  onUpload,
-  progress,
-  error,
+  onChange,
+  disabled = false,
+  selectedFile,
 }: FileUploadInputProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
+    if (!disabled) {
+      setIsDragging(true);
+    }
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
@@ -36,36 +33,43 @@ export function FileUploadInput({
     e.preventDefault();
     setIsDragging(false);
 
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFileSelect(files[0]);
-    }
-  };
+    if (disabled) return;
 
-  const handleFileSelect = (file: File) => {
-    if (type === "id_document") {
-      // Validate ID document
-      if (!file.type.startsWith("image/")) {
-        alert("Please upload an image file for ID document");
-        return;
-      }
-      if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
-        alert("ID document image must be less than 5MB");
-        return;
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && fileInputRef.current) {
+      // Create a DataTransfer object to set the files on the input
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(files[0]);
+      fileInputRef.current.files = dataTransfer.files;
+
+      // Trigger the onChange manually
+      const event = new Event("change", { bubbles: true });
+      fileInputRef.current.dispatchEvent(event);
+
+      // Call the onChange handler
+      if (onChange) {
+        const changeEvent = {
+          target: { files: dataTransfer.files },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(changeEvent);
       }
     }
-    onUpload(file);
   };
 
   const handleClick = () => {
-    fileInputRef.current?.click();
+    if (!disabled) {
+      fileInputRef.current?.click();
+    }
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      handleFileSelect(files[0]);
+  // Format file size in a human-readable way
+  const formatFileSize = (sizeInBytes: number): string => {
+    if (sizeInBytes < 1024) {
+      return `${sizeInBytes} bytes`;
+    } else if (sizeInBytes < 1024 * 1024) {
+      return `${(sizeInBytes / 1024).toFixed(1)} KB`;
+    } else {
+      return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
     }
   };
 
@@ -77,7 +81,7 @@ export function FileUploadInput({
           isDragging
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/25",
-          error && "border-destructive"
+          disabled && "opacity-60 cursor-not-allowed"
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -87,51 +91,68 @@ export function FileUploadInput({
           ref={fileInputRef}
           type="file"
           className="hidden"
-          onChange={handleFileInputChange}
-          accept={type === "id_document" ? "image/*" : ".pdf,.jpg,.jpeg,.png"}
+          onChange={onChange}
+          disabled={disabled}
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic,.heif"
         />
-        <div className="flex flex-col items-center justify-center gap-2 text-center">
-          <div className="rounded-full bg-primary/10 p-2">
-            <Upload className="h-5 w-5 text-primary" />
+
+        {selectedFile ? (
+          <div className="flex flex-col items-center justify-center gap-2 text-center">
+            <div className="rounded-full bg-primary/10 p-2">
+              <FileText className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">{selectedFile.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {formatFileSize(selectedFile.size)}
+              </p>
+            </div>
+            {!disabled && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                    const event = {
+                      target: { files: null },
+                    } as React.ChangeEvent<HTMLInputElement>;
+                    onChange(event);
+                  }
+                }}
+                className="mt-2"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Remove File
+              </Button>
+            )}
           </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium">
-              {progress > 0 ? "Uploading..." : "Upload Document"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {type === "id_document"
-                ? "Upload an image file (max 5MB)"
-                : "Upload a PDF or image file (max 10MB)"}
-            </p>
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 text-center">
+            <div className="rounded-full bg-primary/10 p-2">
+              <Upload className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                {disabled ? "Uploading..." : "Upload Document"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Drag and drop or click to select a file
+              </p>
+            </div>
+            {!disabled && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClick}
+                className="mt-2"
+              >
+                Select File
+              </Button>
+            )}
           </div>
-          {!progress && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClick}
-              className="mt-2"
-            >
-              Select File
-            </Button>
-          )}
-        </div>
+        )}
       </div>
-
-      {progress > 0 && (
-        <div className="mt-4 space-y-2">
-          <Progress value={progress} className="h-2" />
-          <p className="text-xs text-muted-foreground text-center">
-            {progress}% uploaded
-          </p>
-        </div>
-      )}
-
-      {error && (
-        <Alert variant="destructive" className="mt-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
     </div>
   );
 }

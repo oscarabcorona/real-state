@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabase";
-import { Document, DocumentFilters } from "@/pages/Documents/types";
+import { Document, DocumentFilters, Country } from "@/pages/Documents/types";
 
 interface UploadDocumentData {
   userId: string;
@@ -7,6 +7,7 @@ interface UploadDocumentData {
   type: Document["type"];
   file: File;
   propertyId?: string;
+  country?: Country;
 }
 
 // Helper function to validate and convert document types
@@ -80,7 +81,7 @@ export async function uploadDocument(
   documentData: UploadDocumentData,
   onProgressUpdate?: (progress: number) => void
 ): Promise<Document> {
-  const { userId, title, type, file, propertyId } = documentData;
+  const { userId, title, type, file, propertyId, country } = documentData;
 
   try {
     // Generate a unique file path
@@ -111,23 +112,51 @@ export async function uploadDocument(
         verified: false,
         property_id: propertyId || null,
         ocr_status: "pending",
+        country: country || null,
       },
     ]).select().single();
 
     if (dbError) throw dbError;
     if (!data) throw new Error("Failed to create document record");
 
-    // Call OCR function for ID documents
-    if (type === "government_id") {
+    // Call OCR function for supported document types
+    const supportedOcrTypes = [
+      "government_id", 
+      "credit_report", 
+      "income_verification", 
+      "criminal_report", 
+      "eviction_report", 
+      "lease", 
+      "bank_statements", 
+      "employment_letter"
+    ];
+    
+    if (supportedOcrTypes.includes(type)) {
       try {
         // Add a small delay to ensure the document is fully uploaded
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log("Invoking OCR function with filePath:", filePath);
+        console.log(`Invoking OCR function for ${type} with filePath:`, filePath);
+        
+        // Map document types to OCR document types
+        const documentTypeMap: Record<string, string> = {
+          "government_id": "id_document",
+          "credit_report": "credit_report",
+          "income_verification": "income_verification",
+          "criminal_report": "criminal_report",
+          "eviction_report": "eviction_report",
+          "lease": "lease",
+          "bank_statements": "bank_statements",
+          "employment_letter": "employment_letter"
+        };
+        
+        const documentType = documentTypeMap[type] || type;
         
         const { error: ocrError } = await supabase.functions.invoke('ocr', {
           body: {
             filePath: filePath,
+            documentType: documentType,
+            country: country,
             options: {
               temperature: 0,
               maxTokens: 1024
@@ -330,10 +359,15 @@ export function validateDocumentFile(file: File): { valid: boolean; error?: stri
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/heic",
+    "image/heif"
   ];
 
   if (!allowedTypes.includes(file.type)) {
-    return { valid: false, error: "Only PDF and Word documents are allowed" };
+    return { valid: false, error: "Only PDF, Word documents, and common image formats are allowed" };
   }
 
   if (file.size > maxSize) {
@@ -344,12 +378,13 @@ export function validateDocumentFile(file: File): { valid: boolean; error?: stri
 }
 
 /**
- * Upload a document and process it with OCR if it's a government ID
+ * Upload a document and process it with OCR if it's a government ID or credit report
  */
 export async function uploadAndProcessDocument(
   file: File,
   userId: string,
-  type: Document["type"] = "government_id"
+  type: Document["type"] = "government_id",
+  country?: Country
 ): Promise<Document> {
   try {
     // 1. Upload the file to storage
@@ -375,6 +410,7 @@ export async function uploadAndProcessDocument(
           status: "pending",
           verified: false,
           ocr_status: "pending",
+          country: country || null,
         },
       ])
       .select()
@@ -383,17 +419,44 @@ export async function uploadAndProcessDocument(
     if (dbError) throw dbError;
     if (!document) throw new Error("Failed to create document record");
 
-    // 3. If it's a government ID, process with OCR
-    if (type === "government_id") {
+    // 3. Process with OCR for supported document types
+    const supportedOcrTypes = [
+      "government_id", 
+      "credit_report", 
+      "income_verification", 
+      "criminal_report", 
+      "eviction_report", 
+      "lease", 
+      "bank_statements", 
+      "employment_letter"
+    ];
+    
+    if (supportedOcrTypes.includes(type)) {
       try {
         // Add a small delay to ensure the document is fully uploaded
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log("Invoking OCR function with filePath:", filePath);
+        console.log(`Invoking OCR function for ${type} with filePath:`, filePath);
+        
+        // Map document types to OCR document types
+        const documentTypeMap: Record<string, string> = {
+          "government_id": "id_document",
+          "credit_report": "credit_report",
+          "income_verification": "income_verification",
+          "criminal_report": "criminal_report",
+          "eviction_report": "eviction_report",
+          "lease": "lease",
+          "bank_statements": "bank_statements",
+          "employment_letter": "employment_letter"
+        };
+        
+        const documentType = documentTypeMap[type] || type;
         
         const { error: ocrError } = await supabase.functions.invoke('ocr', {
           body: {
             filePath: filePath,
+            documentType: documentType,
+            country: country,
             options: {
               temperature: 0,
               maxTokens: 1024

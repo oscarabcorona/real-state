@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertCircle, CheckCircle, Info } from "lucide-react";
-import { Document } from "../types";
-import { DOCUMENT_REQUIREMENTS } from "../const";
+import { Document, Country } from "../types";
+import { getDocumentRequirements } from "../const";
 import { FileUploadInput } from "../FileUploadInput";
 import {
   Dialog,
@@ -30,6 +30,7 @@ interface UploadModalProps {
     type: Document["type"];
     file: File | null;
     property_id: string;
+    country: Country;
   };
   onFormChange: (form: Partial<UploadModalProps["uploadForm"]>) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -52,8 +53,11 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   uploadSuccess,
   handleFileChange,
 }) => {
+  // Get the document requirements for the selected country
+  const documentRequirements = getDocumentRequirements(uploadForm.country);
+
   // Find the current document requirement for more context
-  const currentRequirement = DOCUMENT_REQUIREMENTS.find(
+  const currentRequirement = documentRequirements.find(
     (req) => req.type === uploadForm.type
   );
 
@@ -73,6 +77,34 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         <form onSubmit={onSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="country" className="text-sm">
+                Country
+              </Label>
+              <Select
+                value={uploadForm.country}
+                onValueChange={(value) => {
+                  onFormChange({
+                    country: value as Country,
+                    // Reset type when country changes to avoid invalid type for new country
+                    type:
+                      getDocumentRequirements(value as Country)[0]?.type ||
+                      "government_id",
+                  });
+                }}
+              >
+                <SelectTrigger id="country" className="w-full">
+                  <SelectValue placeholder="Select country" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USA">United States</SelectItem>
+                  <SelectItem value="CANADA">Canada</SelectItem>
+                  <SelectItem value="MEXICO">Mexico</SelectItem>
+                  <SelectItem value="GUATEMALA">Guatemala</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="type" className="text-sm">
                 Document Type
               </Label>
@@ -86,7 +118,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   <SelectValue placeholder="Select document type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DOCUMENT_REQUIREMENTS.map((req) => (
+                  {documentRequirements.map((req) => (
                     <SelectItem key={req.type} value={req.type}>
                       {req.label}
                     </SelectItem>
@@ -120,7 +152,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               <div className="mt-4 flex items-start text-xs text-muted-foreground">
                 <Info className="h-3 w-3 mr-2 mt-0.5" />
                 <div>
-                  <p>Accepted file formats: PDF, DOC, DOCX</p>
+                  <p>Accepted file formats: PDF, DOC, DOCX, JPG, PNG</p>
                   <p>Maximum file size: 10MB</p>
                 </div>
               </div>
