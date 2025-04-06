@@ -2,19 +2,29 @@ import { Upload, X, FileText } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { Document } from "./types";
 
 interface FileUploadInputProps {
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  type: Document["type"];
+  onUpload: (file: File) => void;
+  progress?: number;
+  error?: string;
   disabled?: boolean;
-  selectedFile: File | null;
 }
 
 export function FileUploadInput({
-  onChange,
+  // We need type for TypeScript but don't use it directly in the component
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  type,
+  onUpload,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  progress = 0,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  error,
   disabled = false,
-  selectedFile,
 }: FileUploadInputProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -36,29 +46,29 @@ export function FileUploadInput({
     if (disabled) return;
 
     const files = e.dataTransfer.files;
-    if (files.length > 0 && fileInputRef.current) {
-      // Create a DataTransfer object to set the files on the input
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(files[0]);
-      fileInputRef.current.files = dataTransfer.files;
+    if (files.length > 0) {
+      setSelectedFile(files[0]);
+      onUpload(files[0]);
+    }
+  };
 
-      // Trigger the onChange manually
-      const event = new Event("change", { bubbles: true });
-      fileInputRef.current.dispatchEvent(event);
-
-      // Call the onChange handler
-      if (onChange) {
-        const changeEvent = {
-          target: { files: dataTransfer.files },
-        } as React.ChangeEvent<HTMLInputElement>;
-        onChange(changeEvent);
-      }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]);
+      onUpload(e.target.files[0]);
     }
   };
 
   const handleClick = () => {
     if (!disabled) {
       fileInputRef.current?.click();
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -91,7 +101,7 @@ export function FileUploadInput({
           ref={fileInputRef}
           type="file"
           className="hidden"
-          onChange={onChange}
+          onChange={handleChange}
           disabled={disabled}
           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic,.heif"
         />
@@ -111,15 +121,7 @@ export function FileUploadInput({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
-                    const event = {
-                      target: { files: null },
-                    } as React.ChangeEvent<HTMLInputElement>;
-                    onChange(event);
-                  }
-                }}
+                onClick={handleRemoveFile}
                 className="mt-2"
               >
                 <X className="h-3 w-3 mr-1" />

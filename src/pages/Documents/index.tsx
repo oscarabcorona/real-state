@@ -489,9 +489,9 @@ export function Documents() {
                               Preview
                             </Button>
                             <Button
-                              variant="outline"
+                              variant="destructive"
                               size="sm"
-                              className="flex-1 bg-white hover:bg-red-50 border border-gray-200 text-gray-700 hover:text-red-600 shadow-sm transition-all duration-200 hover:border-red-200 active:bg-red-100/50 group text-xs h-8"
+                              className="flex-1"
                               onClick={() =>
                                 doc.id &&
                                 handleDeleteClick(doc.id, doc.file_path)
@@ -559,12 +559,12 @@ export function Documents() {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90"
               onClick={() => {
                 if (deleteState.documentId && deleteState.filePath) {
                   handleDelete(deleteState.documentId, deleteState.filePath);
                 }
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={deleteState.isDeleting}
             >
               {deleteState.isDeleting ? (
