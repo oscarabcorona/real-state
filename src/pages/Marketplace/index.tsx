@@ -12,7 +12,6 @@ import { useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { Header } from "./Header";
 import type { Property } from "./types";
-import { PropertyDetailsModal } from "./PropertyDetailsModal";
 import {
   Pagination,
   PaginationContent,
@@ -37,7 +36,6 @@ export function Marketplace() {
     null
   );
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   const { filters, setFilters, clearAllFilters } = useFilters();
 
@@ -115,10 +113,6 @@ export function Marketplace() {
                   property={property}
                   isFavorite={favorites.includes(property.id)}
                   onToggleFavorite={toggleFavorite}
-                  onViewDetails={(property) => {
-                    setSelectedProperty(property);
-                    setShowDetailsModal(true);
-                  }}
                   onSchedule={(property) => {
                     setSelectedProperty(property);
                     setShowAppointmentModal(true);
@@ -185,31 +179,17 @@ export function Marketplace() {
       </div>
 
       {selectedProperty && (
-        <>
-          <ViewingModal
-            open={showAppointmentModal}
-            onOpenChange={setShowAppointmentModal}
-            propertyId={selectedProperty.id}
-            userId={user?.id}
-            userEmail={user?.email}
-            userName={user?.full_name || user?.email}
-            onSuccess={() => {
-              setSelectedProperty(null);
-            }}
-          />
-
-          <PropertyDetailsModal
-            open={showDetailsModal}
-            onOpenChange={setShowDetailsModal}
-            property={selectedProperty}
-            onScheduleViewing={() => {
-              setShowDetailsModal(false);
-              setShowAppointmentModal(true);
-            }}
-            isFavorite={favorites.includes(selectedProperty.id)}
-            onToggleFavorite={() => toggleFavorite(selectedProperty.id)}
-          />
-        </>
+        <ViewingModal
+          open={showAppointmentModal}
+          onOpenChange={setShowAppointmentModal}
+          propertyId={selectedProperty.id}
+          userId={user?.id}
+          userEmail={user?.email}
+          userName={user?.full_name || user?.email}
+          onSuccess={() => {
+            setSelectedProperty(null);
+          }}
+        />
       )}
     </div>
   );

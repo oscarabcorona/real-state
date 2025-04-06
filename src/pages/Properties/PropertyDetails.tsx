@@ -188,9 +188,15 @@ export function PropertyDetails() {
         <p className="text-muted-foreground mb-6">
           The property you're looking for doesn't exist or has been removed.
         </p>
-        <Button onClick={() => navigate("/dashboard/properties")}>
+        <Button
+          onClick={() =>
+            isLessor
+              ? navigate("/dashboard/properties")
+              : navigate("/dashboard/marketplace")
+          }
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Properties
+          Back to {isLessor ? "Properties" : "Marketplace"}
         </Button>
       </div>
     );
@@ -198,7 +204,7 @@ export function PropertyDetails() {
 
   return (
     <>
-      <div className="w-full h-full">
+      <div className="w-full h-full ">
         <Card className="h-full border-none shadow-none">
           {/* Header with navigation */}
           <CardHeader className="flex flex-row items-center justify-between px-6 py-4">
