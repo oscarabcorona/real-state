@@ -4,16 +4,16 @@
         "english": "Inglés",
         "spanish": "Español",
         "welcome": "Bienvenido",
-        "dashboard": "Panel de Control",
+        "dashboard": "Panel de control",
         "properties": "Propiedades",
         "marketplace": "Mercado",
         "payments": "Pagos",
         "documents": "Documentos",
-        "reports": "Reportes",
+        "reports": "Informes",
         "appointments": "Citas",
         "notifications": "Notificaciones",
         "settings": "Configuración",
-        "logout": "Cerrar Sesión",
+        "logout": "Cerrar sesión",
         "profile": "Perfil",
         "search": "Buscar",
         "filter": "Filtrar",
@@ -32,6 +32,71 @@
         "success": "Éxito",
         "warning": "Advertencia",
         "info": "Información"
+    },
+    "dashboard": {
+        "tenant": {
+            "stats": {
+                "propertiesCount": "Propiedades",
+                "totalPaid": "Total Pagado",
+                "documentsVerified": "Documentos Verificados",
+                "upcomingViewings": "Próximas Visitas",
+                "pending": "Pendiente",
+                "autoPayActive": "AutoPago Activo",
+                "noStatsAvailable": "No hay estadísticas disponibles"
+            },
+            "tabs": {
+                "properties": "Propiedades",
+                "payments": "Pagos",
+                "documents": "Documentos",
+                "viewings": "Visitas"
+            },
+            "properties": {
+                "title": "Mis Propiedades",
+                "subtitle": "Administra tus propiedades alquiladas",
+                "noProperties": "No se encontraron propiedades",
+                "noPropertiesDescription": "Todavía no has alquilado ninguna propiedad. Explora nuestras propiedades disponibles para encontrar tu próximo hogar.",
+                "browseProperties": "Explorar Propiedades",
+                "manager": "Administrador",
+                "notAssigned": "No asignado",
+                "rent": "Alquiler",
+                "address": "Dirección",
+                "status": "Estado",
+                "viewDetails": "Ver Detalles",
+                "viewAll": "Ver Todo"
+            },
+            "payments": {
+                "title": "Pagos Recientes",
+                "noPayments": "No hay pagos recientes",
+                "noPaymentHistory": "Sin Historial de Pagos",
+                "noPaymentsDescription": "Aún no has realizado ningún pago. Comienza haciendo tu primer pago.",
+                "makeFirstPayment": "Realizar Primer Pago",
+                "trackPayments": "Realiza seguimiento de tus pagos de alquiler",
+                "startManaging": "Comienza a gestionar tus pagos",
+                "amount": "Monto",
+                "date": "Fecha",
+                "status": "Estado",
+                "property": "Propiedad",
+                "viewAll": "Ver Todos los Pagos"
+            },
+            "documents": {
+                "title": "Documentos Recientes",
+                "noDocuments": "No hay documentos recientes",
+                "name": "Nombre",
+                "date": "Fecha",
+                "status": "Estado",
+                "property": "Propiedad",
+                "viewAll": "Ver Todos los Documentos"
+            },
+            "viewings": {
+                "title": "Próximas Visitas",
+                "noViewings": "No hay próximas visitas",
+                "property": "Propiedad",
+                "date": "Fecha",
+                "time": "Hora",
+                "status": "Estado",
+                "viewAll": "Ver Todas las Citas"
+            }
+        }
     },
     "nav": {
         "home": "Inicio",
@@ -583,7 +648,9 @@
         "pending": "Pendiente",
         "overdue": "Vencido",
         "makePayment": "Realizar Pago",
-        "paymentHistory": "Historial de Pagos"
+        "paymentHistory": "Historial de Pagos",
+        "completed": "Completado",
+        "failed": "Fallido"
     },
     "appointment": {
         "date": "Fecha",

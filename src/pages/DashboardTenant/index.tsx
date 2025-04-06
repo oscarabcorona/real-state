@@ -10,6 +10,7 @@ import { RecentPayments } from "./RecentPayments";
 import { StatsOverview } from "./StatsOverview";
 import { UpcomingViewings } from "./UpcomingViewings";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
 
 const INITIAL_STATE: DashboardData = {
   properties: [],
@@ -31,6 +32,7 @@ export function DashboardTenant() {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [optimisticData, setOptimisticData] = useOptimistic(INITIAL_STATE);
+  const { t } = useTranslation();
 
   const fetchDashboard = useCallback(async () => {
     if (!user?.id) return;
@@ -83,10 +85,19 @@ export function DashboardTenant() {
       <StatsOverview stats={optimisticData.stats} isLoading={loading} />
 
       <Tabs defaultValue="properties" className="w-full">
-        <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="properties">Properties</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="properties">
+            {t("dashboard.tenant.tabs.properties", "Properties")}
+          </TabsTrigger>
+          <TabsTrigger value="payments">
+            {t("dashboard.tenant.tabs.payments", "Payments")}
+          </TabsTrigger>
+          <TabsTrigger value="documents">
+            {t("dashboard.tenant.tabs.documents", "Documents")}
+          </TabsTrigger>
+          <TabsTrigger value="viewings">
+            {t("dashboard.tenant.tabs.viewings", "Viewings")}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="properties" className="mt-6">
@@ -109,11 +120,14 @@ export function DashboardTenant() {
             isLoading={loading}
           />
         </TabsContent>
+
+        <TabsContent value="viewings" className="mt-6">
+          <UpcomingViewings
+            appointments={optimisticData.appointments}
+            isLoading={loading}
+          />
+        </TabsContent>
       </Tabs>
-      <UpcomingViewings
-        appointments={optimisticData.appointments}
-        isLoading={loading}
-      />
     </div>
   );
 }

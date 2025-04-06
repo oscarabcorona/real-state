@@ -6,6 +6,11 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enTranslations from './locales/en.json';
 import esTranslations from './locales/es.json';
 
+// Debugging function
+const debugLanguageChanges = (lng: string) => {
+  console.log(`Language changed to: ${lng}`);
+};
+
 const resources = {
   'en-US': { translation: enTranslations },
   'es': { translation: esTranslations },
@@ -26,9 +31,23 @@ i18n
       lookupLocalStorage: 'i18nextLng',
     },
     supportedLngs: Object.keys(resources),
-    nonExplicitSupportedLngs: true,
+    nonExplicitSupportedLngs: false, // Set to false to be strict about supported languages
     load: 'languageOnly',
     debug: process.env.NODE_ENV === 'development',
   });
+
+// Add language change listener for debugging
+i18n.on('languageChanged', debugLanguageChanges);
+
+// Ensure the initial language is set
+const savedLocale = localStorage.getItem('i18nextLng');
+if (savedLocale && (savedLocale === 'en-US' || savedLocale === 'es')) {
+  i18n.changeLanguage(savedLocale);
+} else {
+  const browserLang = navigator.language;
+  const defaultLocale = browserLang.startsWith('es') ? 'es' : 'en-US';
+  i18n.changeLanguage(defaultLocale);
+  localStorage.setItem('i18nextLng', defaultLocale);
+}
 
 export default i18n; 

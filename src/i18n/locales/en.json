@@ -33,6 +33,71 @@
         "warning": "Warning",
         "info": "Information"
     },
+    "dashboard": {
+        "tenant": {
+            "stats": {
+                "propertiesCount": "Properties",
+                "totalPaid": "Total Paid",
+                "documentsVerified": "Documents Verified",
+                "upcomingViewings": "Upcoming Viewings",
+                "pending": "Pending",
+                "autoPayActive": "AutoPay Active",
+                "noStatsAvailable": "No statistics available"
+            },
+            "tabs": {
+                "properties": "Properties",
+                "payments": "Payments",
+                "documents": "Documents",
+                "viewings": "Viewings"
+            },
+            "properties": {
+                "title": "My Properties",
+                "subtitle": "Manage your rented properties",
+                "noProperties": "No Properties Found",
+                "noPropertiesDescription": "You haven't rented any properties yet. Browse our available properties to find your next home.",
+                "browseProperties": "Browse Properties",
+                "manager": "Manager",
+                "notAssigned": "Not assigned",
+                "rent": "Rent",
+                "address": "Address",
+                "status": "Status",
+                "viewDetails": "View Details",
+                "viewAll": "View All"
+            },
+            "payments": {
+                "title": "Recent Payments",
+                "noPayments": "No recent payments",
+                "noPaymentHistory": "No Payment History",
+                "noPaymentsDescription": "You haven't made any payments yet. Start by making your first payment.",
+                "makeFirstPayment": "Make First Payment",
+                "trackPayments": "Track your rental payments",
+                "startManaging": "Start managing your payments",
+                "amount": "Amount",
+                "date": "Date",
+                "status": "Status",
+                "property": "Property",
+                "viewAll": "View All Payments"
+            },
+            "documents": {
+                "title": "Recent Documents",
+                "noDocuments": "No recent documents",
+                "name": "Name",
+                "date": "Date",
+                "status": "Status",
+                "property": "Property",
+                "viewAll": "View All Documents"
+            },
+            "viewings": {
+                "title": "Upcoming Viewings",
+                "noViewings": "No upcoming viewings",
+                "property": "Property",
+                "date": "Date",
+                "time": "Time",
+                "status": "Status",
+                "viewAll": "View All Appointments"
+            }
+        }
+    },
     "nav": {
         "home": "Home",
         "features": "Features",
@@ -129,7 +194,7 @@
             }
         },
         "common": {
-            "monthly": "/month",
+            "monthly": "month",
             "trialNote": "No credit card required. 30-day free trial.",
             "learnMore": "Learn more about",
             "mostPopular": "Most Popular"
@@ -577,7 +642,12 @@
         "rules": "Rules",
         "addProperty": "Add Property",
         "editProperty": "Edit Property",
-        "deleteProperty": "Delete Property"
+        "deleteProperty": "Delete Property",
+        "size": "Size",
+        "viewDetails": "View Details",
+        "contact": "Contact",
+        "applyNow": "Apply Now",
+        "bookViewing": "Book Viewing"
     },
     "payment": {
         "amount": "Amount",
@@ -591,7 +661,9 @@
         "pending": "Pending",
         "overdue": "Overdue",
         "makePayment": "Make Payment",
-        "paymentHistory": "Payment History"
+        "paymentHistory": "Payment History",
+        "completed": "Completed",
+        "failed": "Failed"
     },
     "appointment": {
         "date": "Date",

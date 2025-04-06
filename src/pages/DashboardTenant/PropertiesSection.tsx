@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Bath, Bed, Building2, MapPin, Search, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Property } from "../../types/dashboard.types";
+import { useTranslation } from "react-i18next";
 
 function PropertyCardSkeleton() {
   return (
@@ -46,19 +47,28 @@ function PropertyCardSkeleton() {
 }
 
 function EmptyProperties() {
+  const { t } = useTranslation();
+
   return (
     <Card className="w-full">
       <CardContent className="p-12 flex flex-col items-center justify-center text-center">
         <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
-        <CardTitle className="text-xl mb-2">No Properties Found</CardTitle>
+        <CardTitle className="text-xl mb-2">
+          {t("dashboard.tenant.properties.noProperties", "No Properties Found")}
+        </CardTitle>
         <CardDescription className="mb-6 max-w-sm">
-          You haven't rented any properties yet. Browse our available properties
-          to find your next home.
+          {t(
+            "dashboard.tenant.properties.noPropertiesDescription",
+            "You haven't rented any properties yet. Browse our available properties to find your next home."
+          )}
         </CardDescription>
         <Button size="lg" asChild>
           <Link to="/dashboard/marketplace">
             <Search className="h-4 w-4 mr-2" />
-            Browse Properties
+            {t(
+              "dashboard.tenant.properties.browseProperties",
+              "Browse Properties"
+            )}
           </Link>
         </Button>
       </CardContent>
@@ -73,6 +83,8 @@ export function PropertiesSections({
   properties: Property[] | undefined;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -107,7 +119,9 @@ export function PropertiesSections({
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors">
                       <div className="absolute right-2 top-2">
-                        <Badge variant="secondary">Available</Badge>
+                        <Badge variant="secondary">
+                          {t("property.available", "Available")}
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -129,7 +143,7 @@ export function PropertiesSections({
                   <div className="text-lg font-bold text-primary">
                     ${(property.price ?? 0).toLocaleString()}
                     <span className="text-sm font-normal text-muted-foreground">
-                      /month
+                      /{t("pricing.common.monthly", "month")}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -147,8 +161,14 @@ export function PropertiesSections({
               <CardFooter className="p-4 border-t">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <User className="h-4 w-4" />
-                  <span className="font-medium">Manager:</span>
-                  {property.property_manager?.email ?? "Not assigned"}
+                  <span className="font-medium">
+                    {t("dashboard.tenant.properties.manager", "Manager")}:
+                  </span>
+                  {property.property_manager?.email ??
+                    t(
+                      "dashboard.tenant.properties.notAssigned",
+                      "Not assigned"
+                    )}
                 </div>
               </CardFooter>
             </Card>
@@ -166,14 +186,21 @@ export function PropertiesSections({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Your Properties</CardTitle>
-          <CardDescription>Manage your rented properties</CardDescription>
+          <CardTitle>
+            {t("dashboard.tenant.properties.title", "My Properties")}
+          </CardTitle>
+          <CardDescription>
+            {t(
+              "dashboard.tenant.properties.subtitle",
+              "Manage your rented properties"
+            )}
+          </CardDescription>
         </div>
         <Link
           to="/dashboard/marketplace"
           className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
         >
-          View All
+          {t("dashboard.tenant.properties.viewAll", "View All")}
         </Link>
       </CardHeader>
       <CardContent>{renderContent()}</CardContent>

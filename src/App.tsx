@@ -21,6 +21,8 @@ import { Reports } from "./pages/Reports";
 import { ReportDetails } from "./pages/Reports/ReportDetails";
 import { Settings } from "./pages/Settings";
 import { useAuthStore } from "./store/authStore";
+import "./i18n/i18n"; // Import i18n configuration
+import { useLocale } from "./hooks/useLocale";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   const { initialize, user } = useAuthStore();
+  // Initialize locale for language management
+  useLocale();
 
   useEffect(() => {
     initialize();

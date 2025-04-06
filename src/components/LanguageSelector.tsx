@@ -15,12 +15,22 @@ const languages = [
 export const LanguageSelector = () => {
   const { locale, changeLocale } = useLocale();
 
+  // Log current locale to debug
+  console.log("Current locale:", locale);
+
+  // Find the current language display name
+  const currentLanguage =
+    languages.find((lang) => lang.code === locale) || languages[0];
+
+  const handleLanguageChange = (value: string) => {
+    console.log("Changing language to:", value);
+    changeLocale(value);
+  };
+
   return (
-    <Select value={locale} onValueChange={changeLocale} defaultValue="en-US">
+    <Select value={locale} onValueChange={handleLanguageChange}>
       <SelectTrigger className="w-[180px]">
-        <SelectValue>
-          {languages.find((lang) => lang.code === locale)?.name || "English"}
-        </SelectValue>
+        <SelectValue>{currentLanguage.name}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {languages.map((lang) => (

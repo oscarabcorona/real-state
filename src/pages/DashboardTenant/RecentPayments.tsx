@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 function getPaymentStatusConfig(status: string) {
   switch (status.toLowerCase()) {
@@ -22,7 +23,7 @@ function getPaymentStatusConfig(status: string) {
       };
     case "pending":
       return {
-        variant: "warning" as const,
+        variant: "destructive" as const,
         label: "Pending",
       };
     case "failed":
@@ -57,17 +58,27 @@ function PaymentCardSkeleton() {
 }
 
 function EmptyPayments() {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <DollarSign className="h-16 w-16 text-muted-foreground/40" />
-      <h3 className="mt-4 text-lg font-medium">No Payment History</h3>
+      <h3 className="mt-4 text-lg font-medium">
+        {t("dashboard.tenant.payments.noPaymentHistory", "No Payment History")}
+      </h3>
       <p className="mt-2 mb-6 text-sm text-muted-foreground max-w-sm">
-        You haven't made any payments yet. Start by making your first payment.
+        {t(
+          "dashboard.tenant.payments.noPaymentsDescription",
+          "You haven't made any payments yet. Start by making your first payment."
+        )}
       </p>
       <Button asChild size="lg">
         <Link to="/dashboard/payments/new">
           <CreditCard className="mr-2 h-4 w-4" />
-          Make First Payment
+          {t(
+            "dashboard.tenant.payments.makeFirstPayment",
+            "Make First Payment"
+          )}
         </Link>
       </Button>
     </div>
@@ -81,6 +92,8 @@ export function RecentPayments({
   payments: Payment[] | null;
   isLoading?: boolean;
 }) {
+  const { t } = useTranslation();
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -127,7 +140,7 @@ export function RecentPayments({
               variant={status.variant}
               className="px-2 py-0.5 text-xs font-medium capitalize"
             >
-              {status.label}
+              {t(`payment.${status.label.toLowerCase()}`, status.label)}
             </Badge>
           </div>
         </div>
@@ -139,18 +152,28 @@ export function RecentPayments({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="space-y-1">
-          <CardTitle>Recent Payments</CardTitle>
+          <CardTitle>
+            {t("dashboard.tenant.payments.title", "Recent Payments")}
+          </CardTitle>
           <CardDescription>
             {isLoading
-              ? "Loading payment history..."
+              ? t("common.loading", "Loading...")
               : payments?.length
-              ? "Track your rental payments"
-              : "Start managing your payments"}
+              ? t(
+                  "dashboard.tenant.payments.trackPayments",
+                  "Track your rental payments"
+                )
+              : t(
+                  "dashboard.tenant.payments.startManaging",
+                  "Start managing your payments"
+                )}
           </CardDescription>
         </div>
         {!isLoading && payments && payments.length > 0 && (
           <Button asChild variant="outline" size="sm">
-            <Link to="/dashboard/payments">View All</Link>
+            <Link to="/dashboard/payments">
+              {t("dashboard.tenant.payments.viewAll", "View All")}
+            </Link>
           </Button>
         )}
       </CardHeader>
