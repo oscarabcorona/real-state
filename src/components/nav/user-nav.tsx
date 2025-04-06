@@ -47,6 +47,10 @@ export function UserNav() {
     }
   };
 
+  const handleNavigation = (path: string) => () => {
+    navigate(path);
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -97,19 +101,27 @@ export function UserNav() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleNavigation("/dashboard/account")}
+              >
                 <BadgeCheck className="mr-2 h-4 w-4" />
                 {t("user.account", "Account")}
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleNavigation("/dashboard/billing")}
+              >
                 <CreditCard className="mr-2 h-4 w-4" />
                 {t("user.billing", "Billing")}
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleNavigation("/dashboard/notifications")}
+              >
                 <Bell className="mr-2 h-4 w-4" />
                 {t("user.notifications", "Notifications")}
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleNavigation("/dashboard/settings")}
+              >
                 <User className="mr-2 h-4 w-4" />
                 {t("user.profile", "Profile")}
               </DropdownMenuItem>

@@ -3,7 +3,6 @@ import { useAuthStore } from "../../store/authStore";
 import {
   ClipboardCheck,
   FileText,
-  Bell,
   Settings,
   CreditCard,
   Home,
@@ -73,12 +72,6 @@ export function MainNav() {
       title: t("sidebar.appointments", "Appointments"),
       url: "/dashboard/appointments",
       icon: Calendar,
-    },
-    {
-      key: "notifications",
-      title: t("sidebar.notifications", "Notifications"),
-      url: "/dashboard/notifications",
-      icon: Bell,
     },
     {
       key: "settings",

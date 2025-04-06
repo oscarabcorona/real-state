@@ -3,6 +3,7 @@ import { Command } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useBreadcrumb } from "../hooks/use-breadcrumb";
 import { LanguageSelector } from "./LanguageSelector";
+import { NotificationBell } from "./NotificationBell";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -106,6 +107,7 @@ export function Layout() {
             </Breadcrumb>
           </div>
           <div className="ml-auto flex items-center gap-4 px-4">
+            <NotificationBell />
             <LanguageSelector />
           </div>
         </header>
