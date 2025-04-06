@@ -23,6 +23,7 @@ import { Settings } from "./pages/Settings";
 import { useAuthStore } from "./store/authStore";
 import "./i18n/i18n"; // Import i18n configuration
 import { useLocale } from "./hooks/useLocale";
+import { PropertyDetails } from "./pages/Properties/PropertyDetails";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,7 @@ function App() {
               }
             />
             <Route path="properties" element={<Properties />} />
+            <Route path="properties/:id" element={<PropertyDetails />} />
             <Route path="marketplace" element={<Marketplace />} />
             <Route
               path="payments"

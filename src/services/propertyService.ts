@@ -184,3 +184,29 @@ export async function togglePropertyPublishStatus(property: Property): Promise<v
     return handleServiceError(error, "togglePropertyPublishStatus");
   }
 }
+
+export async function fetchPropertyById(propertyId: string): Promise<Property | null> {
+  try {
+    const { data, error } = await supabase
+      .from("properties")
+      .select(
+        `
+        *,
+        property_leases (
+          tenant:tenant_id (
+            id,
+            name
+          )
+        )
+      `
+      )
+      .eq("id", propertyId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error fetching property details:", error);
+    return null;
+  }
+}
