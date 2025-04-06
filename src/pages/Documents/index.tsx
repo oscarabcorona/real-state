@@ -112,6 +112,7 @@ export function Documents() {
     if (user?.id) {
       loadDocuments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const loadDocuments = async () => {

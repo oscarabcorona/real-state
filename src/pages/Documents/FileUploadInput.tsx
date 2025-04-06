@@ -6,6 +6,7 @@ import {
   CheckCircle,
   MoveHorizontal,
   Zap,
+  AlertCircle,
 } from "lucide-react";
 import React, { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -22,12 +23,9 @@ interface FileUploadInputProps {
 }
 
 export function FileUploadInput({
-  // We need type for TypeScript but don't use it directly in the component
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type,
   onUpload,
   progress = 0,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   error,
   disabled = false,
 }: FileUploadInputProps) {
@@ -38,6 +36,7 @@ export function FileUploadInput({
 
   const isUploading = progress > 0 && progress < 100;
   const effectiveDisabled = disabled || isUploading;
+  const hasError = !!error;
 
   // Handle the completion animation when progress reaches 100%
   useEffect(() => {
@@ -71,7 +70,9 @@ export function FileUploadInput({
       case "processing":
         return "Processing document...";
       case "analyzing":
-        return "Analyzing content...";
+        return type.includes("government") || type === "credit_report"
+          ? "Analyzing content..."
+          : "Processing document...";
       default:
         return "Upload complete";
     }
@@ -79,6 +80,10 @@ export function FileUploadInput({
 
   // Get appropriate icon based on upload stage
   const StageIcon = () => {
+    if (hasError) {
+      return <AlertCircle className="h-6 w-6 text-red-600" />;
+    }
+
     switch (uploadStage) {
       case "uploading":
         return <Loader2 className="h-6 w-6 text-primary animate-spin" />;
@@ -151,6 +156,10 @@ export function FileUploadInput({
 
   // Get color class based on upload stage
   const getProgressColorClass = () => {
+    if (hasError) {
+      return "bg-red-500";
+    }
+
     switch (uploadStage) {
       case "uploading":
         return "bg-primary";
@@ -163,6 +172,23 @@ export function FileUploadInput({
     }
   };
 
+  // Get appropriate document type label
+  const getDocumentTypeLabel = () => {
+    const typeLabels: Record<string, string> = {
+      credit_report: "Credit Report",
+      criminal_report: "Criminal Background Check",
+      eviction_report: "Eviction Report",
+      income_verification: "Income Verification",
+      government_id: "Government ID",
+      lease: "Lease Agreement",
+      bank_statements: "Bank Statements",
+      employment_letter: "Employment Letter",
+      other: "Document",
+    };
+
+    return typeLabels[type] || "Document";
+  };
+
   return (
     <div className="w-full">
       <div
@@ -170,6 +196,8 @@ export function FileUploadInput({
           "relative border-2 border-dashed rounded-lg p-6 transition-colors",
           isDragging
             ? "border-primary bg-primary/5"
+            : hasError
+            ? "border-red-400 bg-red-50/30"
             : isUploading
             ? uploadStage === "uploading"
               ? "border-blue-400 bg-blue-50/30"
@@ -191,7 +219,7 @@ export function FileUploadInput({
           className="hidden"
           onChange={handleChange}
           disabled={effectiveDisabled}
-          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic,.heif"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic,.heif,.webp,.tiff,.tif,application/pdf,image/jpeg,image/png,image/heic,image/heif,image/webp,image/tiff"
         />
 
         {isUploading && (
@@ -212,6 +240,34 @@ export function FileUploadInput({
                   className={cn("h-1.5", getProgressColorClass())}
                 />
               </div>
+            </div>
+          </div>
+        )}
+
+        {hasError && !isUploading && (
+          <div className="absolute inset-0 bg-red-50/80 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-lg">
+            <div className="flex flex-col items-center space-y-3 p-4 max-w-[90%] text-center">
+              <div className="rounded-full bg-red-100 p-2">
+                <AlertCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-red-800 mb-1">
+                  Upload Failed
+                </p>
+                <p className="text-xs text-red-700">{error}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+                className="mt-1 bg-white"
+              >
+                Try Again
+              </Button>
             </div>
           </div>
         )}
@@ -259,7 +315,9 @@ export function FileUploadInput({
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium">
-                {effectiveDisabled ? getStageMessage() : "Upload Document"}
+                {effectiveDisabled
+                  ? getStageMessage()
+                  : `Upload ${getDocumentTypeLabel()}`}
               </p>
               <p className="text-xs text-muted-foreground">
                 Drag and drop or click to select a file

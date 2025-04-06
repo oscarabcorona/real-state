@@ -84,6 +84,12 @@ export async function uploadDocument(
   const { userId, title, type, file, propertyId, country } = documentData;
 
   try {
+    // Validate file type first
+    const validation = validateDocumentFile(file);
+    if (!validation.valid) {
+      throw new Error(validation.error || "Invalid file type");
+    }
+    
     // Generate a unique file path
     const fileExt = file.name.split(".").pop()?.toLowerCase();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -242,36 +248,69 @@ export async function uploadDocument(
 
         if (ocrError) {
           console.error("OCR processing error:", ocrError);
+          // Extract more detailed error message if available
+          let errorMessage = ocrError.message || 'Failed to process document';
+          
+          // Try to parse error details from the message
+          try {
+            if (errorMessage.includes('{')) {
+              const errorJson = JSON.parse(errorMessage.substring(errorMessage.indexOf('{')));
+              if (errorJson.error && typeof errorJson.error === 'object' && errorJson.error.message) {
+                errorMessage = errorJson.error.message;
+              }
+            }
+          } catch (parseError) {
+            console.error("Failed to parse error message:", parseError);
+          }
+          
           // Update document with error status
           await supabase
             .from('documents')
             .update({
               ocr_status: 'failed',
-              ocr_error: ocrError.message || 'Failed to process document',
+              ocr_error: errorMessage,
               ocr_completed_at: new Date().toISOString()
             })
             .eq('file_path', filePath);
             
-          resultDocument.ocr_status = 'failed';
-          resultDocument.ocr_error = ocrError.message || 'Failed to process document';
+            resultDocument.ocr_status = 'failed';
+            resultDocument.ocr_error = errorMessage;
+            
+            // If it's specifically an "invalid image data" error, provide more helpful guidance
+            if (errorMessage.includes('invalid image data')) {
+              throw new Error(`OCR processing failed: The uploaded file format is not supported for document analysis. Please try uploading a clearer image in JPG or PNG format.`);
+            } else {
+              throw new Error(`OCR processing failed: ${errorMessage}`);
+            }
         } else {
           // Update document status to reflect successful OCR processing
           resultDocument.ocr_status = 'completed';
         }
       } catch (ocrError) {
         console.error("Failed to invoke OCR function:", ocrError);
+        
+        // Create a user-friendly error message
+        let errorMessage = ocrError instanceof Error ? ocrError.message : 'Failed to process document';
+        
+        // If we already have a formatted error message, use it
+        if (!errorMessage.startsWith('OCR processing failed:')) {
+          errorMessage = `OCR processing failed: ${errorMessage}`;
+        }
+        
         // Update document with error status
         await supabase
           .from('documents')
           .update({
             ocr_status: 'failed',
-            ocr_error: ocrError instanceof Error ? ocrError.message : 'Failed to process document',
+            ocr_error: errorMessage,
             ocr_completed_at: new Date().toISOString()
           })
           .eq('file_path', filePath);
           
         resultDocument.ocr_status = 'failed';
-        resultDocument.ocr_error = ocrError instanceof Error ? ocrError.message : 'Failed to process document';
+        resultDocument.ocr_error = errorMessage;
+        
+        throw new Error(errorMessage);
       } finally {
         // Clear OCR progress interval
         if (progressInterval) {
@@ -451,11 +490,28 @@ export function validateDocumentFile(file: File): { valid: boolean; error?: stri
     "image/jpg",
     "image/png",
     "image/heic",
-    "image/heif"
+    "image/heif",
+    "image/webp",
+    "image/tiff"
   ];
+  
+  // Get file extension
+  const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+  const allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'heic', 'heif', 'webp', 'tiff', 'tif'];
+  
+  // Check extension first (more reliable for some file types like HEIC that browsers might misidentify)
+  if (!allowedExtensions.includes(fileExt)) {
+    return { 
+      valid: false, 
+      error: `File extension '.${fileExt}' is not supported. Allowed extensions: ${allowedExtensions.join(', ')}` 
+    };
+  }
 
-  if (!allowedTypes.includes(file.type)) {
-    return { valid: false, error: "Only PDF, Word documents, and common image formats are allowed" };
+  // Then verify MIME type if available
+  if (file.type && !allowedTypes.includes(file.type) && file.type !== '') {
+    console.warn(`File type mismatch: Extension is ${fileExt} but MIME type is ${file.type}`);
+    // Allow the file to pass if extension is valid, even if MIME type doesn't match
+    // This helps with HEIC files which may not have the correct MIME type in all browsers
   }
 
   if (file.size > maxSize) {

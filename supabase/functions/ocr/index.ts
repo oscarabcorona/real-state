@@ -295,6 +295,26 @@ IMPORTANT:
 - Do not generate fake or placeholder data
 - If the image is not a valid employment letter or is of poor quality, set is_valid to false`;
 
+// Helper function to get file extension
+function getFileExtension(filePath: string): string {
+  const parts = filePath.split('.');
+  return parts.length > 1 ? parts.pop()?.toLowerCase() || '' : '';
+}
+
+// Helper function to check if file is supported
+function isSupportedFileType(contentType: string | null, filePath: string): boolean {
+  if (!contentType) {
+    // If content type is not available, try to determine from extension
+    const ext = getFileExtension(filePath);
+    return ['jpg', 'jpeg', 'png', 'pdf', 'heic', 'heif', 'webp', 'tiff', 'tif'].includes(ext);
+  }
+  
+  return (
+    contentType.startsWith('image/') || 
+    contentType === 'application/pdf'
+  );
+}
+
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -394,6 +414,47 @@ Deno.serve(async (req) => {
     // Initialize Groq client
     const groq = new Groq({ apiKey })
     
+    // Try to fetch the file first to ensure it exists and is accessible
+    const fileResponse = await fetch(signedUrlData.signedUrl);
+      
+    if (!fileResponse.ok) {
+      console.error(`File fetch failed with status: ${fileResponse.status}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to access file: ${fileResponse.statusText}` 
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    // Check Content-Type to ensure it's an image or PDF
+    const contentType = fileResponse.headers.get('Content-Type');
+    console.log(`File content type: ${contentType}`);
+    console.log(`File extension: ${getFileExtension(filePath)}`);
+    
+    // Validate supported file types (images and PDFs)
+    if (!isSupportedFileType(contentType, filePath)) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Unsupported file type: ${contentType || 'unknown'}. Supported formats are images (jpg, png, etc.) and PDF.` 
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    // Log important info for debugging
+    console.log(`Processing file: ${filePath}`);
+    console.log(`Document type: ${documentType}`);
+    console.log(`Country: ${country || 'Not specified'}`);
+    
     // Select the appropriate prompt based on document type
     let analysisPrompt: string;
     switch (documentType) {
@@ -425,6 +486,7 @@ Deno.serve(async (req) => {
         break;
     }
     
+    // Call Groq API to analyze the document
     const chatCompletion = await groq.chat.completions.create({
       messages: [
         {
@@ -520,7 +582,29 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error processing document:', error)
+    
+    // Update document with error status if possible
+    try {
+      const { filePath } = await req.json();
+      if (filePath) {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+        if (supabaseUrl && supabaseServiceKey) {
+          const supabase = createClient(supabaseUrl, supabaseServiceKey)
+          await supabase
+            .from('documents')
+            .update({
+              ocr_status: 'failed',
+              ocr_error: error instanceof Error ? error.message : 'Unknown error occurred during processing',
+              ocr_completed_at: new Date().toISOString()
+            })
+            .eq('file_path', filePath)
+        }
+      }
+    } catch (updateError) {
+      console.error('Failed to update document error status:', updateError)
+    }
     
     return new Response(
       JSON.stringify({ 
