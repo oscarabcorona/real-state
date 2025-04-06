@@ -23,7 +23,7 @@ interface DocumentFiltersProps {
   onFilterChange: (filters: FiltersState) => void;
   visible: boolean;
 }
-
+// Remove the filters from the document list
 export const DocumentFilters: React.FC<DocumentFiltersProps> = ({
   filters,
   onFilterChange,

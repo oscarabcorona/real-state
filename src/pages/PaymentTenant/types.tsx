@@ -37,3 +37,11 @@ export interface PaymentDetails {
     location?: string;
   };
 }
+
+export interface PaymentFilters {
+  status: string;
+  paymentMethod: string;
+  dateRange: string;
+  minAmount: string;
+  maxAmount: string;
+}

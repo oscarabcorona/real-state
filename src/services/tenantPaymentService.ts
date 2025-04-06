@@ -55,13 +55,13 @@ export async function fetchTenantPayments(
       .in("property_id", propertyIds);
 
     // Apply filters
-    if (filters.status) {
+    if (filters.status && filters.status !== "all") {
       baseQuery = baseQuery.eq("status", filters.status);
     }
-    if (filters.paymentMethod) {
+    if (filters.paymentMethod && filters.paymentMethod !== "all") {
       baseQuery = baseQuery.eq("payment_method", filters.paymentMethod);
     }
-    if (filters.dateRange) {
+    if (filters.dateRange && filters.dateRange !== "all") {
       const now = new Date();
       const startDate = new Date();
 

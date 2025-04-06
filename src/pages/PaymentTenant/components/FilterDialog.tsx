@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Popover,
   PopoverContent,
@@ -6,31 +6,32 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Filter, X } from "lucide-react";
-import type { DocumentFilters } from "../types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
+import { PaymentFilters } from "../types";
 
 interface FilterDialogProps {
-  onApplyFilters: (filters: DocumentFilters) => void;
-  currentFilters: DocumentFilters;
+  onApplyFilters: (filters: PaymentFilters) => void;
+  currentFilters: PaymentFilters;
 }
 
 export function FilterDialog({
   onApplyFilters,
   currentFilters,
 }: FilterDialogProps) {
-  const [filters, setFilters] = useState<DocumentFilters>(currentFilters);
+  const [filters, setFilters] = useState<PaymentFilters>(currentFilters);
   const [isOpen, setIsOpen] = useState(false);
 
   const handleReset = () => {
     const resetFilters = {
-      type: "all",
       status: "all",
+      paymentMethod: "all",
       dateRange: "all",
-      verified: "all",
-      country: currentFilters.country,
+      minAmount: "",
+      maxAmount: "",
     };
     setFilters(resetFilters);
     onApplyFilters(resetFilters);
@@ -38,12 +39,31 @@ export function FilterDialog({
   };
 
   const handleApply = () => {
-    onApplyFilters(filters);
+    // Convert empty values to "all" for consistency
+    const processedFilters = {
+      ...filters,
+      status: filters.status || "all",
+      paymentMethod: filters.paymentMethod || "all",
+      dateRange: filters.dateRange || "all",
+    };
+    onApplyFilters(processedFilters);
     setIsOpen(false);
   };
 
+  // When initializing filters, make sure to show UI values correctly
+  useEffect(() => {
+    // Convert any empty strings to "all" for display in UI
+    setFilters({
+      ...currentFilters,
+      status: currentFilters.status || "all",
+      paymentMethod: currentFilters.paymentMethod || "all",
+      dateRange: currentFilters.dateRange || "all",
+    });
+  }, [currentFilters]);
+
+  // Count active filters (non-empty values)
   const activeFiltersCount = Object.values(filters).filter(
-    (v) => v !== "all"
+    (v) => v !== "" && v !== "all"
   ).length;
 
   return (
@@ -77,58 +97,9 @@ export function FilterDialog({
         <ScrollArea className="h-[425px]">
           <div className="space-y-4 p-4">
             <div className="space-y-2">
-              <Label>Document Type</Label>
+              <Label>Payment Status</Label>
               <RadioGroup
-                value={filters.type}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, type: value })
-                }
-                className="grid grid-cols-2 gap-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="all" id="type-all" />
-                  <Label htmlFor="type-all">All Types</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="credit_report" id="type-credit" />
-                  <Label htmlFor="type-credit">Credit Report</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="criminal_report" id="type-criminal" />
-                  <Label htmlFor="type-criminal">Criminal Report</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="eviction_report" id="type-eviction" />
-                  <Label htmlFor="type-eviction">Eviction Report</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="income_verification"
-                    id="type-income"
-                  />
-                  <Label htmlFor="type-income">Income Verification</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="id_document" id="type-id" />
-                  <Label htmlFor="type-id">ID Document</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="lease" id="type-lease" />
-                  <Label htmlFor="type-lease">Lease</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="other" id="type-other" />
-                  <Label htmlFor="type-other">Other</Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <RadioGroup
-                value={filters.status}
+                value={filters.status || "all"}
                 onValueChange={(value) =>
                   setFilters({ ...filters, status: value })
                 }
@@ -143,12 +114,42 @@ export function FilterDialog({
                   <Label htmlFor="status-pending">Pending</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="verified" id="status-verified" />
-                  <Label htmlFor="status-verified">Verified</Label>
+                  <RadioGroupItem value="completed" id="status-completed" />
+                  <Label htmlFor="status-completed">Completed</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="rejected" id="status-rejected" />
-                  <Label htmlFor="status-rejected">Rejected</Label>
+                  <RadioGroupItem value="failed" id="status-failed" />
+                  <Label htmlFor="status-failed">Failed</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-2">
+              <Label>Payment Method</Label>
+              <RadioGroup
+                value={filters.paymentMethod || "all"}
+                onValueChange={(value) =>
+                  setFilters({ ...filters, paymentMethod: value })
+                }
+                className="grid grid-cols-2 gap-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="all" id="method-all" />
+                  <Label htmlFor="method-all">All Methods</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="credit_card" id="method-credit" />
+                  <Label htmlFor="method-credit">Credit Card</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="ach" id="method-ach" />
+                  <Label htmlFor="method-ach">ACH Transfer</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="cash" id="method-cash" />
+                  <Label htmlFor="method-cash">Cash</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -158,7 +159,7 @@ export function FilterDialog({
             <div className="space-y-2">
               <Label>Date Range</Label>
               <RadioGroup
-                value={filters.dateRange}
+                value={filters.dateRange || "all"}
                 onValueChange={(value) =>
                   setFilters({ ...filters, dateRange: value })
                 }
@@ -186,27 +187,37 @@ export function FilterDialog({
             <Separator />
 
             <div className="space-y-2">
-              <Label>Verification Status</Label>
-              <RadioGroup
-                value={filters.verified}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, verified: value })
-                }
-                className="grid grid-cols-2 gap-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="all" id="verified-all" />
-                  <Label htmlFor="verified-all">All Documents</Label>
+              <Label>Amount Range</Label>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="space-y-2">
+                  <Label htmlFor="min-amount" className="text-xs">
+                    Minimum ($)
+                  </Label>
+                  <Input
+                    id="min-amount"
+                    type="number"
+                    value={filters.minAmount}
+                    onChange={(e) =>
+                      setFilters({ ...filters, minAmount: e.target.value })
+                    }
+                    placeholder="Min amount"
+                  />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="verified" id="verified-yes" />
-                  <Label htmlFor="verified-yes">Verified Only</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="max-amount" className="text-xs">
+                    Maximum ($)
+                  </Label>
+                  <Input
+                    id="max-amount"
+                    type="number"
+                    value={filters.maxAmount}
+                    onChange={(e) =>
+                      setFilters({ ...filters, maxAmount: e.target.value })
+                    }
+                    placeholder="Max amount"
+                  />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="unverified" id="verified-no" />
-                  <Label htmlFor="verified-no">Unverified Only</Label>
-                </div>
-              </RadioGroup>
+              </div>
             </div>
           </div>
         </ScrollArea>

@@ -11,8 +11,6 @@ import { PaymentModal } from "./components/PaymentModal";
 import { PaymentsTable } from "./components/PaymentsTable";
 import { PaymentStats } from "./components/PaymentStats";
 import { Payment } from "./types";
-import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
 
 export function PaymentTenant() {
   const { user } = useAuthStore();
@@ -20,14 +18,13 @@ export function PaymentTenant() {
   const [loading, setLoading] = useState(true);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState({
-    status: "",
-    paymentMethod: "",
-    dateRange: "",
+    status: "all",
+    paymentMethod: "all",
+    dateRange: "all",
     minAmount: "",
     maxAmount: "",
   });
@@ -41,6 +38,7 @@ export function PaymentTenant() {
     if (user) {
       fetchPaymentsData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, filters, currentPage, pageSize]);
 
   useEffect(() => {
@@ -55,9 +53,19 @@ export function PaymentTenant() {
         return;
       }
 
+      // Process filters - create a local copy to avoid modifying state directly
+      const processedFilters = {
+        ...filters,
+        // Convert "all" values to empty strings for the API
+        status: filters.status === "all" ? "" : filters.status,
+        paymentMethod:
+          filters.paymentMethod === "all" ? "" : filters.paymentMethod,
+        dateRange: filters.dateRange === "all" ? "" : filters.dateRange,
+      };
+
       const result = await fetchTenantPayments(
         user.id,
-        filters,
+        processedFilters,
         currentPage,
         pageSize
       );
@@ -134,23 +142,7 @@ export function PaymentTenant() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">My Payments</h1>
-          <p className="text-sm text-muted-foreground">
-            Track and manage your property payments
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2"
-        >
-          <Filter className="h-4 w-4" />
-          Filters
-        </Button>
-      </div>
+      <PaymentFilters filters={filters} onFilterChange={setFilters} />
 
       <PaymentStats
         totalPaid={stats.totalPaid}
@@ -159,12 +151,6 @@ export function PaymentTenant() {
       />
 
       <div className="rounded-xl border bg-background">
-        {showFilters && (
-          <div className="border-b p-6 animate-in slide-in-from-top-2 duration-200">
-            <PaymentFilters filters={filters} onFilterChange={setFilters} />
-          </div>
-        )}
-
         <div className="p-6">
           {payments.length > 0 ? (
             <PaymentsTable
