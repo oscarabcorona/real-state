@@ -704,5 +704,12 @@
         "appointments": "Citas",
         "notifications": "Notificaciones",
         "settings": "Configuración"
+    },
+    "notifications": {
+        "noNew": "No hay nuevas notificaciones",
+        "unread": "{{count}} notificaciones sin leer",
+        "markAllAsRead": "Marcar todas como leídas",
+        "viewAll": "Ver todas las notificaciones",
+        "title": "Notificaciones"
     }
 }

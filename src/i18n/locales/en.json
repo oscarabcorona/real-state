@@ -717,5 +717,12 @@
         "appointments": "Appointments",
         "notifications": "Notifications",
         "settings": "Settings"
+    },
+    "notifications": {
+        "noNew": "No new notifications",
+        "unread": "{{count}} unread notifications",
+        "markAllAsRead": "Mark all as read",
+        "viewAll": "View all notifications",
+        "title": "Notifications"
     }
 }
