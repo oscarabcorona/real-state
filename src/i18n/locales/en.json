@@ -680,17 +680,42 @@
         "completed": "Completed"
     },
     "user": {
-        "role": {
-            "tenant": "Tenant",
-            "lessor": "Lessor",
-            "admin": "Administrator"
-        },
-        "profile": "Profile",
-        "settings": "Settings",
-        "preferences": "Preferences",
+        "account": "Account",
+        "billing": "Billing",
         "notifications": "Notifications",
-        "security": "Security",
-        "language": "Language",
-        "theme": "Theme"
+        "profile": "Profile",
+        "logout": "Log out",
+        "noEmail": "No email",
+        "noRole": "No role",
+        "tenant": "Tenant",
+        "lessor": "Lessor",
+        "admin": "Administrator"
+    },
+    "sidebar": {
+        "platform": "Platform",
+        "dashboard": "Dashboard",
+        "properties": "Properties",
+        "marketplace": "Marketplace",
+        "payments": "Payments",
+        "reports": "Reports",
+        "documents": "Documents",
+        "appointments": "Appointments",
+        "notifications": "Notifications",
+        "settings": "Settings"
+    },
+    "app": {
+        "name": "ShortStay Hub",
+        "description": "Smart Property Management, Simplified"
+    },
+    "breadcrumb": {
+        "dashboard": "Dashboard",
+        "properties": "Properties",
+        "marketplace": "Marketplace",
+        "payments": "Payments",
+        "documents": "Documents",
+        "reports": "Reports",
+        "appointments": "Appointments",
+        "notifications": "Notifications",
+        "settings": "Settings"
     }
 }

@@ -667,17 +667,42 @@
         "completed": "Completado"
     },
     "user": {
-        "role": {
-            "tenant": "Inquilino",
-            "lessor": "Propietario",
-            "admin": "Administrador"
-        },
-        "profile": "Perfil",
-        "settings": "Configuración",
-        "preferences": "Preferencias",
+        "account": "Cuenta",
+        "billing": "Facturación",
         "notifications": "Notificaciones",
-        "security": "Seguridad",
-        "language": "Idioma",
-        "theme": "Tema"
+        "profile": "Perfil",
+        "logout": "Cerrar sesión",
+        "noEmail": "Sin correo",
+        "noRole": "Sin rol",
+        "tenant": "Inquilino",
+        "lessor": "Arrendador",
+        "admin": "Administrador"
+    },
+    "sidebar": {
+        "platform": "Plataforma",
+        "dashboard": "Panel de Control",
+        "properties": "Propiedades",
+        "marketplace": "Mercado",
+        "payments": "Pagos",
+        "reports": "Informes",
+        "documents": "Documentos",
+        "appointments": "Citas",
+        "notifications": "Notificaciones",
+        "settings": "Configuración"
+    },
+    "app": {
+        "name": "ShortStay Hub",
+        "description": "Gestión Inteligente de Propiedades, Simplificada"
+    },
+    "breadcrumb": {
+        "dashboard": "Panel de Control",
+        "properties": "Propiedades",
+        "marketplace": "Mercado",
+        "payments": "Pagos",
+        "documents": "Documentos",
+        "reports": "Informes",
+        "appointments": "Citas",
+        "notifications": "Notificaciones",
+        "settings": "Configuración"
     }
 }

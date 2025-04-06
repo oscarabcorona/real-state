@@ -19,32 +19,81 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "../ui/sidebar";
+import { useTranslation } from "react-i18next";
 
 export function MainNav() {
   const location = useLocation();
   const { user } = useAuthStore();
+  const { t } = useTranslation();
 
   const menuItems = [
-    { title: "Dashboard", url: "/dashboard", icon: ClipboardCheck },
+    {
+      key: "dashboard",
+      title: t("sidebar.dashboard", "Dashboard"),
+      url: "/dashboard",
+      icon: ClipboardCheck,
+    },
     ...(user?.role === "tenant"
       ? [
-          { title: "Marketplace", url: "/dashboard/marketplace", icon: Search },
-          { title: "Reports", url: "/dashboard/reports", icon: FileBarChart },
-          { title: "Documents", url: "/dashboard/documents", icon: FileText },
+          {
+            key: "marketplace",
+            title: t("sidebar.marketplace", "Marketplace"),
+            url: "/dashboard/marketplace",
+            icon: Search,
+          },
+          {
+            key: "reports",
+            title: t("sidebar.reports", "Reports"),
+            url: "/dashboard/reports",
+            icon: FileBarChart,
+          },
+          {
+            key: "documents",
+            title: t("sidebar.documents", "Documents"),
+            url: "/dashboard/documents",
+            icon: FileText,
+          },
         ]
-      : [{ title: "Properties", url: "/dashboard/properties", icon: Home }]),
-    { title: "Payments", url: "/dashboard/payments", icon: CreditCard },
-    { title: "Appointments", url: "/dashboard/appointments", icon: Calendar },
-    { title: "Notifications", url: "/dashboard/notifications", icon: Bell },
-    { title: "Settings", url: "/dashboard/settings", icon: Settings },
+      : [
+          {
+            key: "properties",
+            title: t("sidebar.properties", "Properties"),
+            url: "/dashboard/properties",
+            icon: Home,
+          },
+        ]),
+    {
+      key: "payments",
+      title: t("sidebar.payments", "Payments"),
+      url: "/dashboard/payments",
+      icon: CreditCard,
+    },
+    {
+      key: "appointments",
+      title: t("sidebar.appointments", "Appointments"),
+      url: "/dashboard/appointments",
+      icon: Calendar,
+    },
+    {
+      key: "notifications",
+      title: t("sidebar.notifications", "Notifications"),
+      url: "/dashboard/notifications",
+      icon: Bell,
+    },
+    {
+      key: "settings",
+      title: t("sidebar.settings", "Settings"),
+      url: "/dashboard/settings",
+      icon: Settings,
+    },
   ];
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>{t("sidebar.platform", "Platform")}</SidebarGroupLabel>
       <SidebarMenu>
         {menuItems.map((item) => (
-          <SidebarMenuItem key={item.url}>
+          <SidebarMenuItem key={item.key}>
             <SidebarMenuButton
               asChild
               isActive={location.pathname === item.url}

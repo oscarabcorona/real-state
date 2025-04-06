@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { supabase } from "../../lib/supabase";
+import { useTranslation } from "react-i18next";
 
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
@@ -31,6 +32,7 @@ export function UserNav() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { isMobile } = useSidebar();
+  const { t } = useTranslation();
 
   const handleSignOut = async () => {
     try {
@@ -61,10 +63,10 @@ export function UserNav() {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {user?.email ?? "No email"}
+                  {user?.email ?? t("user.noEmail", "No email")}
                 </span>
                 <span className="truncate text-xs">
-                  {user?.role ?? "No role"}
+                  {user?.role ?? t("user.noRole", "No role")}
                 </span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -85,10 +87,10 @@ export function UserNav() {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {user?.email ?? "No email"}
+                    {user?.email ?? t("user.noEmail", "No email")}
                   </span>
                   <span className="truncate text-xs">
-                    {user?.role ?? "No role"}
+                    {user?.role ?? t("user.noRole", "No role")}
                   </span>
                 </div>
               </div>
@@ -97,25 +99,25 @@ export function UserNav() {
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <BadgeCheck className="mr-2 h-4 w-4" />
-                Account
+                {t("user.account", "Account")}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard className="mr-2 h-4 w-4" />
-                Billing
+                {t("user.billing", "Billing")}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell className="mr-2 h-4 w-4" />
-                Notifications
+                {t("user.notifications", "Notifications")}
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
-                Profile
+                {t("user.profile", "Profile")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
-              Log out
+              {t("user.logout", "Log out")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

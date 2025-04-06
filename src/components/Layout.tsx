@@ -3,6 +3,7 @@ import { Command } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { useBreadcrumb } from "../hooks/use-breadcrumb";
 import { LanguageSelector } from "./LanguageSelector";
+import { useTranslation } from "react-i18next";
 
 import {
   Sidebar,
@@ -33,6 +34,7 @@ import { Fragment } from "react/jsx-runtime";
 export function Layout() {
   const { user } = useAuthStore();
   const breadcrumbs = useBreadcrumb();
+  const { t } = useTranslation();
 
   if (!user) return <Outlet />;
 
@@ -49,9 +51,11 @@ export function Layout() {
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">
-                      ShortStay Hub
+                      {t("app.name", "ShortStay Hub")}
                     </span>
-                    <span className="truncate text-xs">{user.role}</span>
+                    <span className="truncate text-xs">
+                      {t(`user.${user.role}`, user.role)}
+                    </span>
                   </div>
                 </div>
               </SidebarMenuButton>
@@ -75,7 +79,9 @@ export function Layout() {
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link to="/dashboard">Dashboard</Link>
+                    <Link to="/dashboard">
+                      {t("common.dashboard", "Dashboard")}
+                    </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 {breadcrumbs.map((crumb, index) => (
@@ -83,10 +89,14 @@ export function Layout() {
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       {index === breadcrumbs.length - 1 ? (
-                        <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                        <BreadcrumbPage>
+                          {t(`breadcrumb.${crumb.label}`, crumb.label)}
+                        </BreadcrumbPage>
                       ) : (
                         <BreadcrumbLink asChild>
-                          <Link to={crumb.path}>{crumb.label}</Link>
+                          <Link to={crumb.path}>
+                            {t(`breadcrumb.${crumb.label}`, crumb.label)}
+                          </Link>
                         </BreadcrumbLink>
                       )}
                     </BreadcrumbItem>
