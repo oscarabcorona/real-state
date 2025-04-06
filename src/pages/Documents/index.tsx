@@ -131,12 +131,14 @@ export function Documents() {
     if (!user) return;
 
     try {
+      // Reset any previous errors
       setUploadState((prev) => ({
         ...prev,
         progress: { ...prev.progress, [type]: 0 },
         errors: { ...prev.errors, [type]: undefined },
       }));
 
+      // Start the upload process which includes upload + OCR
       const doc = await documentService.uploadDocument(
         {
           userId: user.id,
@@ -151,8 +153,28 @@ export function Documents() {
           }))
       );
 
-      setDocuments((prev) => [doc, ...prev]);
-      toast.success("Document uploaded successfully");
+      // When the entire process (upload + OCR) completes at 100%:
+      // 1. Show the completion animation (this happens automatically in FileUploadInput)
+      // 2. Wait for the animation to display before updating UI
+      setTimeout(() => {
+        // Add document to the list
+        setDocuments((prev) => [doc, ...prev]);
+
+        // Show success message
+        toast.success(
+          doc.ocr_status === "completed" || !doc.ocr_status
+            ? "Document uploaded and processed successfully"
+            : "Document uploaded successfully"
+        );
+
+        // Reset progress state after a delay
+        setTimeout(() => {
+          setUploadState((prev) => ({
+            ...prev,
+            progress: { ...prev.progress, [type]: 0 },
+          }));
+        }, 300);
+      }, 1000); // Wait for completion animation
     } catch (error) {
       console.error("Error uploading document:", error);
       setUploadState((prev) => ({
@@ -164,6 +186,8 @@ export function Documents() {
               ? error.message
               : "Failed to upload document",
         },
+        // Reset progress on error
+        progress: { ...prev.progress, [type]: 0 },
       }));
       toast.error("Failed to upload document", {
         action: {
@@ -453,18 +477,6 @@ export function Documents() {
                               progress={uploadProgress}
                               error={error}
                             />
-                            {uploadProgress > 0 && uploadProgress < 100 && (
-                              <div className="space-y-1.5">
-                                <div className="flex justify-between text-xs text-gray-600">
-                                  <span>Uploading...</span>
-                                  <span>{uploadProgress}%</span>
-                                </div>
-                                <Progress
-                                  value={uploadProgress}
-                                  className="h-1 bg-gray-100"
-                                />
-                              </div>
-                            )}
                           </div>
                         )}
                       </CardContent>
@@ -491,7 +503,7 @@ export function Documents() {
                             <Button
                               variant="destructive"
                               size="sm"
-                              className="flex-1"
+                              className="flex-1 hover:bg-destructive/90"
                               onClick={() =>
                                 doc.id &&
                                 handleDeleteClick(doc.id, doc.file_path)
@@ -502,7 +514,7 @@ export function Documents() {
                               deleteState.documentId === doc.id ? (
                                 <Loader2 className="h-3.5 w-3.5 mr-1.5 flex-shrink-0 animate-spin" />
                               ) : (
-                                <Trash2 className="h-3.5 w-3.5 mr-1.5 flex-shrink-0 group-hover:text-red-600" />
+                                <Trash2 className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
                               )}
                               {deleteState.isDeleting &&
                               deleteState.documentId === doc.id

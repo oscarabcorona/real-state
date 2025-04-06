@@ -1,8 +1,17 @@
-import { Upload, X, FileText } from "lucide-react";
-import React, { useRef, useState } from "react";
+import {
+  Upload,
+  X,
+  FileText,
+  Loader2,
+  CheckCircle,
+  MoveHorizontal,
+  Zap,
+} from "lucide-react";
+import React, { useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Document } from "./types";
+import { Progress } from "@/components/ui/progress";
 
 interface FileUploadInputProps {
   type: Document["type"];
@@ -17,7 +26,6 @@ export function FileUploadInput({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   type,
   onUpload,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   progress = 0,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   error,
@@ -25,11 +33,69 @@ export function FileUploadInput({
 }: FileUploadInputProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showCompletionAnimation, setShowCompletionAnimation] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isUploading = progress > 0 && progress < 100;
+  const effectiveDisabled = disabled || isUploading;
+
+  // Handle the completion animation when progress reaches 100%
+  useEffect(() => {
+    if (progress === 100) {
+      setShowCompletionAnimation(true);
+
+      // Reset the animation state after a delay
+      const timeout = setTimeout(() => {
+        setShowCompletionAnimation(false);
+      }, 1500);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [progress]);
+
+  // Determine the current stage of the upload process
+  const getUploadStage = () => {
+    if (progress < 60) return "uploading";
+    if (progress < 75) return "processing";
+    if (progress < 100) return "analyzing";
+    return "complete";
+  };
+
+  const uploadStage = getUploadStage();
+
+  // Get appropriate message based on upload stage
+  const getStageMessage = () => {
+    switch (uploadStage) {
+      case "uploading":
+        return "Uploading file...";
+      case "processing":
+        return "Processing document...";
+      case "analyzing":
+        return "Analyzing content...";
+      default:
+        return "Upload complete";
+    }
+  };
+
+  // Get appropriate icon based on upload stage
+  const StageIcon = () => {
+    switch (uploadStage) {
+      case "uploading":
+        return <Loader2 className="h-6 w-6 text-primary animate-spin" />;
+      case "processing":
+        return (
+          <MoveHorizontal className="h-6 w-6 text-blue-600 animate-pulse" />
+        );
+      case "analyzing":
+        return <Zap className="h-6 w-6 text-amber-600 animate-pulse" />;
+      default:
+        return <CheckCircle className="h-6 w-6 text-green-600" />;
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!disabled) {
+    if (!effectiveDisabled) {
       setIsDragging(true);
     }
   };
@@ -43,7 +109,7 @@ export function FileUploadInput({
     e.preventDefault();
     setIsDragging(false);
 
-    if (disabled) return;
+    if (effectiveDisabled) return;
 
     const files = e.dataTransfer.files;
     if (files.length > 0) {
@@ -60,7 +126,7 @@ export function FileUploadInput({
   };
 
   const handleClick = () => {
-    if (!disabled) {
+    if (!effectiveDisabled) {
       fileInputRef.current?.click();
     }
   };
@@ -83,6 +149,20 @@ export function FileUploadInput({
     }
   };
 
+  // Get color class based on upload stage
+  const getProgressColorClass = () => {
+    switch (uploadStage) {
+      case "uploading":
+        return "bg-primary";
+      case "processing":
+        return "bg-blue-500";
+      case "analyzing":
+        return "bg-amber-500";
+      default:
+        return "bg-green-500";
+    }
+  };
+
   return (
     <div className="w-full">
       <div
@@ -90,8 +170,16 @@ export function FileUploadInput({
           "relative border-2 border-dashed rounded-lg p-6 transition-colors",
           isDragging
             ? "border-primary bg-primary/5"
+            : isUploading
+            ? uploadStage === "uploading"
+              ? "border-blue-400 bg-blue-50/30"
+              : uploadStage === "processing"
+              ? "border-blue-500 bg-blue-50/30"
+              : "border-amber-500 bg-amber-50/30"
+            : showCompletionAnimation
+            ? "border-green-400 bg-green-50/30"
             : "border-muted-foreground/25",
-          disabled && "opacity-60 cursor-not-allowed"
+          effectiveDisabled && "opacity-60 cursor-not-allowed"
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -102,9 +190,44 @@ export function FileUploadInput({
           type="file"
           className="hidden"
           onChange={handleChange}
-          disabled={disabled}
+          disabled={effectiveDisabled}
           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic,.heif"
         />
+
+        {isUploading && (
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-lg">
+            <div className="flex flex-col items-center space-y-4 p-4 max-w-[80%]">
+              <StageIcon />
+              <div className="space-y-2 w-full">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">
+                    {getStageMessage()}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {progress}%
+                  </span>
+                </div>
+                <Progress
+                  value={progress}
+                  className={cn("h-1.5", getProgressColorClass())}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showCompletionAnimation && progress === 100 && (
+          <div className="absolute inset-0 bg-green-50/80 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-lg transition-opacity duration-300">
+            <div className="flex flex-col items-center space-y-3">
+              <div className="rounded-full bg-green-100 p-2">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <p className="text-sm font-medium text-green-800">
+                Upload Complete
+              </p>
+            </div>
+          </div>
+        )}
 
         {selectedFile ? (
           <div className="flex flex-col items-center justify-center gap-2 text-center">
@@ -117,7 +240,7 @@ export function FileUploadInput({
                 {formatFileSize(selectedFile.size)}
               </p>
             </div>
-            {!disabled && (
+            {!effectiveDisabled && (
               <Button
                 variant="outline"
                 size="sm"
@@ -136,13 +259,13 @@ export function FileUploadInput({
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium">
-                {disabled ? "Uploading..." : "Upload Document"}
+                {effectiveDisabled ? getStageMessage() : "Upload Document"}
               </p>
               <p className="text-xs text-muted-foreground">
                 Drag and drop or click to select a file
               </p>
             </div>
-            {!disabled && (
+            {!effectiveDisabled && (
               <Button
                 variant="outline"
                 size="sm"
