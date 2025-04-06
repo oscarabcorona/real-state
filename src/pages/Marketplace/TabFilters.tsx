@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import React from "react";
 
-interface FiltersProps {
+interface TabFiltersProps {
   filters: {
     type: string;
     minPrice: string;
@@ -27,7 +27,7 @@ interface FiltersProps {
   showFilters: boolean;
 }
 
-export function Filters({ filters, setFilters }: FiltersProps) {
+export function TabFilters({ filters, setFilters }: TabFiltersProps) {
   const handlePropertyTypeClick = (type: string) => {
     setFilters((prev) => ({
       ...prev,

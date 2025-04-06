@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 export type FilterState = {
   type: string;
@@ -18,15 +18,6 @@ export const useFilters = () => {
     city: "",
     state: "",
   });
-  
-  // Use a ref for instant response when toggling filters visibility
-  const showFiltersRef = useRef(false);
-  const [showFilters, setShowFilters] = useState(false);
-
-  const handleToggleFilters = (value: boolean) => {
-    showFiltersRef.current = value;
-    setShowFilters(value);
-  };
 
   const countActiveFilters = () => {
     return Object.values(filters).filter((val) => val !== "").length;
@@ -52,9 +43,7 @@ export const useFilters = () => {
 
   return {
     filters,
-    setFilters, // Explicitly return the setFilters function
-    showFilters,
-    handleToggleFilters,
+    setFilters,
     countActiveFilters,
     clearAllFilters,
     handleFilterChange,

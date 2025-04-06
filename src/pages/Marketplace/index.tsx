@@ -28,6 +28,7 @@ import { useProperties, SortOption } from "./hooks/useProperties";
 import { usePagination } from "./hooks/usePagination";
 import { useFavorites } from "./hooks/useFavorites";
 import { useFilters } from "./hooks/useFilters";
+import { Filters } from "./components/Filters";
 
 export function Marketplace() {
   const { user } = useAuthStore();
@@ -38,13 +39,7 @@ export function Marketplace() {
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  const {
-    filters,
-    setFilters,
-    showFilters,
-    handleToggleFilters,
-    clearAllFilters,
-  } = useFilters();
+  const { filters, setFilters, clearAllFilters } = useFilters();
 
   const { properties, loading } = useProperties(filters, sortOption);
   const { favorites, toggleFavorite } = useFavorites();
@@ -58,36 +53,40 @@ export function Marketplace() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header
-        filters={filters}
-        setFilters={setFilters}
-        showFilters={showFilters}
-        setShowFilters={handleToggleFilters}
-      />
+      <Header />
 
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
-          <p className="text-muted-foreground">
-            {loading
-              ? "Loading properties..."
-              : `${properties.length} ${
-                  properties.length === 1 ? "Property" : "Properties"
-                } Available`}
-          </p>
-          <Select
-            value={sortOption}
-            onValueChange={(value: SortOption) => setSortOption(value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="price-low-high">Price: Low to High</SelectItem>
-              <SelectItem value="price-high-low">Price: High to Low</SelectItem>
-              <SelectItem value="bedrooms">Most Bedrooms</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-3">
+            <p className="text-muted-foreground">
+              {loading
+                ? "Loading properties..."
+                : `${properties.length} ${
+                    properties.length === 1 ? "Property" : "Properties"
+                  } Available`}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Select
+              value={sortOption}
+              onValueChange={(value: SortOption) => setSortOption(value)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="price-low-high">
+                  Price: Low to High
+                </SelectItem>
+                <SelectItem value="price-high-low">
+                  Price: High to Low
+                </SelectItem>
+                <SelectItem value="bedrooms">Most Bedrooms</SelectItem>
+              </SelectContent>
+            </Select>
+            <Filters currentFilters={filters} onApplyFilters={setFilters} />
+          </div>
         </div>
 
         {loading ? (
