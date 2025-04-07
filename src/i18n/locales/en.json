@@ -718,7 +718,8 @@
         "reports": "Reports",
         "appointments": "Appointments",
         "notifications": "Notifications",
-        "settings": "Settings"
+        "settings": "Settings",
+        "Appointments": "Appointments"
     },
     "notifications": {
         "noNew": "No new notifications",
@@ -823,8 +824,18 @@
         }
     },
     "appointmentTenant": {
+        "title": "My Appointments",
+        "subtitle": "Manage your property viewing appointments",
+        "view": {
+            "calendar": "Calendar",
+            "list": "List"
+        },
+        "status": {
+            "pending": "Pending",
+            "confirmed": "Confirmed",
+            "cancelled": "Cancelled"
+        },
         "filters": {
-            "title": "Filters",
             "status": {
                 "title": "Status",
                 "all": "All Statuses",
@@ -835,13 +846,38 @@
             "dateRange": {
                 "title": "Date Range",
                 "all": "All Time",
-                "last7Days": "Last 7 Days",
-                "last30Days": "Last 30 Days",
-                "last90Days": "Last 90 Days"
+                "last7Days": "Last 7 days",
+                "last30Days": "Last 30 days",
+                "last90Days": "Last 90 days"
             },
             "propertyName": {
                 "title": "Property Name",
                 "placeholder": "Search by property name"
+            }
+        },
+        "list": {
+            "viewDetails": "View details",
+            "openOptions": "Open options",
+            "unknownProperty": "Unknown property"
+        },
+        "pagination": {
+            "previous": "Previous",
+            "next": "Next"
+        },
+        "modals": {
+            "reschedule": {
+                "title": "Reschedule Appointment",
+                "description": "Choose a new date and time for your property viewing",
+                "cancel": "Cancel",
+                "reschedule": "Reschedule",
+                "processing": "Processing..."
+            },
+            "cancel": {
+                "title": "Cancel Appointment",
+                "description": "Are you sure you want to cancel this property viewing?",
+                "back": "Back",
+                "cancel": "Cancel Appointment",
+                "processing": "Processing..."
             }
         }
     }

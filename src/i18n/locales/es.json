@@ -796,25 +796,59 @@
         }
     },
     "appointmentTenant": {
+        "title": "Mis Citas",
+        "subtitle": "Gestiona tus citas para ver propiedades",
+        "view": {
+            "calendar": "Calendario",
+            "list": "Lista"
+        },
+        "status": {
+            "pending": "Pendiente",
+            "confirmed": "Confirmada",
+            "cancelled": "Cancelada"
+        },
         "filters": {
             "title": "Filtros",
             "status": {
-                "title": "Estado",
                 "all": "Todos los Estados",
                 "pending": "Pendiente",
-                "confirmed": "Confirmado",
-                "cancelled": "Cancelado"
+                "confirmed": "Confirmada",
+                "cancelled": "Cancelada"
             },
             "dateRange": {
-                "title": "Rango de Fechas",
                 "all": "Todo el Tiempo",
-                "last7Days": "Últimos 7 Días",
-                "last30Days": "Últimos 30 Días",
-                "last90Days": "Últimos 90 Días"
+                "7days": "Últimos 7 Días",
+                "30days": "Últimos 30 Días",
+                "90days": "Últimos 90 Días"
             },
             "propertyName": {
                 "title": "Nombre de la Propiedad",
-                "placeholder": "Buscar por nombre de propiedad"
+                "placeholder": "Buscar por nombre de la propiedad"
+            }
+        },
+        "list": {
+            "viewDetails": "Ver detalles",
+            "openOptions": "Abrir opciones",
+            "unknownProperty": "Propiedad desconocida"
+        },
+        "pagination": {
+            "previous": "Anterior",
+            "next": "Siguiente"
+        },
+        "modals": {
+            "reschedule": {
+                "title": "Reprogramar Cita",
+                "description": "Elige una nueva fecha y hora para ver la propiedad",
+                "cancel": "Cancelar",
+                "reschedule": "Reprogramar",
+                "processing": "Procesando..."
+            },
+            "cancel": {
+                "title": "Cancelar Cita",
+                "description": "¿Estás seguro de que quieres cancelar esta visita a la propiedad?",
+                "back": "Atrás",
+                "cancel": "Cancelar Cita",
+                "processing": "Procesando..."
             }
         }
     }

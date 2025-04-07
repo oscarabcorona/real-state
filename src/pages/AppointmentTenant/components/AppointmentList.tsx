@@ -7,6 +7,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useTranslation } from "react-i18next";
 
 const statuses: Record<string, string> = {
   pending: "text-yellow-700 bg-yellow-50 ring-yellow-600/20",
@@ -33,6 +34,8 @@ export function AppointmentList({
   onPageChange,
   onAppointmentClick,
 }: AppointmentListProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-white shadow rounded-lg">
       <ul role="list" className="divide-y divide-gray-100">
@@ -45,7 +48,8 @@ export function AppointmentList({
             <div className="min-w-0">
               <div className="flex items-start gap-x-3">
                 <p className="text-sm/6 font-semibold text-gray-900">
-                  {appointment.properties?.name || "Unknown property"}
+                  {appointment.properties?.name ||
+                    t("appointmentTenant.list.unknownProperty")}
                 </p>
                 <p
                   className={classNames(
@@ -53,7 +57,11 @@ export function AppointmentList({
                     "mt-0.5 rounded-md px-1.5 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset"
                   )}
                 >
-                  {appointment.status}
+                  {t(
+                    `appointmentTenant.status.${
+                      appointment.status || "pending"
+                    }`
+                  )}
                 </p>
               </div>
               <div className="mt-1 flex items-center gap-x-2 text-xs/5 text-gray-500">
@@ -71,7 +79,7 @@ export function AppointmentList({
                 type="button"
                 className="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 hover:bg-gray-50 sm:block"
               >
-                View details
+                {t("appointmentTenant.list.viewDetails")}
               </button>
               <div className="relative">
                 <button
@@ -82,7 +90,9 @@ export function AppointmentList({
                     onAppointmentClick(appointment);
                   }}
                 >
-                  <span className="sr-only">Open options</span>
+                  <span className="sr-only">
+                    {t("appointmentTenant.list.openOptions")}
+                  </span>
                   <svg
                     className="h-5 w-5"
                     viewBox="0 0 20 20"
@@ -111,7 +121,9 @@ export function AppointmentList({
                 className={
                   currentPage === 1 ? "pointer-events-none opacity-50" : ""
                 }
-              />
+              >
+                {t("appointmentTenant.pagination.previous")}
+              </PaginationPrevious>
             </PaginationItem>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <PaginationItem key={page}>
@@ -139,7 +151,9 @@ export function AppointmentList({
                     ? "pointer-events-none opacity-50"
                     : ""
                 }
-              />
+              >
+                {t("appointmentTenant.pagination.next")}
+              </PaginationNext>
             </PaginationItem>
           </PaginationContent>
         </Pagination>

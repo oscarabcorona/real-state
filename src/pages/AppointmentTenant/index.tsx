@@ -29,8 +29,10 @@ import {
   validateDate,
   validateTime,
 } from "../../services/appointmentTenantService";
+import { useTranslation } from "react-i18next";
 
-export default function AppointmentTenant() {
+export function AppointmentTenant() {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<
@@ -310,10 +312,10 @@ export default function AppointmentTenant() {
     <div className="container py-8 space-y-6">
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">
-          My Appointments
+          {t("appointmentTenant.title")}
         </h1>
         <p className="text-muted-foreground">
-          Manage your property viewing appointments
+          {t("appointmentTenant.subtitle")}
         </p>
       </div>
 
@@ -325,7 +327,7 @@ export default function AppointmentTenant() {
             onClick={() => setView("calendar")}
           >
             <CalendarDays className="h-4 w-4 mr-2" />
-            Calendar
+            {t("appointmentTenant.view.calendar")}
           </Button>
           <Button
             variant={view === "list" ? "default" : "outline"}
@@ -333,7 +335,7 @@ export default function AppointmentTenant() {
             onClick={() => setView("list")}
           >
             <List className="h-4 w-4 mr-2" />
-            List
+            {t("appointmentTenant.view.list")}
           </Button>
         </div>
         <FilterDialog currentFilters={filters} onApplyFilters={setFilters} />
@@ -377,9 +379,11 @@ export default function AppointmentTenant() {
       <Sheet open={showRescheduleModal} onOpenChange={setShowRescheduleModal}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Reschedule Appointment</SheetTitle>
+            <SheetTitle>
+              {t("appointmentTenant.modals.reschedule.title")}
+            </SheetTitle>
             <SheetDescription>
-              Choose a new date and time for your property viewing
+              {t("appointmentTenant.modals.reschedule.description")}
             </SheetDescription>
           </SheetHeader>
           <RescheduleContent
@@ -393,10 +397,12 @@ export default function AppointmentTenant() {
               variant="outline"
               onClick={() => setShowRescheduleModal(false)}
             >
-              Cancel
+              {t("appointmentTenant.modals.reschedule.cancel")}
             </Button>
             <Button onClick={handleReschedule} disabled={processing}>
-              {processing ? "Processing..." : "Reschedule"}
+              {processing
+                ? t("appointmentTenant.modals.reschedule.processing")
+                : t("appointmentTenant.modals.reschedule.reschedule")}
             </Button>
           </SheetFooter>
         </SheetContent>
@@ -405,22 +411,26 @@ export default function AppointmentTenant() {
       <Sheet open={showCancelModal} onOpenChange={setShowCancelModal}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Cancel Appointment</SheetTitle>
+            <SheetTitle>
+              {t("appointmentTenant.modals.cancel.title")}
+            </SheetTitle>
             <SheetDescription>
-              Are you sure you want to cancel this property viewing?
+              {t("appointmentTenant.modals.cancel.description")}
             </SheetDescription>
           </SheetHeader>
           <CancelContent cancelNote={cancelNote} onUpdateNote={setCancelNote} />
           <SheetFooter>
             <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-              Back
+              {t("appointmentTenant.modals.cancel.back")}
             </Button>
             <Button
               variant="destructive"
               onClick={handleCancel}
               disabled={processing}
             >
-              {processing ? "Processing..." : "Cancel Appointment"}
+              {processing
+                ? t("appointmentTenant.modals.cancel.processing")
+                : t("appointmentTenant.modals.cancel.cancel")}
             </Button>
           </SheetFooter>
         </SheetContent>
