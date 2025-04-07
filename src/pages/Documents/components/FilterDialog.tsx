@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-
+import { useTranslation } from "react-i18next";
 interface FilterDialogProps {
   onApplyFilters: (filters: DocumentFilters) => void;
   currentFilters: DocumentFilters;
@@ -21,6 +21,7 @@ export function FilterDialog({
   onApplyFilters,
   currentFilters,
 }: FilterDialogProps) {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<DocumentFilters>(currentFilters);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -51,7 +52,7 @@ export function FilterDialog({
       <PopoverTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <Filter className="h-4 w-4" />
-          Filters
+          <h4 className="font-medium">{t("common.filter")}</h4>
           {activeFiltersCount > 0 && (
             <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
               {activeFiltersCount}
@@ -61,7 +62,7 @@ export function FilterDialog({
       </PopoverTrigger>
       <PopoverContent className="w-100 p-0" align="end">
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h4 className="font-medium">Filters</h4>
+          <h4 className="font-medium">{t("common.filter")}</h4>
           {activeFiltersCount > 0 && (
             <Button
               variant="ghost"
@@ -70,7 +71,7 @@ export function FilterDialog({
               onClick={handleReset}
             >
               <X className="mr-2 h-3 w-3" />
-              Clear all
+              {t("common.reset")}
             </Button>
           )}
         </div>

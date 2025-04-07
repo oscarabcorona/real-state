@@ -31,7 +31,9 @@
         "error": "Error",
         "success": "Success",
         "warning": "Warning",
-        "info": "Information"
+        "info": "Information",
+        "apply": "Apply Filters",
+        "reset": "Reset"
     },
     "dashboard": {
         "tenant": {
@@ -818,6 +820,29 @@
             "next": "Next",
             "showing": "Showing {{start}} to {{end}} of {{total}} entries",
             "itemsPerPage": "Items per page:"
+        }
+    },
+    "appointmentTenant": {
+        "filters": {
+            "title": "Filters",
+            "status": {
+                "title": "Status",
+                "all": "All Statuses",
+                "pending": "Pending",
+                "confirmed": "Confirmed",
+                "cancelled": "Cancelled"
+            },
+            "dateRange": {
+                "title": "Date Range",
+                "all": "All Time",
+                "last7Days": "Last 7 Days",
+                "last30Days": "Last 30 Days",
+                "last90Days": "Last 90 Days"
+            },
+            "propertyName": {
+                "title": "Property Name",
+                "placeholder": "Search by property name"
+            }
         }
     }
 }

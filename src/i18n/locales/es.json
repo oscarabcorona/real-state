@@ -31,7 +31,9 @@
         "error": "Error",
         "success": "Éxito",
         "warning": "Advertencia",
-        "info": "Información"
+        "info": "Información",
+        "apply": "Aplicar Filtros",
+        "reset": "Restablecer"
     },
     "dashboard": {
         "tenant": {
@@ -791,6 +793,29 @@
             "next": "Siguiente",
             "showing": "Mostrando {{start}} a {{end}} de {{total}} entradas",
             "itemsPerPage": "Elementos por página:"
+        }
+    },
+    "appointmentTenant": {
+        "filters": {
+            "title": "Filtros",
+            "status": {
+                "title": "Estado",
+                "all": "Todos los Estados",
+                "pending": "Pendiente",
+                "confirmed": "Confirmado",
+                "cancelled": "Cancelado"
+            },
+            "dateRange": {
+                "title": "Rango de Fechas",
+                "all": "Todo el Tiempo",
+                "last7Days": "Últimos 7 Días",
+                "last30Days": "Últimos 30 Días",
+                "last90Days": "Últimos 90 Días"
+            },
+            "propertyName": {
+                "title": "Nombre de la Propiedad",
+                "placeholder": "Buscar por nombre de propiedad"
+            }
         }
     }
 }

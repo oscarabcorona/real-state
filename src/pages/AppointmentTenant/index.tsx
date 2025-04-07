@@ -8,7 +8,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { parseISO } from "date-fns";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -23,16 +22,20 @@ import {
 import { useAuthStore } from "../../store/authStore";
 import { MainAppointmentsList } from "./MainAppointmentsList";
 import { Appointment, RescheduleForm } from "../Calendar/types";
-import { UpcomingAppointmentsSection } from "./UpcomingAppointmnetsSection";
 import { RescheduleContent } from "./components/RescheduleContent";
 import { CancelContent } from "./components/CancelContent";
 import { Button } from "@/components/ui/button";
 import { AppointmentDetailsSheet } from "@/components/appointments/AppointmentDetailsSheet";
 import { CalendarDays, List } from "lucide-react";
+import { FilterDialog, AppointmentFilters } from "./components/FilterDialog";
+import { subDays } from "date-fns";
 
 export function AppointmentTenant() {
   const { user } = useAuthStore();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [filteredAppointments, setFilteredAppointments] = useState<
+    Appointment[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
@@ -49,6 +52,11 @@ export function AppointmentTenant() {
   const [timeSlots, setTimeSlots] = useState<string[]>([]);
   const [timeError, setTimeError] = useState("");
   const [view, setView] = useState<"calendar" | "list">("calendar");
+  const [filters, setFilters] = useState<AppointmentFilters>({
+    status: "all",
+    dateRange: "all",
+    propertyName: "",
+  });
 
   useEffect(() => {
     if (user) {
@@ -63,6 +71,54 @@ export function AppointmentTenant() {
     }
   }, [rescheduleForm.date]);
 
+  useEffect(() => {
+    filterAppointments();
+  }, [appointments, filters]);
+
+  const filterAppointments = () => {
+    let filtered = [...appointments];
+
+    // Filter by status
+    if (filters.status !== "all") {
+      filtered = filtered.filter(
+        (appointment) => appointment.status === filters.status
+      );
+    }
+
+    // Filter by date range
+    const now = new Date();
+    switch (filters.dateRange) {
+      case "7days":
+        filtered = filtered.filter((appointment) => {
+          const appointmentDate = new Date(appointment.preferred_date);
+          return appointmentDate >= subDays(now, 7);
+        });
+        break;
+      case "30days":
+        filtered = filtered.filter((appointment) => {
+          const appointmentDate = new Date(appointment.preferred_date);
+          return appointmentDate >= subDays(now, 30);
+        });
+        break;
+      case "90days":
+        filtered = filtered.filter((appointment) => {
+          const appointmentDate = new Date(appointment.preferred_date);
+          return appointmentDate >= subDays(now, 90);
+        });
+        break;
+    }
+
+    // Filter by property name
+    if (filters.propertyName) {
+      const searchTerm = filters.propertyName.toLowerCase();
+      filtered = filtered.filter((appointment) =>
+        appointment.properties.name.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    setFilteredAppointments(filtered);
+  };
+
   const fetchAppointments = async () => {
     try {
       const data = await fetchTenantAppointments(user?.id || "");
@@ -76,7 +132,7 @@ export function AppointmentTenant() {
 
   // Convert appointments to calendar events
   const calendarEvents = useMemo<CalendarEvent[]>(() => {
-    return appointments
+    return filteredAppointments
       .filter(
         (appointment) =>
           appointment &&
@@ -137,7 +193,7 @@ export function AppointmentTenant() {
         }
       })
       .filter(Boolean) as CalendarEvent[];
-  }, [appointments]);
+  }, [filteredAppointments]);
 
   const handleEventClick = (event: CalendarEvent) => {
     const appointment = event.meta as Appointment;
@@ -248,57 +304,48 @@ export function AppointmentTenant() {
         </p>
       </div>
 
-      <Tabs
-        value={view}
-        onValueChange={(v) => setView(v as "calendar" | "list")}
-      >
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium">Viewing Calendar</h2>
-          <TabsList>
-            <TabsTrigger value="calendar" className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger value="list" className="flex items-center gap-2">
-              <List className="h-4 w-4" />
-              List
-            </TabsTrigger>
-          </TabsList>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant={view === "calendar" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setView("calendar")}
+          >
+            <CalendarDays className="h-4 w-4 mr-2" />
+            Calendar
+          </Button>
+          <Button
+            variant={view === "list" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setView("list")}
+          >
+            <List className="h-4 w-4 mr-2" />
+            List
+          </Button>
         </div>
+        <FilterDialog currentFilters={filters} onApplyFilters={setFilters} />
+      </div>
 
-        <div className="mt-4">
-          <TabsContent value="calendar" className="m-0">
-            <div className="h-[75vh] bg-background rounded-md">
-              <CalendarContainer
-                events={calendarEvents}
-                onEventClick={handleEventClick}
-              />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="list" className="m-0">
-            <div className="space-y-8">
-              <UpcomingAppointmentsSection
-                appointments={appointments}
-                setSelectedAppointment={setSelectedAppointment}
-                setShowDetailsSheet={setShowDetailsSheet}
-              />
-              <MainAppointmentsList
-                appointments={appointments}
-                setSelectedAppointment={setSelectedAppointment}
-                setShowDetailsSheet={setShowDetailsSheet}
-                setShowRescheduleModal={setShowRescheduleModal}
-                setShowCancelModal={setShowCancelModal}
-              />
-            </div>
-          </TabsContent>
-        </div>
-      </Tabs>
+      {view === "calendar" ? (
+        <CalendarContainer
+          events={calendarEvents}
+          onEventClick={handleEventClick}
+        />
+      ) : (
+        <MainAppointmentsList
+          appointments={filteredAppointments}
+          setSelectedAppointment={setSelectedAppointment}
+          setShowDetailsSheet={setShowDetailsSheet}
+          setShowRescheduleModal={setShowRescheduleModal}
+          setShowCancelModal={setShowCancelModal}
+        />
+      )}
 
       {selectedAppointment && (
         <AppointmentDetailsSheet
           appointment={selectedAppointment}
           userRole="tenant"
+          open={showDetailsSheet}
           onClose={() => setShowDetailsSheet(false)}
           onReschedule={() => {
             setShowDetailsSheet(false);
@@ -308,7 +355,6 @@ export function AppointmentTenant() {
             setShowDetailsSheet(false);
             setShowCancelModal(true);
           }}
-          open={showDetailsSheet}
         />
       )}
 
@@ -317,34 +363,23 @@ export function AppointmentTenant() {
           <SheetHeader>
             <SheetTitle>Reschedule Appointment</SheetTitle>
             <SheetDescription>
-              Change the date and time of your property viewing
+              Choose a new date and time for your property viewing
             </SheetDescription>
           </SheetHeader>
-
-          {selectedAppointment && (
-            <div className="py-4">
-              <RescheduleContent
-                rescheduleForm={rescheduleForm}
-                onUpdateForm={setRescheduleForm}
-                timeError={timeError}
-                timeSlots={timeSlots}
-              />
-            </div>
-          )}
-
-          <SheetFooter className="flex justify-end gap-2 pt-4">
+          <RescheduleContent
+            rescheduleForm={rescheduleForm}
+            onUpdateForm={setRescheduleForm}
+            timeSlots={timeSlots}
+            timeError={timeError}
+          />
+          <SheetFooter>
             <Button
               variant="outline"
               onClick={() => setShowRescheduleModal(false)}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleReschedule}
-              disabled={
-                processing || !rescheduleForm.date || !rescheduleForm.time
-              }
-            >
+            <Button onClick={handleReschedule} disabled={processing}>
               {processing ? "Processing..." : "Reschedule"}
             </Button>
           </SheetFooter>
@@ -356,29 +391,20 @@ export function AppointmentTenant() {
           <SheetHeader>
             <SheetTitle>Cancel Appointment</SheetTitle>
             <SheetDescription>
-              Provide a reason for cancelling your property viewing
+              Are you sure you want to cancel this property viewing?
             </SheetDescription>
           </SheetHeader>
-
-          {selectedAppointment && (
-            <div className="py-4">
-              <CancelContent
-                cancelNote={cancelNote}
-                onUpdateNote={setCancelNote}
-              />
-            </div>
-          )}
-
-          <SheetFooter className="flex justify-end gap-2 pt-4">
+          <CancelContent cancelNote={cancelNote} onUpdateNote={setCancelNote} />
+          <SheetFooter>
             <Button variant="outline" onClick={() => setShowCancelModal(false)}>
-              Cancel
+              Back
             </Button>
             <Button
-              onClick={handleCancel}
-              disabled={processing || !cancelNote.trim()}
               variant="destructive"
+              onClick={handleCancel}
+              disabled={processing}
             >
-              {processing ? "Processing..." : "Confirm Cancellation"}
+              {processing ? "Processing..." : "Cancel Appointment"}
             </Button>
           </SheetFooter>
         </SheetContent>

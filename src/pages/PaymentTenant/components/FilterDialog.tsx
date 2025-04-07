@@ -83,7 +83,7 @@ export function FilterDialog({
       </PopoverTrigger>
       <PopoverContent className="w-100 p-0" align="end">
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h4 className="font-medium">{t("paymentTenant.filters.title")}</h4>
+          <h4 className="font-medium">{t("common.filter")}</h4>
           {activeFiltersCount > 0 && (
             <Button
               variant="ghost"
@@ -92,7 +92,7 @@ export function FilterDialog({
               onClick={handleReset}
             >
               <X className="mr-2 h-3 w-3" />
-              {t("paymentTenant.filters.reset")}
+              {t("common.reset")}
             </Button>
           )}
         </div>
