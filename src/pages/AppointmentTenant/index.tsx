@@ -1,3 +1,14 @@
+import { useState, useEffect, useMemo } from "react";
+import { subDays, parseISO } from "date-fns";
+import { AppointmentDetailsSheet } from "@/components/appointments/AppointmentDetailsSheet";
+import { FilterDialog } from "./components/FilterDialog";
+import { AppointmentFilters } from "./components/FilterDialog";
+import { Appointment, RescheduleForm } from "../Calendar/types";
+import { Button } from "@/components/ui/button";
+import { RescheduleContent } from "./components/RescheduleContent";
+import { CancelContent } from "./components/CancelContent";
+import { CalendarDays, List } from "lucide-react";
+import { AppointmentList } from "./components/AppointmentList";
 import { CalendarContainer } from "@/components/ui/calendar";
 import { CalendarEvent } from "@/components/ui/calendar/types";
 import {
@@ -8,8 +19,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { parseISO } from "date-fns";
-import { useEffect, useMemo, useState } from "react";
+import { useAuthStore } from "../../store/authStore";
 import {
   cancelAppointment,
   checkTimeSlotConflicts,
@@ -19,18 +29,8 @@ import {
   validateDate,
   validateTime,
 } from "../../services/appointmentTenantService";
-import { useAuthStore } from "../../store/authStore";
-import { MainAppointmentsList } from "./MainAppointmentsList";
-import { Appointment, RescheduleForm } from "../Calendar/types";
-import { RescheduleContent } from "./components/RescheduleContent";
-import { CancelContent } from "./components/CancelContent";
-import { Button } from "@/components/ui/button";
-import { AppointmentDetailsSheet } from "@/components/appointments/AppointmentDetailsSheet";
-import { CalendarDays, List } from "lucide-react";
-import { FilterDialog, AppointmentFilters } from "./components/FilterDialog";
-import { subDays } from "date-fns";
 
-export function AppointmentTenant() {
+export default function AppointmentTenant() {
   const { user } = useAuthStore();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<
@@ -58,12 +58,21 @@ export function AppointmentTenant() {
     propertyName: "",
   });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+  const paginatedAppointments = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredAppointments.slice(startIndex, endIndex);
+  }, [filteredAppointments, currentPage, itemsPerPage]);
+
   useEffect(() => {
-    if (user) {
-      fetchAppointments();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+    fetchAppointments();
+  }, []);
 
   useEffect(() => {
     if (rescheduleForm.date) {
@@ -285,6 +294,10 @@ export function AppointmentTenant() {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen w-full">
@@ -332,12 +345,15 @@ export function AppointmentTenant() {
           onEventClick={handleEventClick}
         />
       ) : (
-        <MainAppointmentsList
-          appointments={filteredAppointments}
-          setSelectedAppointment={setSelectedAppointment}
-          setShowDetailsSheet={setShowDetailsSheet}
-          setShowRescheduleModal={setShowRescheduleModal}
-          setShowCancelModal={setShowCancelModal}
+        <AppointmentList
+          appointments={paginatedAppointments}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onAppointmentClick={(appointment) => {
+            setSelectedAppointment(appointment);
+            setShowDetailsSheet(true);
+          }}
         />
       )}
 
