@@ -34,20 +34,17 @@ export function PaymentFilters({
   });
 
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{t("paymentTenant.title")}</h2>
-        <div className="flex items-center gap-2">
-          {filtersApplied && (
-            <Button variant="ghost" onClick={clearFilters}>
-              {t("paymentTenant.filters.clearAll")}
-            </Button>
-          )}
-          <FilterDialog
-            onApplyFilters={onFilterChange}
-            currentFilters={filters}
-          />
-        </div>
+    <div className="flex items-center justify-end">
+      <div className="flex items-center gap-2">
+        {filtersApplied && (
+          <Button variant="ghost" onClick={clearFilters}>
+            {t("paymentTenant.filters.clearAll")}
+          </Button>
+        )}
+        <FilterDialog
+          onApplyFilters={onFilterChange}
+          currentFilters={filters}
+        />
       </div>
     </div>
   );

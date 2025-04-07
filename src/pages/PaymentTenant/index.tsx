@@ -144,6 +144,7 @@ export function PaymentTenant() {
 
   return (
     <div className="space-y-6">
+      <h2 className="text-lg font-semibold">{t("paymentTenant.title")}</h2>
       <PaymentStats
         totalPaid={stats.totalPaid}
         pending={stats.pending}

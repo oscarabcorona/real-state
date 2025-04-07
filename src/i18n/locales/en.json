@@ -731,7 +731,7 @@
         "noPayments": "No payments found.",
         "noMatchingPayments": "No matching payment records found.",
         "filters": {
-            "title": "Filter Payments",
+            "title": "Filters",
             "status": "Payment Status",
             "method": "Payment Method",
             "dateRange": "Date Range",
@@ -765,6 +765,7 @@
             "reset": "Reset Filters"
         },
         "table": {
+            "createdBy": "Created By",
             "invoice": "Invoice",
             "property": "Property",
             "amount": "Amount",

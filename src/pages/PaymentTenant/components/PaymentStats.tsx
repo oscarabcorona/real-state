@@ -26,7 +26,7 @@ export function PaymentStats({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
       <div className="rounded-lg border bg-card p-4">
         <div className="flex items-center justify-between">
           <div className="text-sm font-medium">
