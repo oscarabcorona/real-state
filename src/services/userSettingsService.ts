@@ -114,7 +114,7 @@ export async function updateUserPassword(
 ): Promise<void> {
   try {
     const { error } = await supabase.auth.updateUser({
-      password: newPassword,
+      password: newPassword
     });
 
     if (error) throw error;

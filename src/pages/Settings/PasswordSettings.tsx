@@ -76,11 +76,7 @@ export function PasswordSettings({
     setParentLoading(true);
 
     try {
-      await updateUserPassword({
-        user_id: user.id,
-        current_password: data.currentPassword,
-        new_password: data.newPassword,
-      });
+      await updateUserPassword(data.newPassword);
 
       setParentPasswordForm({
         currentPassword: "",
@@ -186,15 +182,15 @@ export function PasswordSettings({
                     </Button>
                   </div>
                 </FormControl>
-                <FormDescription className="text-xs space-y-1">
+                <FormDescription className="text-xs">
                   Password must:
-                  <ul className="list-disc list-inside">
-                    <li>Be at least 8 characters long</li>
-                    <li>Include uppercase and lowercase letters</li>
-                    <li>Include at least one number</li>
-                    <li>Include at least one special character</li>
-                  </ul>
                 </FormDescription>
+                <ul className="text-xs text-muted-foreground list-disc list-inside space-y-1">
+                  <li>Be at least 8 characters long</li>
+                  <li>Include uppercase and lowercase letters</li>
+                  <li>Include at least one number</li>
+                  <li>Include at least one special character</li>
+                </ul>
                 <FormMessage />
               </FormItem>
             )}
