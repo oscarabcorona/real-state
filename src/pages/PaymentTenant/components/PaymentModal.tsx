@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Payment } from "../types";
+import { useTranslation } from "react-i18next";
 
 type PaymentModalProps = {
   payment: Payment;
@@ -22,26 +23,34 @@ export function PaymentModal({
   onClose,
   onProcessPayment,
 }: PaymentModalProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Process Payment</DialogTitle>
+          <DialogTitle>{t("paymentTenant.modal.paymentDetails")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Card>
             <CardContent className="pt-6">
               <dl className="grid gap-2 text-sm">
                 <div className="grid grid-cols-2">
-                  <dt className="font-medium">Amount</dt>
+                  <dt className="font-medium">
+                    {t("paymentTenant.table.amount")}
+                  </dt>
                   <dd>${payment?.amount.toLocaleString()}</dd>
                 </div>
                 <div className="grid grid-cols-2">
-                  <dt className="font-medium">Property</dt>
+                  <dt className="font-medium">
+                    {t("paymentTenant.table.property")}
+                  </dt>
                   <dd>{payment?.properties.name}</dd>
                 </div>
                 <div className="grid grid-cols-2">
-                  <dt className="font-medium">Invoice</dt>
+                  <dt className="font-medium">
+                    {t("paymentTenant.table.invoice")}
+                  </dt>
                   <dd>{payment?.invoice_number}</dd>
                 </div>
               </dl>
@@ -54,7 +63,7 @@ export function PaymentModal({
               className="w-full"
             >
               <CreditCard className="mr-2 h-4 w-4" />
-              Pay with Credit Card
+              {t("paymentTenant.filters.method_options.creditCard")}
             </Button>
 
             <Button
@@ -63,7 +72,7 @@ export function PaymentModal({
               className="w-full"
             >
               <Building2 className="mr-2 h-4 w-4" />
-              Pay with ACH Transfer
+              {t("paymentTenant.filters.method_options.bankTransfer")}
             </Button>
 
             <Button
@@ -72,7 +81,7 @@ export function PaymentModal({
               className="w-full"
             >
               <DollarSign className="mr-2 h-4 w-4" />
-              Pay with Cash
+              {t("paymentTenant.filters.method_options.cash")}
             </Button>
           </div>
         </div>

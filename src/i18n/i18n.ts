@@ -13,6 +13,7 @@ const debugLanguageChanges = (lng: string) => {
 
 const resources = {
   'en-US': { translation: enTranslations },
+  'en': { translation: enTranslations },
   'es': { translation: esTranslations },
 };
 
@@ -21,7 +22,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en-US',
+    fallbackLng: 'en',
     interpolation: {
       escapeValue: false,
     },
@@ -41,13 +42,17 @@ i18n.on('languageChanged', debugLanguageChanges);
 
 // Ensure the initial language is set
 const savedLocale = localStorage.getItem('i18nextLng');
-if (savedLocale && (savedLocale === 'en-US' || savedLocale === 'es')) {
+if (savedLocale && (savedLocale === 'en-US' || savedLocale === 'en' || savedLocale === 'es')) {
   i18n.changeLanguage(savedLocale);
 } else {
   const browserLang = navigator.language;
-  const defaultLocale = browserLang.startsWith('es') ? 'es' : 'en-US';
+  const defaultLocale = browserLang.startsWith('es') ? 'es' : 'en';
   i18n.changeLanguage(defaultLocale);
   localStorage.setItem('i18nextLng', defaultLocale);
 }
+
+// Force English mode for testing
+i18n.changeLanguage('en');
+localStorage.setItem('i18nextLng', 'en');
 
 export default i18n; 

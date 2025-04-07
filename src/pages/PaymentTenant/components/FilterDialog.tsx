@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { PaymentFilters } from "../types";
+import { useTranslation } from "react-i18next";
 
 interface FilterDialogProps {
   onApplyFilters: (filters: PaymentFilters) => void;
@@ -22,6 +23,7 @@ export function FilterDialog({
   onApplyFilters,
   currentFilters,
 }: FilterDialogProps) {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<PaymentFilters>(currentFilters);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -71,7 +73,7 @@ export function FilterDialog({
       <PopoverTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <Filter className="h-4 w-4" />
-          Filters
+          {t("paymentTenant.filters.title")}
           {activeFiltersCount > 0 && (
             <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
               {activeFiltersCount}
@@ -81,7 +83,7 @@ export function FilterDialog({
       </PopoverTrigger>
       <PopoverContent className="w-100 p-0" align="end">
         <div className="flex items-center justify-between border-b px-4 py-3">
-          <h4 className="font-medium">Filters</h4>
+          <h4 className="font-medium">{t("paymentTenant.filters.title")}</h4>
           {activeFiltersCount > 0 && (
             <Button
               variant="ghost"
@@ -90,14 +92,14 @@ export function FilterDialog({
               onClick={handleReset}
             >
               <X className="mr-2 h-3 w-3" />
-              Clear all
+              {t("paymentTenant.filters.reset")}
             </Button>
           )}
         </div>
         <ScrollArea className="h-[425px]">
           <div className="space-y-4 p-4">
             <div className="space-y-2">
-              <Label>Payment Status</Label>
+              <Label>{t("paymentTenant.filters.status")}</Label>
               <RadioGroup
                 value={filters.status || "all"}
                 onValueChange={(value) =>
@@ -107,19 +109,27 @@ export function FilterDialog({
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="all" id="status-all" />
-                  <Label htmlFor="status-all">All Statuses</Label>
+                  <Label htmlFor="status-all">
+                    {t("paymentTenant.filters.status_options.all")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="pending" id="status-pending" />
-                  <Label htmlFor="status-pending">Pending</Label>
+                  <Label htmlFor="status-pending">
+                    {t("paymentTenant.filters.status_options.pending")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="completed" id="status-completed" />
-                  <Label htmlFor="status-completed">Completed</Label>
+                  <Label htmlFor="status-completed">
+                    {t("paymentTenant.filters.status_options.paid")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="failed" id="status-failed" />
-                  <Label htmlFor="status-failed">Failed</Label>
+                  <Label htmlFor="status-failed">
+                    {t("paymentTenant.filters.status_options.failed")}
+                  </Label>
                 </div>
               </RadioGroup>
             </div>
@@ -127,7 +137,7 @@ export function FilterDialog({
             <Separator />
 
             <div className="space-y-2">
-              <Label>Payment Method</Label>
+              <Label>{t("paymentTenant.filters.method")}</Label>
               <RadioGroup
                 value={filters.paymentMethod || "all"}
                 onValueChange={(value) =>
@@ -137,19 +147,27 @@ export function FilterDialog({
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="all" id="method-all" />
-                  <Label htmlFor="method-all">All Methods</Label>
+                  <Label htmlFor="method-all">
+                    {t("paymentTenant.filters.method_options.all")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="credit_card" id="method-credit" />
-                  <Label htmlFor="method-credit">Credit Card</Label>
+                  <Label htmlFor="method-credit">
+                    {t("paymentTenant.filters.method_options.creditCard")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="ach" id="method-ach" />
-                  <Label htmlFor="method-ach">ACH Transfer</Label>
+                  <Label htmlFor="method-ach">
+                    {t("paymentTenant.filters.method_options.bankTransfer")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="cash" id="method-cash" />
-                  <Label htmlFor="method-cash">Cash</Label>
+                  <Label htmlFor="method-cash">
+                    {t("paymentTenant.filters.method_options.cash")}
+                  </Label>
                 </div>
               </RadioGroup>
             </div>
@@ -157,7 +175,7 @@ export function FilterDialog({
             <Separator />
 
             <div className="space-y-2">
-              <Label>Date Range</Label>
+              <Label>{t("paymentTenant.filters.dateRange")}</Label>
               <RadioGroup
                 value={filters.dateRange || "all"}
                 onValueChange={(value) =>
@@ -167,19 +185,27 @@ export function FilterDialog({
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="all" id="date-all" />
-                  <Label htmlFor="date-all">All Time</Label>
+                  <Label htmlFor="date-all">
+                    {t("paymentTenant.filters.date_options.all")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="7days" id="date-7days" />
-                  <Label htmlFor="date-7days">Last 7 Days</Label>
+                  <Label htmlFor="date-7days">
+                    {t("paymentTenant.filters.date_options.7days")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="30days" id="date-30days" />
-                  <Label htmlFor="date-30days">Last 30 Days</Label>
+                  <Label htmlFor="date-30days">
+                    {t("paymentTenant.filters.date_options.30days")}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="90days" id="date-90days" />
-                  <Label htmlFor="date-90days">Last 90 Days</Label>
+                  <Label htmlFor="date-90days">
+                    {t("paymentTenant.filters.date_options.90days")}
+                  </Label>
                 </div>
               </RadioGroup>
             </div>
@@ -187,11 +213,11 @@ export function FilterDialog({
             <Separator />
 
             <div className="space-y-2">
-              <Label>Amount Range</Label>
+              <Label>{t("paymentTenant.filters.amountRange")}</Label>
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div className="space-y-2">
                   <Label htmlFor="min-amount" className="text-xs">
-                    Minimum ($)
+                    {t("paymentTenant.filters.minAmount")}
                   </Label>
                   <Input
                     id="min-amount"
@@ -200,12 +226,12 @@ export function FilterDialog({
                     onChange={(e) =>
                       setFilters({ ...filters, minAmount: e.target.value })
                     }
-                    placeholder="Min amount"
+                    placeholder={t("paymentTenant.filters.minAmount")}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="max-amount" className="text-xs">
-                    Maximum ($)
+                    {t("paymentTenant.filters.maxAmount")}
                   </Label>
                   <Input
                     id="max-amount"
@@ -214,7 +240,7 @@ export function FilterDialog({
                     onChange={(e) =>
                       setFilters({ ...filters, maxAmount: e.target.value })
                     }
-                    placeholder="Max amount"
+                    placeholder={t("paymentTenant.filters.maxAmount")}
                   />
                 </div>
               </div>
@@ -223,7 +249,7 @@ export function FilterDialog({
         </ScrollArea>
         <div className="border-t p-4">
           <Button className="w-full" onClick={handleApply}>
-            Apply Filters
+            {t("paymentTenant.filters.apply")}
           </Button>
         </div>
       </PopoverContent>

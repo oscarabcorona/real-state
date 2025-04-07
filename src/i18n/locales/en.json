@@ -724,5 +724,99 @@
         "markAllAsRead": "Mark all as read",
         "viewAll": "View all notifications",
         "title": "Notifications"
+    },
+    "paymentTenant": {
+        "title": "Payment Management",
+        "subtitle": "View and manage all tenant payments",
+        "noPayments": "No payments found.",
+        "noMatchingPayments": "No matching payment records found.",
+        "filters": {
+            "title": "Filter Payments",
+            "status": "Payment Status",
+            "method": "Payment Method",
+            "dateRange": "Date Range",
+            "amountRange": "Amount Range",
+            "status_options": {
+                "all": "All Statuses",
+                "paid": "Paid",
+                "pending": "Pending",
+                "overdue": "Overdue",
+                "failed": "Failed"
+            },
+            "method_options": {
+                "all": "All Methods",
+                "creditCard": "Credit Card",
+                "bankTransfer": "Bank Transfer",
+                "cash": "Cash",
+                "check": "Check",
+                "other": "Other"
+            },
+            "date_options": {
+                "all": "All Time",
+                "7days": "Last 7 Days",
+                "30days": "Last 30 Days",
+                "90days": "Last 90 Days"
+            },
+            "startDate": "Start Date",
+            "endDate": "End Date",
+            "minAmount": "Min Amount",
+            "maxAmount": "Max Amount",
+            "apply": "Apply Filters",
+            "reset": "Reset Filters"
+        },
+        "table": {
+            "invoice": "Invoice",
+            "property": "Property",
+            "amount": "Amount",
+            "date": "Date",
+            "status": "Status",
+            "statusLabels": {
+                "paid": "Paid",
+                "pending": "Pending",
+                "overdue": "Overdue",
+                "failed": "Failed",
+                "completed": "Completed"
+            },
+            "method": "Method",
+            "actions": "Actions",
+            "actionLabels": {
+                "view": "View Details",
+                "download": "Download Invoice",
+                "invoice": "Invoice",
+                "receipt": "Receipt",
+                "pay": "Make Payment",
+                "viewDetails": "View Details"
+            }
+        },
+        "stats": {
+            "totalPaid": "Total Paid",
+            "pending": "Pending",
+            "failed": "Failed",
+            "fromLastMonth": "from last month",
+            "totalCompletedPayments": "Total completed payments",
+            "awaitingPayment": "Awaiting payment",
+            "failedTransactions": "Failed transactions"
+        },
+        "actions": {
+            "viewDetails": "View Details",
+            "downloadInvoice": "Download Invoice",
+            "makePayment": "Make Payment"
+        },
+        "modal": {
+            "paymentDetails": "Payment Details",
+            "propertyDetails": "Property Details",
+            "paymentDate": "Payment Date",
+            "dueDate": "Due Date",
+            "paymentMethod": "Payment Method",
+            "paymentReference": "Payment Reference",
+            "paymentDescription": "Payment Description",
+            "close": "Close"
+        },
+        "pagination": {
+            "previous": "Previous",
+            "next": "Next",
+            "showing": "Showing {{start}} to {{end}} of {{total}} entries",
+            "itemsPerPage": "Items per page:"
+        }
     }
 }

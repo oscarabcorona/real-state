@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { FilterDialog } from "./FilterDialog";
 import { PaymentFilters as PaymentFiltersType } from "../types";
+import { useTranslation } from "react-i18next";
 
 type PaymentFiltersProps = {
   filters: PaymentFiltersType;
@@ -11,6 +12,8 @@ export function PaymentFilters({
   filters,
   onFilterChange,
 }: PaymentFiltersProps) {
+  const { t } = useTranslation();
+
   const clearFilters = () => {
     onFilterChange({
       status: "all",
@@ -33,11 +36,11 @@ export function PaymentFilters({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Payments</h2>
+        <h2 className="text-lg font-semibold">{t("paymentTenant.title")}</h2>
         <div className="flex items-center gap-2">
           {filtersApplied && (
             <Button variant="ghost" onClick={clearFilters}>
-              Clear filters
+              {t("paymentTenant.filters.clearAll")}
             </Button>
           )}
           <FilterDialog

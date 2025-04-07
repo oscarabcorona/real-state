@@ -1,4 +1,5 @@
 import { Check, Clock, XCircle, TrendingUp, TrendingDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PaymentStatsProps {
   totalPaid: number;
@@ -17,6 +18,8 @@ export function PaymentStats({
   pendingChange = 0,
   failedChange = 0,
 }: PaymentStatsProps) {
+  const { t } = useTranslation();
+
   const formatPercentage = (value: number) => {
     const absValue = Math.abs(value);
     return `${value >= 0 ? "+" : "-"}${absValue}%`;
@@ -26,7 +29,9 @@ export function PaymentStats({
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <div className="rounded-lg border bg-card p-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-medium">Total Paid</div>
+          <div className="text-sm font-medium">
+            {t("paymentTenant.stats.totalPaid")}
+          </div>
           <Check className="h-4 w-4 text-green-500" />
         </div>
         <div className="mt-3">
@@ -53,18 +58,20 @@ export function PaymentStats({
               {formatPercentage(totalPaidChange)}
             </span>
             <span className="text-sm text-muted-foreground">
-              from last month
+              {t("paymentTenant.stats.fromLastMonth")}
             </span>
           </div>
           <div className="text-sm text-muted-foreground">
-            Total completed payments
+            {t("paymentTenant.stats.totalCompletedPayments")}
           </div>
         </div>
       </div>
 
       <div className="rounded-lg border bg-card p-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-medium">Pending</div>
+          <div className="text-sm font-medium">
+            {t("paymentTenant.stats.pending")}
+          </div>
           <Clock className="h-4 w-4 text-yellow-500" />
         </div>
         <div className="mt-3">
@@ -79,16 +86,20 @@ export function PaymentStats({
               {formatPercentage(pendingChange)}
             </span>
             <span className="text-sm text-muted-foreground">
-              from last month
+              {t("paymentTenant.stats.fromLastMonth")}
             </span>
           </div>
-          <div className="text-sm text-muted-foreground">Awaiting payment</div>
+          <div className="text-sm text-muted-foreground">
+            {t("paymentTenant.stats.awaitingPayment")}
+          </div>
         </div>
       </div>
 
       <div className="rounded-lg border bg-card p-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm font-medium">Failed</div>
+          <div className="text-sm font-medium">
+            {t("paymentTenant.stats.failed")}
+          </div>
           <XCircle className="h-4 w-4 text-destructive" />
         </div>
         <div className="mt-3">
@@ -109,11 +120,11 @@ export function PaymentStats({
               {formatPercentage(failedChange)}
             </span>
             <span className="text-sm text-muted-foreground">
-              from last month
+              {t("paymentTenant.stats.fromLastMonth")}
             </span>
           </div>
           <div className="text-sm text-muted-foreground">
-            Failed transactions
+            {t("paymentTenant.stats.failedTransactions")}
           </div>
         </div>
       </div>

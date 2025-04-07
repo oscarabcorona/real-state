@@ -23,22 +23,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Payment } from "../types";
 import { Card } from "@/components/ui/card";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+import { useTranslation } from "react-i18next";
+import { PaymentPagination } from "./PaymentPagination";
 
 type PaymentsTableProps = {
   payments: Payment[];
@@ -63,6 +50,8 @@ export function PaymentsTable({
   pageSize,
   onPageSizeChange,
 }: PaymentsTableProps) {
+  const { t } = useTranslation();
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
@@ -89,131 +78,6 @@ export function PaymentsTable({
     }
   };
 
-  const renderPagination = () => {
-    if (totalPages <= 1 && payments.length <= 5) return null;
-
-    const pages = [];
-    const maxPagesToShow = 5;
-
-    // Always show first page, last page, and pages around current page
-    let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
-    const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
-
-    // Adjust if we're near the end
-    if (endPage - startPage + 1 < maxPagesToShow) {
-      startPage = Math.max(1, endPage - maxPagesToShow + 1);
-    }
-
-    // Add pages to array
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    return (
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 items-center">
-        {/* Left column - Items per page */}
-        <div className="flex items-center space-x-2 justify-start mb-4 sm:mb-0">
-          <span className="text-sm text-muted-foreground">Items per page:</span>
-          <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => onPageSizeChange(parseInt(value, 10))}
-          >
-            <SelectTrigger className="h-8 w-16">
-              <SelectValue placeholder={pageSize.toString()} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="5">5</SelectItem>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Center column - Pagination */}
-        <div className="flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-                  className={
-                    currentPage === 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-
-              {startPage > 1 && (
-                <>
-                  <PaginationItem>
-                    <PaginationLink
-                      onClick={() => onPageChange(1)}
-                      isActive={currentPage === 1}
-                    >
-                      1
-                    </PaginationLink>
-                  </PaginationItem>
-                  {startPage > 2 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )}
-                </>
-              )}
-
-              {pages.map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    onClick={() => onPageChange(page)}
-                    isActive={currentPage === page}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-
-              {endPage < totalPages && (
-                <>
-                  {endPage < totalPages - 1 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )}
-                  <PaginationItem>
-                    <PaginationLink
-                      onClick={() => onPageChange(totalPages)}
-                      isActive={currentPage === totalPages}
-                    >
-                      {totalPages}
-                    </PaginationLink>
-                  </PaginationItem>
-                </>
-              )}
-
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() =>
-                    onPageChange(Math.min(totalPages, currentPage + 1))
-                  }
-                  className={
-                    currentPage === totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-
-        {/* Right column - Empty (for balance) */}
-        <div className="hidden sm:block"></div>
-      </div>
-    );
-  };
-
   if (loading) {
     return (
       <div className="space-y-3">
@@ -228,9 +92,11 @@ export function PaymentsTable({
     return (
       <div className="text-center py-12">
         <DollarSign className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h3 className="mt-2 text-lg font-medium">No payments found</h3>
+        <h3 className="mt-2 text-lg font-medium">
+          {t("paymentTenant.noPayments")}
+        </h3>
         <p className="text-sm text-muted-foreground">
-          No payment records match your current filters.
+          {t("paymentTenant.noMatchingPaymentsDesc")}
         </p>
       </div>
     );
@@ -289,7 +155,7 @@ export function PaymentsTable({
               {payment.status === "pending" && (
                 <Button size="sm" onClick={() => onPaymentClick(payment)}>
                   <CreditCard className="h-4 w-4 mr-1" />
-                  Pay Now
+                  {t("paymentTenant.table.actionLabels.pay")}
                 </Button>
               )}
               {payment.invoice_file_path && (
@@ -299,7 +165,7 @@ export function PaymentsTable({
                   onClick={() => onDownloadInvoice(payment)}
                 >
                   <FileText className="h-4 w-4 mr-1" />
-                  Invoice
+                  {t("paymentTenant.table.actionLabels.invoice")}
                 </Button>
               )}
               {payment.receipt_file_path && payment.status === "completed" && (
@@ -309,7 +175,7 @@ export function PaymentsTable({
                   onClick={() => onDownloadInvoice(payment)}
                 >
                   <Download className="h-4 w-4 mr-1" />
-                  Receipt
+                  {t("paymentTenant.table.actionLabels.receipt")}
                 </Button>
               )}
             </div>
@@ -327,14 +193,22 @@ export function PaymentsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Invoice #</TableHead>
-              <TableHead className="hidden lg:table-cell">Property</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead className="hidden md:table-cell">Method</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden xl:table-cell">Created By</TableHead>
-              <TableHead className="hidden lg:table-cell">Date</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>{t("paymentTenant.table.invoice")}</TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {t("paymentTenant.table.property")}
+              </TableHead>
+              <TableHead>{t("paymentTenant.table.amount")}</TableHead>
+              <TableHead className="hidden md:table-cell">
+                {t("paymentTenant.table.method")}
+              </TableHead>
+              <TableHead>{t("paymentTenant.table.status")}</TableHead>
+              <TableHead className="hidden xl:table-cell">
+                {t("paymentTenant.table.createdBy")}
+              </TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {t("paymentTenant.table.date")}
+              </TableHead>
+              <TableHead>{t("paymentTenant.table.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -354,7 +228,11 @@ export function PaymentsTable({
                   <Badge variant={getStatusVariant(payment.status)}>
                     <span className="flex items-center gap-1">
                       {getStatusIcon(payment.status)}
-                      <span className="capitalize">{payment.status}</span>
+                      <span>
+                        {t(
+                          `paymentTenant.table.statusLabels.${payment.status}`
+                        )}
+                      </span>
                     </span>
                   </Badge>
                 </TableCell>
@@ -369,7 +247,9 @@ export function PaymentsTable({
                     {payment.status === "pending" && (
                       <Button size="sm" onClick={() => onPaymentClick(payment)}>
                         <CreditCard className="h-4 w-4 mr-1" />
-                        <span className="hidden md:inline">Pay Now</span>
+                        <span className="hidden md:inline">
+                          {t("paymentTenant.table.actionLabels.pay")}
+                        </span>
                       </Button>
                     )}
                     {payment.invoice_file_path && (
@@ -379,7 +259,9 @@ export function PaymentsTable({
                         onClick={() => onDownloadInvoice(payment)}
                       >
                         <FileText className="h-4 w-4 md:mr-1" />
-                        <span className="hidden md:inline">Invoice</span>
+                        <span className="hidden md:inline">
+                          {t("paymentTenant.table.actionLabels.invoice")}
+                        </span>
                       </Button>
                     )}
                     {payment.receipt_file_path &&
@@ -390,7 +272,9 @@ export function PaymentsTable({
                           onClick={() => onDownloadInvoice(payment)}
                         >
                           <Download className="h-4 w-4 md:mr-1" />
-                          <span className="hidden md:inline">Receipt</span>
+                          <span className="hidden md:inline">
+                            {t("paymentTenant.table.actionLabels.receipt")}
+                          </span>
                         </Button>
                       )}
                   </div>
@@ -401,7 +285,16 @@ export function PaymentsTable({
         </Table>
       </div>
 
-      {renderPagination()}
+      <PaymentPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+        itemsPerPage={pageSize}
+        totalItems={totalPages * pageSize} // This is an approximation, ideally you would pass the exact total items count
+        payments={payments}
+        pageSize={pageSize}
+        onPageSizeChange={onPageSizeChange}
+      />
     </>
   );
 }

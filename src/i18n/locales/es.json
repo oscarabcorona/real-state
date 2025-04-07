@@ -711,5 +711,86 @@
         "markAllAsRead": "Marcar todas como leídas",
         "viewAll": "Ver todas las notificaciones",
         "title": "Notificaciones"
+    },
+    "paymentTenant": {
+        "title": "Pagos",
+        "subtitle": "Administra y rastrea tus pagos",
+        "noPayments": "No se encontraron pagos",
+        "noPaymentsDesc": "Aún no tienes pagos en el sistema.",
+        "noMatchingPayments": "No hay pagos coincidentes",
+        "noMatchingPaymentsDesc": "No hay registros de pago que coincidan con tus filtros actuales.",
+        "filters": {
+            "title": "Filtrar Pagos",
+            "status": "Estado de Pago",
+            "method": "Método de Pago",
+            "dateRange": "Rango de Fechas",
+            "amountRange": "Rango de Monto",
+            "status_options": {
+                "all": "Todos los Estados",
+                "paid": "Pagado",
+                "pending": "Pendiente",
+                "overdue": "Vencido",
+                "failed": "Fallido"
+            },
+            "method_options": {
+                "all": "Todos los métodos",
+                "creditCard": "Tarjeta de crédito",
+                "bankTransfer": "Transferencia bancaria",
+                "cash": "Efectivo",
+                "check": "Cheque",
+                "other": "Otro"
+            },
+            "date_options": {
+                "all": "Todo el tiempo",
+                "7days": "Últimos 7 días",
+                "30days": "Últimos 30 días",
+                "90days": "Últimos 90 días"
+            },
+            "startDate": "Fecha de Inicio",
+            "endDate": "Fecha Final",
+            "minAmount": "Monto Mínimo",
+            "maxAmount": "Monto Máximo",
+            "apply": "Aplicar Filtros",
+            "reset": "Reiniciar Filtros"
+        },
+        "stats": {
+            "totalPaid": "Total Pagado",
+            "pending": "Pendiente",
+            "failed": "Fallido",
+            "fromLastMonth": "desde el mes pasado",
+            "totalCompletedPayments": "Total de pagos completados",
+            "awaitingPayment": "Esperando pago",
+            "failedTransactions": "Transacciones fallidas"
+        },
+        "table": {
+            "property": "Propiedad",
+            "amount": "Monto",
+            "date": "Fecha",
+            "status": "Estado",
+            "statusLabels": {
+                "paid": "Pagado",
+                "pending": "Pendiente",
+                "overdue": "Vencido",
+                "failed": "Fallido",
+                "completed": "Completado"
+            },
+            "method": "Método",
+            "invoice": "Factura #",
+            "createdBy": "Creado Por",
+            "actions": "Acciones",
+            "actionLabels": {
+                "view": "Ver Detalles",
+                "download": "Descargar Factura",
+                "invoice": "Factura",
+                "receipt": "Recibo",
+                "pay": "Pagar Ahora"
+            }
+        },
+        "pagination": {
+            "previous": "Anterior",
+            "next": "Siguiente",
+            "showing": "Mostrando {{start}} a {{end}} de {{total}} entradas",
+            "itemsPerPage": "Elementos por página:"
+        }
     }
 }

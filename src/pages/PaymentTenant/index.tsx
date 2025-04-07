@@ -11,8 +11,10 @@ import { PaymentModal } from "./components/PaymentModal";
 import { PaymentsTable } from "./components/PaymentsTable";
 import { PaymentStats } from "./components/PaymentStats";
 import { Payment } from "./types";
+import { useTranslation } from "react-i18next";
 
 export function PaymentTenant() {
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const [payments, setPayments] = useOptimistic<Payment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,13 +144,12 @@ export function PaymentTenant() {
 
   return (
     <div className="space-y-6">
-      <PaymentFilters filters={filters} onFilterChange={setFilters} />
-
       <PaymentStats
         totalPaid={stats.totalPaid}
         pending={stats.pending}
         failed={stats.failed}
       />
+      <PaymentFilters filters={filters} onFilterChange={setFilters} />
 
       <div className="rounded-xl border bg-background">
         <div className="p-6">
@@ -167,9 +168,11 @@ export function PaymentTenant() {
           ) : (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="text-4xl text-muted-foreground">$</div>
-              <h3 className="mt-4 text-lg font-medium">No payments found</h3>
+              <h3 className="mt-4 text-lg font-medium">
+                {t("paymentTenant.noPayments")}
+              </h3>
               <p className="text-sm text-muted-foreground">
-                No payment records match your current filters.
+                {t("paymentTenant.noMatchingPaymentsDesc")}
               </p>
             </div>
           )}
