@@ -1,20 +1,11 @@
 import { useState, useEffect } from "react";
-import {
-  Plus,
-  Building2,
-  Filter,
-  Grid3X3,
-  List,
-  Loader2,
-  Search,
-} from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import { Property, Tenant } from "./types";
 import { PropertyCard } from "./components/PropertyCard";
-import { EmptyState } from "./components/EmptyState";
 import { PropertyModal } from "./components/PropertyModal";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -22,21 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   fetchProperties,
   fetchTenants,
   deleteProperty,
   togglePropertyPublishStatus,
 } from "@/services/propertyService";
+import { LoadingSkeleton } from "./components/LoadingSkeleton";
+import { EmptyState } from "./components/EmptyState";
 
 export function Properties() {
   const { user } = useAuthStore();
@@ -46,8 +31,8 @@ export function Properties() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState<string>("newest");
 
   useEffect(() => {
     if (user) {
@@ -116,36 +101,71 @@ export function Properties() {
     setSearchQuery("");
   };
 
-  const filteredProperties = properties.filter(
-    (property) =>
-      property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.city.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProperties = properties
+    .filter(
+      (property) =>
+        property.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        property.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        property.city.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      switch (sortOption) {
+        case "price-low-high":
+          return (a.price || 0) - (b.price || 0);
+        case "price-high-low":
+          return (b.price || 0) - (a.price || 0);
+        case "bedrooms":
+          return (b.bedrooms || 0) - (a.bedrooms || 0);
+        default:
+          return (
+            new Date(b.created_at || new Date()).getTime() -
+            new Date(a.created_at || new Date()).getTime()
+          );
+      }
+    });
 
   return (
-    <div className="w-full h-full p-4 md:p-6">
-      <Card className="h-full border-none shadow-none">
-        <CardHeader className="flex flex-row items-center justify-between px-6 py-4">
-          <div className="flex items-center space-x-2">
+    <div className="min-h-screen bg-background">
+      <div className="container py-6">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
             <Building2 className="h-6 w-6 text-primary" />
-            <CardTitle>Properties</CardTitle>
+            <h1 className="text-2xl font-semibold">Properties</h1>
             <Badge variant="outline" className="ml-2">
               {properties.length} total
             </Badge>
           </div>
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-primary hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Property
-          </Button>
-        </CardHeader>
-        <Separator />
-        <div className="px-6 py-3 flex flex-col sm:flex-row gap-4 bg-muted/20">
+          <div className="flex items-center gap-3">
+            <Select
+              value={sortOption}
+              onValueChange={(value) => setSortOption(value)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="price-low-high">
+                  Price: Low to High
+                </SelectItem>
+                <SelectItem value="price-high-low">
+                  Price: High to Low
+                </SelectItem>
+                <SelectItem value="bedrooms">Most Bedrooms</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Property
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search properties..."
               className="pl-9"
@@ -153,92 +173,47 @@ export function Properties() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            <Select value={selectedTenant} onValueChange={setSelectedTenant}>
-              <SelectTrigger className="w-[180px]">
-                <div className="flex items-center">
-                  <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
-                  <SelectValue placeholder="All Tenants" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Tenants</SelectItem>
-                {tenants.map((tenant) => (
-                  <SelectItem key={tenant.id} value={tenant.id}>
-                    {tenant.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>Price: Low to High</DropdownMenuItem>
-                <DropdownMenuItem>Price: High to Low</DropdownMenuItem>
-                <DropdownMenuItem>Newest First</DropdownMenuItem>
-                <DropdownMenuItem>Published Only</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <div className="flex items-center border rounded-md overflow-hidden">
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="icon"
-                className="rounded-none h-9 w-9"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="icon"
-                className="rounded-none h-9 w-9"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-        <CardContent className="p-6 overflow-auto h-[calc(100vh-13rem)]">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <span className="ml-3 text-muted-foreground">
-                Loading properties...
-              </span>
-            </div>
-          ) : filteredProperties.length === 0 ? (
-            <EmptyState
-              onAddProperty={() => setIsModalOpen(true)}
-              isFiltered={searchQuery !== "" || selectedTenant !== "all"}
-              onClearFilters={handleClearFilters}
-            />
-          ) : (
-            <div
-              className={
-                viewMode === "grid"
-                  ? "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
-                  : "flex flex-col gap-4"
-              }
-            >
-              {filteredProperties.map((property) => (
-                <PropertyCard
-                  key={property.id}
-                  property={property}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onPublish={handlePublish}
-                  viewMode={viewMode}
-                />
+          <Select value={selectedTenant} onValueChange={setSelectedTenant}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Tenants" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Tenants</SelectItem>
+              {tenants.map((tenant) => (
+                <SelectItem key={tenant.id} value={tenant.id}>
+                  {tenant.name}
+                </SelectItem>
               ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <LoadingSkeleton key={i} />
+            ))}
+          </div>
+        ) : filteredProperties.length === 0 ? (
+          <EmptyState
+            onAddProperty={() => setIsModalOpen(true)}
+            isFiltered={searchQuery !== "" || selectedTenant !== "all"}
+            onClearFilters={handleClearFilters}
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProperties.map((property) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onPublish={handlePublish}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {isModalOpen && (
         <PropertyModal
@@ -253,3 +228,5 @@ export function Properties() {
     </div>
   );
 }
+
+export default Properties;

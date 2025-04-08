@@ -1,12 +1,3 @@
-/*
-  # Seed Properties with Example Data
-  
-  1. Changes
-    - Insert 20 diverse properties with realistic data
-    - Include various property types, locations, and amenities
-    - Set appropriate pricing and availability dates
-*/
-
 DO $$
 DECLARE
   current_user_id uuid;
