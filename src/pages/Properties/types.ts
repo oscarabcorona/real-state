@@ -53,6 +53,7 @@ export interface Property {
       name: string;
     }
   }[];
+  status: "published" | "draft"; // Add this field
 }
 
 // Define the PropertyFormSchema with zod to match database structure

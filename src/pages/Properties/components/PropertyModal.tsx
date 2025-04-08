@@ -28,21 +28,22 @@ import { MediaTab } from "./modal-tabs/MediaTab";
 import { PoliciesTab } from "./modal-tabs/PoliciesTab";
 import { PublishingTab } from "./modal-tabs/PublishingTab";
 
-interface PropertyModalProps {
+export interface PropertyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userId: string;
-  editingProperty: Property | null;
-  tenants: Tenant[];
-  onSuccess: () => void;
+  editingProperty?: Property | null;
+  userId?: string;
+  tenants?: Tenant[];
+  onSave: () => void;
 }
 
 export function PropertyModal({
   isOpen,
   onClose,
-  userId,
-  editingProperty,
-  onSuccess,
+  userId = "",
+  editingProperty = null,
+  tenants = [],
+  onSave,
 }: PropertyModalProps) {
   const [activeTab, setActiveTab] = React.useState("details");
   const [loading, setLoading] = React.useState(false);
@@ -126,7 +127,7 @@ export function PropertyModal({
         } successfully.`,
       });
 
-      onSuccess();
+      onSave();
       handleClose();
     } catch (error) {
       console.error("Error saving property:", error);

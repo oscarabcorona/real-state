@@ -37,3 +37,16 @@ export function wrapPromise<T>(promise: Promise<T>) {
     },
   };
 }
+
+export function formatPrice(price: number | string | undefined): string {
+  if (price === undefined) return "$0";
+  
+  const numericPrice = typeof price === "string" ? parseFloat(price) : price;
+  
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(numericPrice);
+}

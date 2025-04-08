@@ -18,36 +18,25 @@ export async function fetchTenants(): Promise<Tenant[]> {
   }
 }
 
-export async function fetchProperties(userId: string, selectedTenant: string = ""): Promise<Property[]> {
+export const fetchProperties = async (): Promise<Property[]> => {
   try {
-    let query = supabase
+    const { data, error } = await supabase
       .from("properties")
-      .select(
-        `
-        *,
-        property_leases (
-          tenant:tenant_id (
-            name
-          )
-        )
-      `
-      )
-      .eq("user_id", userId);
-
-    if (selectedTenant && selectedTenant !== "all") {
-      query = query.eq("property_leases.tenant_id", selectedTenant);
-    }
-
-    const { data, error } = await query.order("created_at", {
-      ascending: false,
-    });
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data || [];
+
+    // Map the published field to status
+    return data.map((property) => ({
+      ...property,
+      status: property.published ? "published" : "draft",
+    }));
   } catch (error) {
-    return handleServiceError(error, "fetchProperties");
+    console.error("Error fetching properties:", error);
+    throw error;
   }
-}
+};
 
 export async function saveProperty(
   userId: string, 
