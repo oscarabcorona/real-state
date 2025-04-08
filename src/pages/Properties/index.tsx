@@ -1,57 +1,67 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Building2 } from "lucide-react";
-import { useAuthStore } from "../../store/authStore";
-import { Property, Tenant } from "./types";
 import { Badge } from "@/components/ui/badge";
-import {
-  fetchProperties,
-  fetchTenants,
-  deleteProperty,
-  togglePropertyPublishStatus,
-} from "@/services/propertyService";
+import { DataTable } from "./components/table/data-table";
+import { columns } from "./components/table/columns";
 import { PropertyModal } from "./components/PropertyModal";
-import { DataTable } from "./components/data-table";
-import { columns } from "./components/columns";
+import { PROPERTIES_REFRESH_EVENT } from "./components/table/data-table-row-actions";
+import { useProperties } from "./hooks/useProperties";
+import { Property } from "./types";
 
+/**
+ * Properties page component for managing real estate properties
+ * Displays a data table with properties and allows adding/editing properties
+ */
 export function Properties() {
-  const { user } = useAuthStore();
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [tenants, setTenants] = useState<Tenant[]>([]);
+  // Property management state using our custom hook
+  const { properties, tenants, isLoading, error, loadProperties } =
+    useProperties({
+      autoLoad: true,
+      loadTenants: true,
+    });
+
+  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(
+    null
+  );
 
-  // Load tenants when component mounts
-  useEffect(() => {
-    if (user) {
-      loadTenants();
-    }
-  }, [user]);
+  // Memoize columns to prevent unnecessary re-renders
+  const tableColumns = useMemo(() => columns, []);
 
-  // Load properties when component mounts or a tenant is selected
+  // Handle modal close
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false);
+    setSelectedProperty(null);
+  }, []);
+
+  // Handle property edit
+  const handleEditProperty = useCallback((property: Property) => {
+    setSelectedProperty(property);
+    setIsModalOpen(true);
+  }, []);
+
+  // Handle modal save
+  const handleModalSave = useCallback(async () => {
+    await loadProperties();
+    handleModalClose();
+  }, [loadProperties, handleModalClose]);
+
+  // Listen for property refresh events
   useEffect(() => {
-    if (user) {
+    // When a property refresh event is triggered, reload properties
+    const handleRefresh = () => {
       loadProperties();
-    }
-  }, [user]);
+    };
 
-  // Load tenants from API
-  const loadTenants = async () => {
-    try {
-      const fetchedTenants = await fetchTenants();
-      setTenants(fetchedTenants);
-    } catch (error) {
-      console.error("Error loading tenants:", error);
-    }
-  };
+    // Add event listener
+    window.addEventListener(PROPERTIES_REFRESH_EVENT, handleRefresh);
 
-  // Load properties from API
-  const loadProperties = async () => {
-    try {
-      const fetchedProperties = await fetchProperties();
-      setProperties(fetchedProperties);
-    } catch (error) {
-      console.error("Error loading properties:", error);
-    }
-  };
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener(PROPERTIES_REFRESH_EVENT, handleRefresh);
+    };
+  }, [loadProperties]);
 
   return (
     <div className="flex-1">
@@ -71,17 +81,27 @@ export function Properties() {
           </Badge>
         </div>
 
+        {error && (
+          <div className="my-4 p-4 bg-destructive/10 text-destructive rounded-md">
+            {error}
+          </div>
+        )}
+
         <DataTable
-          columns={columns}
+          columns={tableColumns}
           data={properties}
           setIsModalOpen={setIsModalOpen}
+          isLoading={isLoading}
+          onEditProperty={handleEditProperty}
         />
 
         {/* Property Modal */}
         <PropertyModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={loadProperties}
+          onClose={handleModalClose}
+          onSave={handleModalSave}
+          tenants={tenants}
+          editingProperty={selectedProperty}
         />
       </div>
     </div>

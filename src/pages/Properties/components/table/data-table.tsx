@@ -25,17 +25,24 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { Loader2 } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   setIsModalOpen: (value: boolean) => void;
+  isLoading?: boolean;
+  onRefresh?: () => void;
+  onEditProperty?: (property: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   setIsModalOpen,
+  isLoading = false,
+  onRefresh,
+  onEditProperty,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -65,12 +72,24 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    meta: {
+      onRefresh,
+      onEditProperty,
+    },
   });
 
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table} setIsModalOpen={setIsModalOpen} />
-      <div className="rounded-md border">
+      <div className="rounded-md border relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <span className="ml-2 text-sm text-muted-foreground">
+              Loading properties...
+            </span>
+          </div>
+        )}
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -113,7 +132,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {isLoading ? "Loading..." : "No properties found."}
                 </TableCell>
               </TableRow>
             )}

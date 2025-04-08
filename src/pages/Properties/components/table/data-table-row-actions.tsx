@@ -17,12 +17,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { Property } from "../types";
+import { Property } from "../../types";
 import { useNavigate } from "react-router-dom";
 import {
   deleteProperty,
   togglePropertyPublishStatus,
 } from "@/services/propertyService";
+
+// Custom event to refresh properties
+export const PROPERTIES_REFRESH_EVENT = "properties:refresh";
+
+// Extended Row type that includes the table property
+interface ExtendedRow<TData> extends Row<TData> {
+  table: {
+    options: {
+      meta?: {
+        onEditProperty?: (property: Property) => void;
+      };
+    };
+  };
+}
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -33,6 +47,14 @@ export function DataTableRowActions<TData>({
 }: DataTableRowActionsProps<TData>) {
   const property = row.original as Property;
   const navigate = useNavigate();
+  const onEditProperty = (row as ExtendedRow<TData>).table.options.meta
+    ?.onEditProperty;
+
+  const triggerRefresh = () => {
+    // Dispatch a custom event to trigger a refresh
+    const refreshEvent = new CustomEvent(PROPERTIES_REFRESH_EVENT);
+    window.dispatchEvent(refreshEvent);
+  };
 
   const handleToggleStatus = async () => {
     try {
@@ -47,6 +69,9 @@ export function DataTableRowActions<TData>({
           description: "The property has been published successfully.",
         });
       }
+
+      // Trigger a refresh
+      triggerRefresh();
     } catch (error: unknown) {
       console.error("Error toggling property status:", error);
       toast.error("Error", {
@@ -61,6 +86,9 @@ export function DataTableRowActions<TData>({
       toast.success("Property deleted", {
         description: "The property has been deleted successfully.",
       });
+
+      // Trigger a refresh
+      triggerRefresh();
     } catch (error: unknown) {
       console.error("Error deleting property:", error);
       toast.error("Error", {
@@ -88,7 +116,13 @@ export function DataTableRowActions<TData>({
           View
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => navigate(`/properties/${property.id}/edit`)}
+          onClick={() => {
+            if (onEditProperty) {
+              onEditProperty(property);
+            } else {
+              navigate(`/properties/${property.id}/edit`);
+            }
+          }}
         >
           <Pencil className="mr-2 h-4 w-4" />
           Edit
