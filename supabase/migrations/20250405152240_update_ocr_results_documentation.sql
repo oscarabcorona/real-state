@@ -1,6 +1,3 @@
--- Add migration comment
-COMMENT ON MIGRATION IS 'Update OCR results documentation to reflect typed structure for all document types';
-
 -- Update OCR results column comment to document the expected structure based on document type
 COMMENT ON COLUMN documents.ocr_results IS 'Stores the OCR analysis results in JSON format with different structures based on document type:
 
@@ -88,150 +85,67 @@ COMMENT ON COLUMN documents.ocr_results IS 'Stores the OCR analysis results in J
    - letterhead_verified: Boolean indicating if letterhead is verified
    - signature_verified: Boolean indicating if signature is verified';
 
--- Add functions to validate OCR result structures if needed
-DO $$
+-- Drop existing function if it exists
+DROP FUNCTION IF EXISTS validate_ocr_result(jsonb, text);
+
+-- Create the validation function
+CREATE OR REPLACE FUNCTION validate_ocr_result(
+  p_ocr_results jsonb,
+  p_document_type text
+) RETURNS boolean AS $$
+DECLARE
+  v_is_valid boolean := true;
+  v_required_fields text[];
 BEGIN
-  -- Check if the function already exists
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_proc p
-    JOIN pg_namespace n ON p.pronamespace = n.oid
-    WHERE n.nspname = 'public' 
-    AND p.proname = 'validate_ocr_result'
-  ) THEN
-    -- Create a function to validate OCR result structure
-    CREATE OR REPLACE FUNCTION validate_ocr_result(result JSONB, doc_type TEXT)
-    RETURNS BOOLEAN AS $$
-    BEGIN
-      -- Basic validation - ensure result is not null
-      IF result IS NULL THEN
-        RETURN FALSE;
-      END IF;
-      
-      -- Verify it has the basic required fields
-      IF NOT (result ? 'document_type') THEN
-        RETURN FALSE;
-      END IF;
-      
-      -- Document-specific validation
-      CASE doc_type
-        WHEN 'government_id' THEN
-          -- ID document should have these fields
-          RETURN (
-            result ? 'full_name' OR 
-            result ? 'date_of_birth' OR
-            result ? 'document_number'
-          );
-        WHEN 'credit_report' THEN
-          -- Credit report should have these fields
-          RETURN (
-            result ? 'credit_score' OR
-            result ? 'report_date' OR
-            result ? 'credit_utilization'
-          );
-        WHEN 'income_verification' THEN
-          -- Income verification should have these fields
-          RETURN (
-            result ? 'employer_name' OR
-            result ? 'salary'
-          );
-        WHEN 'criminal_report' THEN
-          -- Criminal report should have these fields
-          RETURN (
-            result ? 'records_found' OR
-            result ? 'record_count'
-          );
-        WHEN 'eviction_report' THEN
-          -- Eviction report should have these fields
-          RETURN (
-            result ? 'eviction_count' OR
-            result ? 'eviction_details'
-          );
-        WHEN 'lease' THEN
-          -- Lease should have these fields
-          RETURN (
-            result ? 'property_address' OR
-            result ? 'lease_term' OR
-            result ? 'rent_details'
-          );
-        WHEN 'bank_statements' THEN
-          -- Bank statement should have these fields
-          RETURN (
-            result ? 'bank_name' OR
-            result ? 'account_holder' OR
-            result ? 'statement_period'
-          );
-        WHEN 'employment_letter' THEN
-          -- Employment letter should have these fields
-          RETURN (
-            result ? 'employer_name' AND
-            result ? 'issue_date'
-          );
-        ELSE
-          -- For other document types, just ensure it has a document_type
-          RETURN TRUE;
-      END CASE;
-    END;
-    $$ LANGUAGE plpgsql;
-  END IF;
-  
-  -- Create a function to tag OCR results with their document type
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_proc p
-    JOIN pg_namespace n ON p.pronamespace = n.oid
-    WHERE n.nspname = 'public' 
-    AND p.proname = 'tag_ocr_result_type'
-  ) THEN
-    CREATE OR REPLACE FUNCTION tag_ocr_result_type()
-    RETURNS TRIGGER AS $$
-    BEGIN
-      -- Only proceed if OCR results are being updated and not null
-      IF NEW.ocr_results IS NOT NULL AND 
-         (TG_OP = 'INSERT' OR OLD.ocr_results IS DISTINCT FROM NEW.ocr_results) THEN
-        
-        -- Add country to OCR results if missing and document has country
-        IF NEW.country IS NOT NULL AND NOT (NEW.ocr_results ? 'country') THEN
-          NEW.ocr_results = jsonb_set(NEW.ocr_results, '{country}', to_jsonb(NEW.country));
-        END IF;
-        
-        -- Add a result_type field based on document type to help with client-side type guards
-        CASE NEW.type
-          WHEN 'government_id' THEN
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"id_document"');
-          WHEN 'credit_report' THEN
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"credit_report"');
-          WHEN 'income_verification' THEN
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"income_verification"');
-          WHEN 'criminal_report' THEN
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"criminal_report"');
-          WHEN 'eviction_report' THEN
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"eviction_report"');
-          WHEN 'lease' THEN
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"lease"');
-          WHEN 'bank_statements' THEN
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"bank_statements"');
-          WHEN 'employment_letter' THEN
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"employment_letter"');
-          ELSE
-            NEW.ocr_results = jsonb_set(NEW.ocr_results, '{result_type}', '"other"');
-        END CASE;
+  -- Define required fields based on document type
+  CASE p_document_type
+    WHEN 'government_id' THEN
+      v_required_fields := ARRAY['full_name', 'date_of_birth', 'document_number'];
+    WHEN 'credit_report' THEN
+      v_required_fields := ARRAY['report_date', 'personal_info', 'credit_score'];
+    WHEN 'income_verification' THEN
+      v_required_fields := ARRAY['employer_name', 'position', 'salary'];
+    WHEN 'criminal_report' THEN
+      v_required_fields := ARRAY['report_date', 'personal_info', 'records_found'];
+    WHEN 'eviction_report' THEN
+      v_required_fields := ARRAY['report_date', 'personal_info', 'records_found'];
+    WHEN 'lease' THEN
+      v_required_fields := ARRAY['property_address', 'lease_term', 'rent_details'];
+    WHEN 'bank_statements' THEN
+      v_required_fields := ARRAY['bank_name', 'account_holder', 'statement_period'];
+    WHEN 'employment_letter' THEN
+      v_required_fields := ARRAY['employer_name', 'employee_name', 'position'];
+    ELSE
+      v_required_fields := ARRAY['document_type', 'is_valid'];
+  END CASE;
 
-        -- Validate the OCR result structure based on document type
-        IF NOT validate_ocr_result(NEW.ocr_results, NEW.type) THEN
-          -- Log warning but allow operation to continue
-          RAISE WARNING 'OCR result structure for document ID % does not match expected format for type %', 
-                        NEW.id, NEW.type;
-        END IF;
-      END IF;
-      
-      RETURN NEW;
-    END;
-    $$ LANGUAGE plpgsql;
-  END IF;
-END $$;
+  -- Check if all required fields are present
+  FOR i IN 1..array_length(v_required_fields, 1) LOOP
+    IF NOT (p_ocr_results ? v_required_fields[i]) THEN
+      v_is_valid := false;
+      EXIT;
+    END IF;
+  END LOOP;
 
--- Create or replace the trigger for tagging OCR results
+  RETURN v_is_valid;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a function to tag OCR result type
+CREATE OR REPLACE FUNCTION tag_ocr_result_type()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- If ocr_results is not null, ensure it has a document_type field
+  IF NEW.ocr_results IS NOT NULL THEN
+    NEW.ocr_results := NEW.ocr_results || 
+      jsonb_build_object('document_type', NEW.type);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to automatically tag OCR result type
 DROP TRIGGER IF EXISTS tag_ocr_result_type_trigger ON documents;
-
 CREATE TRIGGER tag_ocr_result_type_trigger
 BEFORE INSERT OR UPDATE OF ocr_results ON documents
 FOR EACH ROW

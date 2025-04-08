@@ -1,5 +1,4 @@
--- Add migration comment
-COMMENT ON MIGRATION IS 'Add credit report OCR support and ensure document types include credit_report';
+-- Add credit report OCR support and ensure document types include credit_report
 
 -- Ensure credit_report is included in the documents type check constraint
 DO $$ 
@@ -63,8 +62,8 @@ COMMENT ON COLUMN documents.type IS 'Document types:
 INSERT INTO document_requirements (country, document_type, description) 
 VALUES 
     ('USA', 'credit_report', 'A credit report showing credit history, scores, and debt information'),
-    ('Canada', 'credit_report', 'Credit report with credit score and payment history'),
-    ('UK', 'credit_report', 'Credit report with credit score and financial history')
+    ('CANADA', 'credit_report', 'Credit report with credit score and payment history'),
+    ('MEXICO', 'credit_report', 'Reporte de crédito con historial de pagos')
 ON CONFLICT (country, document_type) 
 DO UPDATE SET 
     description = EXCLUDED.description,
