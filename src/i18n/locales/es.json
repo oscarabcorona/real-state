@@ -44,7 +44,8 @@
         "total": "total",
         "hide": "Ocultar",
         "selectAll": "Seleccionar todo",
-        "selectRow": "Seleccionar fila"
+        "selectRow": "Seleccionar fila",
+        "add": "Agregar"
     },
     "dashboard": {
         "tenant": {
