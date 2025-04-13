@@ -38,6 +38,7 @@ import { saveProperty } from "@/services/propertyService";
 import { Property, PropertyFormSchema, PropertyFormValues } from "../types";
 import { AmenityField } from "./form-fields/AmenityField";
 import { ImageUploadField } from "./form-fields/ImageUploadField";
+import { parseSyndication } from "../utils/propertyHelpers";
 
 interface PropertyEditFormProps {
   property: Property | null;
@@ -79,12 +80,7 @@ export function PropertyEditForm({
       pet_policy: property?.pet_policy || null,
       lease_terms: property?.lease_terms || null,
       published: property?.published || false,
-      syndication: property?.syndication || {
-        zillow: false,
-        trulia: false,
-        realtor: false,
-        hotpads: false,
-      },
+      syndication: property ? parseSyndication(property.syndication) : null,
     },
   });
 
