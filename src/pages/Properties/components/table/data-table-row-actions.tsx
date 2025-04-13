@@ -128,7 +128,7 @@ export function DataTableRowActions<TData>({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[160px] z-50">
           <DropdownMenuItem
-            onClick={() => navigate(`/properties/${property.id}`)}
+            onClick={() => navigate(`/dashboard/properties/${property.id}`)}
           >
             <Eye className="mr-2 h-4 w-4" />
             View
@@ -138,7 +138,7 @@ export function DataTableRowActions<TData>({
               if (onEditProperty) {
                 onEditProperty(property);
               } else {
-                navigate(`/properties/${property.id}/edit`);
+                navigate(`/dashboard/properties/${property.id}?edit=true`);
               }
             }}
           >

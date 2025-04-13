@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Property } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,20 +12,22 @@ import {
   PropertyInformation,
   AppointmentModal,
 } from "./components/PropertyDetails";
-import { PropertyModal } from "./components/PropertyModal";
 import { useProperties } from "./hooks/useProperties";
+import { PropertyEditForm } from "./components/PropertyEditForm";
 
 /**
  * PropertyDetails component for displaying detailed information about a specific property
+ * Supports inline editing mode
  */
 export function PropertyDetails() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [property, setProperty] = useState<Property | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, workspace } = useAuthStore();
 
   // Use the properties hook with autoLoad set to false since we're loading a specific property
   const { loadProperty, deleteProperty: deletePropertyAction } = useProperties({
@@ -33,6 +35,21 @@ export function PropertyDetails() {
   });
 
   const isLessor = user?.role === "lessor";
+
+  // Check for edit query parameter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const shouldEditMode = searchParams.get("edit") === "true";
+
+    // Only allow edit mode for lessors
+    if (shouldEditMode && isLessor) {
+      setEditMode(true);
+
+      // Remove the query parameter without reloading the page
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [location.search, isLessor]);
 
   // Load the property when the component mounts or when the id changes
   useEffect(() => {
@@ -90,6 +107,23 @@ export function PropertyDetails() {
     );
   }
 
+  // Edit mode view - Using the PropertyEditForm component
+  if (editMode) {
+    return (
+      <PropertyEditForm
+        property={property}
+        userId={user?.id}
+        workspaceId={workspace?.id}
+        onCancel={() => setEditMode(false)}
+        onSaved={(id) => {
+          setEditMode(false);
+          loadPropertyData(id);
+        }}
+      />
+    );
+  }
+
+  // View mode (default)
   return (
     <>
       <div className="w-full h-full">
@@ -99,7 +133,7 @@ export function PropertyDetails() {
             property={property}
             isLessor={isLessor}
             onDelete={handleDelete}
-            onEditClick={() => setIsEditing(true)}
+            onEditClick={() => setEditMode(true)}
             onScheduleClick={() => setShowAppointmentModal(true)}
           />
 
@@ -128,17 +162,6 @@ export function PropertyDetails() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Property Edit Modal */}
-      <PropertyModal
-        isOpen={isEditing}
-        onClose={() => setIsEditing(false)}
-        onSave={() => {
-          setIsEditing(false);
-          if (id) loadPropertyData(id);
-        }}
-        editingProperty={property}
-      />
 
       {/* Appointment Modal */}
       <AppointmentModal
