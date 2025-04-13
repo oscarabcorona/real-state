@@ -33,7 +33,9 @@
         "warning": "Warning",
         "info": "Information",
         "apply": "Apply Filters",
-        "reset": "Reset"
+        "reset": "Reset",
+        "selected": "selected",
+        "toggleColumns": "Toggle columns"
     },
     "dashboard": {
         "tenant": {
@@ -878,6 +880,55 @@
                 "back": "Back",
                 "cancel": "Cancel Appointment",
                 "processing": "Processing..."
+            }
+        }
+    },
+    "properties": {
+        "table": {
+            "filterPlaceholder": "Filter properties...",
+            "statusFilter": "Status",
+            "typeFilter": "Type",
+            "resetFilters": "Reset",
+            "addProperty": "Add Property",
+            "add": "Add",
+            "loading": "Loading properties...",
+            "noResults": "No results found",
+            "noPropertiesFound": "No properties found",
+            "tryAnotherFilter": "Try another filter or add a new property",
+            "columns": {
+                "property": "Property",
+                "status": "Status",
+                "type": "Type",
+                "price": "Price",
+                "address": "Address",
+                "bedrooms": "Bedrooms",
+                "bathrooms": "Bathrooms",
+                "area": "Area",
+                "image": "Image",
+                "actions": "Actions"
+            },
+            "statusValues": {
+                "published": "Published",
+                "draft": "Draft"
+            },
+            "propertyTypes": {
+                "house": "House",
+                "apartment": "Apartment",
+                "condo": "Condo",
+                "townhouse": "Townhouse",
+                "land": "Land",
+                "commercial": "Commercial"
+            },
+            "rowActions": {
+                "view": "View",
+                "edit": "Edit",
+                "delete": "Delete"
+            },
+            "pagination": {
+                "rowsPerPage": "Rows per page",
+                "of": "of",
+                "page": "Page",
+                "showingResultsText": "Showing {{start}} to {{end}} of {{total}}"
             }
         }
     }

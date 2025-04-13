@@ -27,6 +27,7 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // Simple inline implementation of useMediaQuery to avoid import issues
 const useMediaQuery = (query: string): boolean => {
@@ -71,6 +72,7 @@ export function DataTable<TData, TValue>({
     []
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const { t } = useTranslation();
 
   // Use media query to check screen size
   const isSmallScreen = useMediaQuery("(max-width: 640px)");
@@ -146,7 +148,7 @@ export function DataTable<TData, TValue>({
           <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <span className="ml-2 text-sm text-muted-foreground">
-              Loading properties...
+              {t("properties.table.loading")}
             </span>
           </div>
         )}
@@ -200,7 +202,20 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  {isLoading ? "Loading..." : "No properties found."}
+                  {isLoading ? (
+                    <span className="text-muted-foreground">
+                      {t("properties.table.loading")}
+                    </span>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-1">
+                      <p className="text-sm text-muted-foreground">
+                        {t("properties.table.noPropertiesFound")}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("properties.table.tryAnotherFilter")}
+                      </p>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             )}

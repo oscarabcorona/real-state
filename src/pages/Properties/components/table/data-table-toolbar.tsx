@@ -6,6 +6,7 @@ import { DataTableViewOptions } from "./data-table-view-options";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { propertyTypes, statuses } from "./columns";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -18,45 +19,48 @@ export function DataTableToolbar<TData>({
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [showFilters, setShowFilters] = useState(false);
+  const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-4 py-4">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center flex-wrap gap-2">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Input
-            placeholder="Filter properties..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
-            className="h-9 w-full sm:w-[250px] lg:w-[300px]"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            className="sm:hidden"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
+    <div className="space-y-4 py-4">
+      {/* Top row: Search */}
+      <div className="flex items-center gap-2">
+        <Input
+          placeholder={t("properties.table.filterPlaceholder")}
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }
+          className="h-9 w-full max-w-sm"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="md:hidden h-9"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <Filter className="h-4 w-4" />
+        </Button>
+      </div>
 
+      {/* Bottom row: Filters, View options, and Add button */}
+      <div className="flex flex-wrap items-center gap-2">
         <div
-          className={`flex-1 space-x-2 ${
-            showFilters ? "flex" : "hidden sm:flex"
-          } flex-wrap gap-2 mt-2 sm:mt-0`}
+          className={`${
+            showFilters ? "flex" : "hidden md:flex"
+          } flex-wrap items-center gap-2 mr-auto`}
         >
           {table.getColumn("status") && (
             <DataTableFacetedFilter
               column={table.getColumn("status")}
-              title="Status"
+              title={t("properties.table.statusFilter")}
               options={[...statuses]}
             />
           )}
           {table.getColumn("property_type") && (
             <DataTableFacetedFilter
               column={table.getColumn("property_type")}
-              title="Type"
+              title={t("properties.table.typeFilter")}
               options={[...propertyTypes]}
             />
           )}
@@ -66,19 +70,25 @@ export function DataTableToolbar<TData>({
               onClick={() => table.resetColumnFilters()}
               className="h-9 px-2 lg:px-3"
             >
-              Reset
+              {t("properties.table.resetFilters")}
               <X className="ml-2 h-4 w-4" />
             </Button>
           )}
         </div>
 
-        <div className="flex items-center sm:ml-auto gap-2 mt-2 sm:mt-0">
-          <Button onClick={() => setIsModalOpen(true)} className="h-9">
-            <Plus className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Add Property</span>
-            <span className="sm:hidden">Add</span>
-          </Button>
+        {/* Action buttons in a flex row that stays together */}
+        <div className="flex items-center gap-2 shrink-0">
           <DataTableViewOptions table={table} />
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="h-9 whitespace-nowrap"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">
+              {t("properties.table.addProperty")}
+            </span>
+            <span className="sm:hidden">{t("properties.table.add")}</span>
+          </Button>
         </div>
       </div>
     </div>

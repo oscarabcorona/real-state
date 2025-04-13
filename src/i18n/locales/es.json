@@ -4,7 +4,7 @@
         "english": "Inglés",
         "spanish": "Español",
         "welcome": "Bienvenido",
-        "dashboard": "Panel de control",
+        "dashboard": "Panel",
         "properties": "Propiedades",
         "marketplace": "Mercado",
         "payments": "Pagos",
@@ -33,7 +33,9 @@
         "warning": "Advertencia",
         "info": "Información",
         "apply": "Aplicar Filtros",
-        "reset": "Restablecer"
+        "reset": "Restablecer",
+        "selected": "seleccionados",
+        "toggleColumns": "Alternar columnas"
     },
     "dashboard": {
         "tenant": {
@@ -849,6 +851,55 @@
                 "back": "Atrás",
                 "cancel": "Cancelar Cita",
                 "processing": "Procesando..."
+            }
+        }
+    },
+    "properties": {
+        "table": {
+            "filterPlaceholder": "Filtrar propiedades...",
+            "statusFilter": "Estado",
+            "typeFilter": "Tipo",
+            "resetFilters": "Restablecer",
+            "addProperty": "Añadir Propiedad",
+            "add": "Añadir",
+            "loading": "Cargando propiedades...",
+            "noResults": "No se encontraron resultados",
+            "noPropertiesFound": "No se encontraron propiedades",
+            "tryAnotherFilter": "Intenta con otro filtro o añade una nueva propiedad",
+            "columns": {
+                "property": "Propiedad",
+                "status": "Estado",
+                "type": "Tipo",
+                "price": "Precio",
+                "address": "Dirección",
+                "bedrooms": "Habitaciones",
+                "bathrooms": "Baños",
+                "area": "Área",
+                "image": "Imagen",
+                "actions": "Acciones"
+            },
+            "statusValues": {
+                "published": "Publicado",
+                "draft": "Borrador"
+            },
+            "propertyTypes": {
+                "house": "Casa",
+                "apartment": "Apartamento",
+                "condo": "Condominio",
+                "townhouse": "Casa Adosada",
+                "land": "Terreno",
+                "commercial": "Comercial"
+            },
+            "rowActions": {
+                "view": "Ver",
+                "edit": "Editar",
+                "delete": "Eliminar"
+            },
+            "pagination": {
+                "rowsPerPage": "Filas por página",
+                "of": "de",
+                "page": "Página",
+                "showingResultsText": "Mostrando {{start}} a {{end}} de {{total}}"
             }
         }
     }

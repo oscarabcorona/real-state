@@ -2,32 +2,22 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Property } from "../../types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import {
-  Home,
-  Building2,
-  MapPin,
-  DollarSign,
-  MoreHorizontal,
-  Eye,
-  Pencil,
-  Trash2,
-} from "lucide-react";
-import { formatPrice } from "@/lib/utils";
+import { Home, Building2, MapPin, MoreHorizontal } from "lucide-react";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-// Import the row actions directly
-import { Row } from "@tanstack/react-table";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
+// Define static types
+export type PropertyStatus = "published" | "draft";
+export type PropertyType =
+  | "house"
+  | "apartment"
+  | "condo"
+  | "townhouse"
+  | "land"
+  | "commercial";
+
+// Non-translated statuses (fallbacks)
 export const statuses = [
   {
     value: "published",
@@ -41,9 +31,7 @@ export const statuses = [
   },
 ] as const;
 
-// Create a union type for status values to improve type safety
-export type PropertyStatus = (typeof statuses)[number]["value"];
-
+// Non-translated property types (fallbacks)
 export const propertyTypes = [
   {
     value: "house",
@@ -77,51 +65,15 @@ export const propertyTypes = [
   },
 ] as const;
 
-// Create a union type for property types to improve type safety
-export type PropertyType = (typeof propertyTypes)[number]["value"];
+// This is a basic action button that will be replaced in the TranslatedTable component
+const BasicActions = () => (
+  <Button variant="ghost" className="h-8 w-8 p-0">
+    <span className="sr-only">Open menu</span>
+    <MoreHorizontal className="h-4 w-4" />
+  </Button>
+);
 
-// Use a wrapper for the row actions to avoid circular dependencies
-function RowActions({ row }: { row: Row<Property> }) {
-  // We'll re-implement a simplified version or use dynamic import
-  const navigate = useNavigate();
-  const property = row.original;
-
-  // This would typically be the DataTableRowActions component
-  // For now, creating a simplified version to avoid import issues
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0 data-[state=open]:bg-muted"
-        >
-          <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem
-          onClick={() => navigate(`/properties/${property.id}`)}
-        >
-          <Eye className="mr-2 h-4 w-4" />
-          View
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => navigate(`/properties/${property.id}/edit`)}
-        >
-          <Pencil className="mr-2 h-4 w-4" />
-          Edit
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-red-600">
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
+// Define base columns with basic configuration
 export const columns: ColumnDef<Property>[] = [
   {
     id: "select",
@@ -157,7 +109,6 @@ export const columns: ColumnDef<Property>[] = [
           ? property.images[0]
           : null;
 
-      // Get property initials for fallback
       const initials = property.name
         .split(" ")
         .map((word) => word[0])
@@ -206,45 +157,12 @@ export const columns: ColumnDef<Property>[] = [
     enableHiding: true,
   },
   {
-    accessorKey: "address",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Address" />
-    ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
-          <div className="text-sm">{row.original.address}</div>
-        </div>
-      );
-    },
-    enableSorting: true,
-    enableHiding: true,
-  },
-  {
-    accessorKey: "price",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Price" />
-    ),
-    cell: ({ row }) => {
-      // Prevent null values from causing format errors
-      const price = row.original.price ?? 0;
-      return (
-        <div className="flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-          <div className="font-medium">{formatPrice(price)}</div>
-        </div>
-      );
-    },
-    enableSorting: true,
-    enableHiding: true,
-  },
-  {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
+      // This will be patched by the TranslatedTable wrapper
       const status = statuses.find(
         (status) => status.value === row.original.status
       );
@@ -278,6 +196,7 @@ export const columns: ColumnDef<Property>[] = [
       <DataTableColumnHeader column={column} title="Type" />
     ),
     cell: ({ row }) => {
+      // This will be patched by the TranslatedTable wrapper
       const propertyType = propertyTypes.find(
         (type) => type.value === row.original.property_type
       );
@@ -295,21 +214,8 @@ export const columns: ColumnDef<Property>[] = [
     enableHiding: true,
   },
   {
-    accessorKey: "bedrooms",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Beds" />
-    ),
-    cell: ({ row }) => {
-      // Use the bedrooms property from the property data
-      const bedrooms = row.original.bedrooms || 0;
-      return <div className="font-medium text-center">{bedrooms}</div>;
-    },
-    enableSorting: true,
-    enableHiding: true,
-  },
-  {
     id: "actions",
-    cell: ({ row }) => <RowActions row={row} />,
+    cell: () => <BasicActions />,
     enableSorting: false,
     enableHiding: false,
   },
