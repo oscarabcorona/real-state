@@ -13,7 +13,7 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -84,33 +84,113 @@ export function PropertyEditForm({
     },
   });
 
+  // Focus on first error field when validation fails
+  useEffect(() => {
+    const subscription =
+      form.formState.submitCount > 0
+        ? form.formState.errors && form.formState.isSubmitting === false
+          ? setTimeout(() => {
+              const firstErrorField = Object.keys(form.formState.errors)[0];
+              const element = document.getElementById(firstErrorField);
+              if (element) {
+                // Determine which tab contains the error
+                let tabWithError = "basic";
+                if (
+                  [
+                    "price",
+                    "bedrooms",
+                    "bathrooms",
+                    "square_feet",
+                    "amenities",
+                    "pet_policy",
+                    "lease_terms",
+                  ].includes(firstErrorField)
+                ) {
+                  tabWithError = "details";
+                } else if (["images"].includes(firstErrorField)) {
+                  tabWithError = "media";
+                } else if (
+                  ["published", "syndication"].includes(firstErrorField)
+                ) {
+                  tabWithError = "publishing";
+                }
+
+                // Switch to the tab with the error
+                setActiveTab(tabWithError);
+
+                // Focus the element after tab switch
+                setTimeout(() => {
+                  element.focus();
+                  element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                  });
+                }, 100);
+              }
+            }, 100)
+          : null
+        : null;
+
+    return () => {
+      if (subscription) clearTimeout(subscription);
+    };
+  }, [
+    form.formState.submitCount,
+    form.formState.errors,
+    form.formState.isSubmitting,
+  ]);
+
   // Handle saving the property
   const onSubmit = async (formData: PropertyFormValues) => {
-    if (!userId) return;
+    if (!userId) {
+      toast.error(t("properties.form.error.noUser"), {
+        description: t("properties.form.error.pleaseLogin"),
+      });
+      return;
+    }
 
     setIsLoading(true);
     try {
+      // Save the property
       await saveProperty(userId, formData, property?.id, workspaceId);
 
+      // Show success message
       toast.success(
         property
           ? t("properties.form.success.updated")
           : t("properties.form.success.created"),
         {
           description: property
-            ? t("properties.form.success.updatedDescription")
-            : t("properties.form.success.createdDescription"),
+            ? t("properties.form.success.updatedDescription", {
+                name: formData.name,
+              })
+            : t("properties.form.success.createdDescription", {
+                name: formData.name,
+              }),
         }
       );
 
-      if (property?.id) {
-        onSaved(property.id);
-      }
-    } catch (error) {
+      // Return to property list and trigger refresh
+      onSaved(property?.id || "");
+    } catch (error: unknown) {
       console.error("Error updating property:", error);
-      toast.error(t("properties.form.error.saving"), {
-        description: t("properties.form.error.savingDescription"),
-      });
+
+      // Handle different types of errors
+      const err = error as { code?: string; message?: string };
+      if (err.code === "VALIDATION_ERROR") {
+        toast.error(t("properties.form.error.validation"), {
+          description: err.message || t("properties.form.error.checkFields"),
+        });
+      } else if (err.code === "PERMISSION_DENIED") {
+        toast.error(t("properties.form.error.permission"), {
+          description: t("properties.form.error.permissionDescription"),
+        });
+      } else {
+        toast.error(t("properties.form.error.saving"), {
+          description:
+            err.message || t("properties.form.error.savingDescription"),
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -210,6 +290,7 @@ export function PropertyEditForm({
                             <Input
                               placeholder={t("properties.form.propertyName")}
                               {...field}
+                              id="name"
                             />
                           </FormControl>
                           <FormMessage />
@@ -276,6 +357,7 @@ export function PropertyEditForm({
                               <Input
                                 placeholder={t("properties.form.address")}
                                 {...field}
+                                id="address"
                               />
                             </FormControl>
                             <FormMessage />
@@ -294,6 +376,7 @@ export function PropertyEditForm({
                                 <Input
                                   placeholder={t("properties.form.city")}
                                   {...field}
+                                  id="city"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -313,6 +396,7 @@ export function PropertyEditForm({
                                 <Input
                                   placeholder={t("properties.form.state")}
                                   {...field}
+                                  id="state"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -332,6 +416,7 @@ export function PropertyEditForm({
                                 <Input
                                   placeholder={t("properties.form.zipCode")}
                                   {...field}
+                                  id="zip_code"
                                 />
                               </FormControl>
                               <FormMessage />
@@ -391,6 +476,7 @@ export function PropertyEditForm({
                                 type="number"
                                 placeholder={t("properties.form.price")}
                                 {...field}
+                                id="price"
                                 value={field.value?.toString() || ""}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value) || null)
@@ -438,6 +524,7 @@ export function PropertyEditForm({
                                 type="number"
                                 placeholder={t("properties.form.bedrooms")}
                                 {...field}
+                                id="bedrooms"
                                 value={field.value?.toString() || ""}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value) || null)
@@ -462,6 +549,7 @@ export function PropertyEditForm({
                                 type="number"
                                 placeholder={t("properties.form.bathrooms")}
                                 {...field}
+                                id="bathrooms"
                                 value={field.value?.toString() || ""}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value) || null)
@@ -486,6 +574,7 @@ export function PropertyEditForm({
                                 type="number"
                                 placeholder={t("properties.form.squareFeet")}
                                 {...field}
+                                id="square_feet"
                                 value={field.value?.toString() || ""}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value) || null)

@@ -54,10 +54,35 @@ export function Properties() {
   }, []);
 
   // Handle save completion
-  const handleSaved = useCallback(async () => {
-    await loadProperties();
-    handleCancel();
-  }, [loadProperties, handleCancel]);
+  const handleSaved = useCallback(
+    async (propertyId: string) => {
+      // First reload the properties list to ensure it's up to date
+      await loadProperties();
+
+      // Then cancel the edit mode to return to list view
+      handleCancel();
+
+      // If we have a specific property that was just created/edited, highlight it
+      if (propertyId) {
+        // Using setTimeout to allow the list to render first
+        setTimeout(() => {
+          const propertyRow = document.getElementById(
+            `property-row-${propertyId}`
+          );
+          if (propertyRow) {
+            propertyRow.scrollIntoView({ behavior: "smooth", block: "center" });
+            propertyRow.classList.add("highlight-row");
+
+            // Remove highlight after a moment
+            setTimeout(() => {
+              propertyRow.classList.remove("highlight-row");
+            }, 3000);
+          }
+        }, 100);
+      }
+    },
+    [loadProperties, handleCancel]
+  );
 
   // Listen for property refresh events
   useEffect(() => {

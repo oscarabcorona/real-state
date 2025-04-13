@@ -43,7 +43,7 @@ export async function saveProperty(
   propertyData: PropertyFormValues, 
   propertyId?: string,
   workspaceId?: string
-): Promise<void> {
+): Promise<string | null> {
   try {
     // Extract tenant_id from property data to handle separately
     const { tenant_id, syndication, ...propertyFields } = propertyData;
@@ -100,6 +100,8 @@ export async function saveProperty(
           if (leaseError) throw leaseError;
         }
       }
+      
+      return propertyId;
     } else {
       // Create new property
       if (!workspaceId) {
@@ -117,31 +119,40 @@ export async function saveProperty(
       // Insert the property with processed data
       const { data: newProperty, error } = await supabase
         .from("properties")
-        .insert([{
+        .insert({
           ...dataToSave,
           user_id: userId,
           workspace_id: workspaceId,
           compliance_status: "pending",
-        }])
+        })
         .select();
 
       if (error) throw error;
       
-      // If tenant_id is specified and property was created successfully, create a lease
-      if (tenant_id && newProperty && newProperty.length > 0) {
-        const { error: leaseError } = await supabase
-          .from("property_leases")
-          .insert([{
-            property_id: newProperty[0].id,
-            tenant_id: tenant_id,
-            status: "active"
-          }]);
-          
-        if (leaseError) throw leaseError;
+      if (newProperty && newProperty.length > 0) {
+        const newPropertyId = newProperty[0].id;
+        
+        // If tenant_id is specified and property was created successfully, create a lease
+        if (tenant_id) {
+          const { error: leaseError } = await supabase
+            .from("property_leases")
+            .insert([{
+              property_id: newPropertyId,
+              tenant_id: tenant_id,
+              status: "active"
+            }]);
+            
+          if (leaseError) throw leaseError;
+        }
+        
+        return newPropertyId;
       }
+      
+      return null;
     }
   } catch (error) {
-    return handleServiceError(error, "saveProperty");
+    handleServiceError(error, "saveProperty");
+    return null;
   }
 }
 
