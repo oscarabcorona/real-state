@@ -1,26 +1,25 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Loader2,
-  ChevronLeft,
-  Save,
-  X,
-  Home,
-  Map,
+  ArrowLeft,
   Bed,
   DollarSign,
-  Layers,
   FileText,
-  ImageIcon,
   Globe,
+  Home,
+  ImageIcon,
+  Layers,
+  Loader2,
+  Map,
+  Save,
+  X,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -31,12 +30,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { PropertyFormSchema, PropertyFormValues, Property } from "../types";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { saveProperty } from "@/services/propertyService";
+import { Property, PropertyFormSchema, PropertyFormValues } from "../types";
 import { AmenityField } from "./form-fields/AmenityField";
 import { ImageUploadField } from "./form-fields/ImageUploadField";
 
@@ -124,16 +123,16 @@ export function PropertyEditForm({
   return (
     <div className="w-full h-full">
       <Card className="h-full border-none shadow-none">
-        <CardHeader className="p-6 flex flex-row justify-between items-center">
+        <CardHeader className="flex flex-row justify-between items-center">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={onCancel}>
-              <ChevronLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-semibold">
+            <h2 className="text-xl font-semibold">
               {property
                 ? t("properties.form.editProperty")
                 : t("properties.form.createProperty")}
-            </h1>
+            </h2>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onCancel}>
@@ -157,9 +156,9 @@ export function PropertyEditForm({
           </div>
         </CardHeader>
 
-        <Separator />
+        <Separator className="my-6" />
 
-        <CardContent className="p-6">
+        <CardContent>
           <Form {...form}>
             <form
               id="property-edit-form"
