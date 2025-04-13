@@ -51,19 +51,19 @@ const useMediaQuery = (query: string): boolean => {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  setIsModalOpen: (value: boolean) => void;
   isLoading?: boolean;
   onRefresh?: () => void;
   onEditProperty?: (property: TData) => void;
+  onCreateProperty?: () => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  setIsModalOpen,
   isLoading = false,
   onRefresh,
   onEditProperty,
+  onCreateProperty,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -142,7 +142,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar table={table} setIsModalOpen={setIsModalOpen} />
+      <DataTableToolbar table={table} onCreateProperty={onCreateProperty} />
       <div className="rounded-md border relative overflow-x-auto">
         {isLoading && (
           <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">

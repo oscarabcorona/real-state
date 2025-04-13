@@ -3,10 +3,11 @@ import { Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "./components/table/data-table";
 import { columns } from "./components/table/columns";
-import { PropertyModal } from "./components/PropertyModal";
 import { PROPERTIES_REFRESH_EVENT } from "./components/table/data-table-row-actions";
 import { useProperties } from "./hooks/useProperties";
 import { Property } from "./types";
+import { PropertyEditForm } from "./components/PropertyEditForm";
+import { useAuthStore } from "@/store/authStore";
 
 /**
  * Properties page component for managing real estate properties
@@ -14,14 +15,16 @@ import { Property } from "./types";
  */
 export function Properties() {
   // Property management state using our custom hook
-  const { properties, tenants, isLoading, error, loadProperties } =
-    useProperties({
-      autoLoad: true,
-      loadTenants: true,
-    });
+  const { properties, isLoading, error, loadProperties } = useProperties({
+    autoLoad: true,
+    loadTenants: true,
+  });
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Get user and workspace from store
+  const { user, workspace } = useAuthStore();
+
+  // Edit mode state
+  const [isCreating, setIsCreating] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null
   );
@@ -29,23 +32,29 @@ export function Properties() {
   // Memoize columns to prevent unnecessary re-renders
   const tableColumns = useMemo(() => columns, []);
 
-  // Handle modal close
-  const handleModalClose = useCallback(() => {
-    setIsModalOpen(false);
+  // Handle canceling edit/create mode
+  const handleCancel = useCallback(() => {
+    setIsCreating(false);
     setSelectedProperty(null);
   }, []);
 
   // Handle property edit
   const handleEditProperty = useCallback((property: Property) => {
     setSelectedProperty(property);
-    setIsModalOpen(true);
+    setIsCreating(false);
   }, []);
 
-  // Handle modal save
-  const handleModalSave = useCallback(async () => {
+  // Handle creating a new property
+  const handleCreateProperty = useCallback(() => {
+    setSelectedProperty(null);
+    setIsCreating(true);
+  }, []);
+
+  // Handle save completion
+  const handleSaved = useCallback(async () => {
     await loadProperties();
-    handleModalClose();
-  }, [loadProperties, handleModalClose]);
+    handleCancel();
+  }, [loadProperties, handleCancel]);
 
   // Listen for property refresh events
   useEffect(() => {
@@ -63,6 +72,20 @@ export function Properties() {
     };
   }, [loadProperties]);
 
+  // If in edit/create mode, show the PropertyEditForm
+  if (isCreating || selectedProperty) {
+    return (
+      <PropertyEditForm
+        property={selectedProperty}
+        userId={user?.id}
+        workspaceId={workspace?.id}
+        onCancel={handleCancel}
+        onSaved={handleSaved}
+      />
+    );
+  }
+
+  // Otherwise show the properties list
   return (
     <div className="flex-1">
       <div className="py-6">
@@ -90,18 +113,9 @@ export function Properties() {
         <DataTable
           columns={tableColumns}
           data={properties}
-          setIsModalOpen={setIsModalOpen}
           isLoading={isLoading}
           onEditProperty={handleEditProperty}
-        />
-
-        {/* Property Modal */}
-        <PropertyModal
-          isOpen={isModalOpen}
-          onClose={handleModalClose}
-          onSave={handleModalSave}
-          tenants={tenants}
-          editingProperty={selectedProperty}
+          onCreateProperty={handleCreateProperty}
         />
       </div>
     </div>

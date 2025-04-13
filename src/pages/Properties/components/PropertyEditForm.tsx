@@ -120,7 +120,9 @@ export function PropertyEditForm({
             <Button variant="ghost" size="icon" onClick={onCancel}>
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-2xl font-semibold">Edit Property</h1>
+            <h1 className="text-2xl font-semibold">
+              {property ? "Edit Property" : "Create Property"}
+            </h1>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onCancel}>
@@ -137,7 +139,7 @@ export function PropertyEditForm({
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              Save
+              {property ? "Save Changes" : "Create Property"}
             </Button>
           </div>
         </CardHeader>

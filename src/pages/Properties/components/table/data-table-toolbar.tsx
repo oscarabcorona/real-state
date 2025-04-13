@@ -10,12 +10,12 @@ import { useTranslation } from "react-i18next";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
-  setIsModalOpen: (value: boolean) => void;
+  onCreateProperty?: () => void;
 }
 
 export function DataTableToolbar<TData>({
   table,
-  setIsModalOpen,
+  onCreateProperty,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const [showFilters, setShowFilters] = useState(false);
@@ -31,7 +31,6 @@ export function DataTableToolbar<TData>({
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          className="h-9 w-full max-w-sm"
         />
         <Button
           variant="outline"
@@ -79,10 +78,7 @@ export function DataTableToolbar<TData>({
         {/* Action buttons in a flex row that stays together */}
         <div className="flex items-center gap-2 shrink-0">
           <DataTableViewOptions table={table} />
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="h-9 whitespace-nowrap"
-          >
+          <Button onClick={onCreateProperty} className="h-9 whitespace-nowrap">
             <Plus className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">
               {t("properties.table.addProperty")}
