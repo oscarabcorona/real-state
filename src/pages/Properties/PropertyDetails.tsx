@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 import { Property } from "./types";
@@ -138,55 +137,51 @@ export function PropertyDetails() {
 
   return (
     <>
-      <div className="w-full h-full">
-        <Card className="h-full border-none shadow-none">
-          {/* Only show header in view mode */}
-          {!editMode && (
-            <>
-              <PropertyHeader
-                property={property}
-                isLessor={isLessor}
-                onDelete={handleDelete}
-                onEditClick={() => setEditMode(true)}
-                onScheduleClick={() => setShowAppointmentModal(true)}
-                onPublishToggle={isLessor ? handlePublishToggle : undefined}
+      <div className="w-full h-full flex flex-col">
+        {/* Only show header in view mode */}
+        {!editMode && (
+          <>
+            <PropertyHeader
+              property={property}
+              isLessor={isLessor}
+              onDelete={handleDelete}
+              onEditClick={() => setEditMode(true)}
+              onScheduleClick={() => setShowAppointmentModal(true)}
+              onPublishToggle={isLessor ? handlePublishToggle : undefined}
+            />
+            <Separator className="my-0" />
+          </>
+        )}
+
+        {!editMode ? (
+          <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Left column - property images and features */}
+            <div className="lg:col-span-2 space-y-4">
+              <PropertyGallery
+                images={property.images}
+                propertyName={property.name}
               />
-              <Separator />
-            </>
-          )}
 
-          <CardContent className="p-0">
-            {!editMode ? (
-              <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left column - property images and features */}
-                <div className="lg:col-span-2 space-y-6">
-                  <PropertyGallery
-                    images={property.images}
-                    propertyName={property.name}
-                  />
-
-                  <PropertyFeatures
-                    description={property.description}
-                    amenities={property.amenities}
-                  />
-                </div>
-
-                {/* Right column - property information */}
-                <div>
-                  <PropertyInformation property={property} />
-                </div>
-              </div>
-            ) : (
-              <PropertyEditForm
-                property={property}
-                userId={user?.id}
-                workspaceId={workspace?.id}
-                onCancel={() => setEditMode(false)}
-                onSaved={handleSaveSuccess}
+              <PropertyFeatures
+                description={property.description}
+                amenities={property.amenities}
               />
-            )}
-          </CardContent>
-        </Card>
+            </div>
+
+            {/* Right column - property information */}
+            <div>
+              <PropertyInformation property={property} />
+            </div>
+          </div>
+        ) : (
+          <PropertyEditForm
+            property={property}
+            userId={user?.id}
+            workspaceId={workspace?.id}
+            onCancel={() => setEditMode(false)}
+            onSaved={handleSaveSuccess}
+          />
+        )}
       </div>
 
       {/* Appointment Modal */}

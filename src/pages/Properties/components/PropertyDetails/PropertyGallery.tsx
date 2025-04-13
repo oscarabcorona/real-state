@@ -13,7 +13,11 @@ export function PropertyGallery({
 
   return (
     <div>
-      <div className="rounded-lg overflow-hidden aspect-video bg-muted">
+      <div
+        className={`rounded-lg overflow-hidden aspect-video ${
+          !hasImages ? "property-empty-state" : "bg-muted"
+        }`}
+      >
         {hasImages ? (
           <img
             src={images[0]}
@@ -21,8 +25,12 @@ export function PropertyGallery({
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="h-full flex items-center justify-center">
-            <Home className="h-16 w-16 text-muted-foreground/50" />
+          <div className="h-full flex flex-col items-center justify-center gap-2 p-8 text-center relative z-10">
+            <Home className="h-20 w-20 text-muted-foreground/40" />
+            <div className="text-sm text-muted-foreground">
+              <p className="font-medium">{propertyName}</p>
+              <p>No property images available yet</p>
+            </div>
           </div>
         )}
       </div>

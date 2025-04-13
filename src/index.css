@@ -231,3 +231,29 @@
 .highlight-row {
   animation: highlight-pulse 1.5s ease-in-out 2;
 }
+
+/* Property details empty state styling */
+.property-empty-state {
+  transition: background-color 0.3s ease-in-out;
+  position: relative;
+}
+
+.property-empty-state:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(var(--muted), 0.1),
+    rgba(var(--muted), 0.1) 10px,
+    rgba(var(--muted), 0.2) 10px,
+    rgba(var(--muted), 0.2) 20px
+  );
+  border-radius: 0.5rem;
+  opacity: 0.5;
+  z-index: 0;
+  pointer-events: none;
+}
