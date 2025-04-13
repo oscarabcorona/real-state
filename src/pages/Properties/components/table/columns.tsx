@@ -2,10 +2,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Property } from "../../types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Home, Building2, MapPin, MoreHorizontal } from "lucide-react";
+import { Home, Building2, MapPin } from "lucide-react";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { DataTableRowActions } from "./data-table-row-actions";
 
 // Define static types
 export type PropertyStatus = "published" | "draft";
@@ -64,14 +64,6 @@ export const propertyTypes = [
     icon: Building2,
   },
 ] as const;
-
-// This is a basic action button that will be replaced in the TranslatedTable component
-const BasicActions = () => (
-  <Button variant="ghost" className="h-8 w-8 p-0">
-    <span className="sr-only">Open menu</span>
-    <MoreHorizontal className="h-4 w-4" />
-  </Button>
-);
 
 // Define base columns with basic configuration
 export const columns: ColumnDef<Property>[] = [
@@ -215,7 +207,7 @@ export const columns: ColumnDef<Property>[] = [
   },
   {
     id: "actions",
-    cell: () => <BasicActions />,
+    cell: ({ row }) => <DataTableRowActions row={row} />,
     enableSorting: false,
     enableHiding: false,
   },

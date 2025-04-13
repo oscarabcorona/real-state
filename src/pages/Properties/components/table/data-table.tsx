@@ -186,7 +186,11 @@ export function DataTable<TData, TValue>({
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className={cell.column.id === "name" ? "font-medium" : ""}
+                      className={`${
+                        cell.column.id === "name" ? "font-medium" : ""
+                      } ${
+                        cell.column.id === "actions" ? "p-0 text-center" : ""
+                      }`}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
