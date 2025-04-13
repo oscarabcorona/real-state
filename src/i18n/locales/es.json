@@ -4,7 +4,7 @@
         "english": "Inglés",
         "spanish": "Español",
         "welcome": "Bienvenido",
-        "dashboard": "Panel",
+        "dashboard": "Panel de Control",
         "properties": "Propiedades",
         "marketplace": "Mercado",
         "payments": "Pagos",
@@ -13,11 +13,14 @@
         "appointments": "Citas",
         "notifications": "Notificaciones",
         "settings": "Configuración",
-        "logout": "Cerrar sesión",
+        "logout": "Cerrar Sesión",
         "profile": "Perfil",
         "search": "Buscar",
         "filter": "Filtrar",
-        "sort": "Ordenar",
+        "sort": {
+            "asc": "Ascendente",
+            "desc": "Descendente"
+        },
         "view": "Ver",
         "edit": "Editar",
         "delete": "Eliminar",
@@ -34,8 +37,14 @@
         "info": "Información",
         "apply": "Aplicar Filtros",
         "reset": "Restablecer",
-        "selected": "seleccionados",
-        "toggleColumns": "Alternar columnas"
+        "selected": "seleccionado",
+        "toggleColumns": "Mostrar/ocultar columnas",
+        "publish": "Publicar",
+        "unpublish": "Despublicar",
+        "total": "total",
+        "hide": "Ocultar",
+        "selectAll": "Seleccionar todo",
+        "selectRow": "Seleccionar fila"
     },
     "dashboard": {
         "tenant": {
@@ -855,11 +864,24 @@
         }
     },
     "properties": {
+        "title": "Propiedades",
+        "subtitle": "Administra tus propiedades inmobiliarias",
+        "columns": {
+            "image": "Imagen",
+            "property": "Propiedad",
+            "status": "Estado",
+            "type": "Tipo"
+        },
+        "statuses": {
+            "published": "Publicada",
+            "draft": "Borrador",
+            "unknown": "Desconocido"
+        },
         "table": {
             "filterPlaceholder": "Filtrar propiedades...",
             "statusFilter": "Estado",
-            "typeFilter": "Tipo",
-            "resetFilters": "Restablecer",
+            "typeFilter": "Tipo de Propiedad",
+            "resetFilters": "Restablecer filtros",
             "addProperty": "Añadir Propiedad",
             "add": "Añadir",
             "loading": "Cargando propiedades...",
@@ -900,6 +922,41 @@
                 "of": "de",
                 "page": "Página",
                 "showingResultsText": "Mostrando {{start}} a {{end}} de {{total}}"
+            }
+        },
+        "form": {
+            "basicInfo": "Información Básica",
+            "details": "Detalles",
+            "media": "Medios",
+            "publishing": "Publicación",
+            "editProperty": "Editar Propiedad",
+            "createProperty": "Crear Propiedad",
+            "saveChanges": "Guardar Cambios",
+            "createButton": "Crear Propiedad",
+            "propertyName": "Nombre de la Propiedad",
+            "propertyType": "Tipo de Propiedad",
+            "types": {
+                "house": "Casa",
+                "apartment": "Apartamento",
+                "condo": "Condominio",
+                "townhouse": "Casa Adosada",
+                "land": "Terreno",
+                "commercial": "Comercial",
+                "unknown": "Desconocido"
+            },
+            "success": {
+                "created": "Propiedad Creada",
+                "createdDescription": "Tu propiedad ha sido creada exitosamente.",
+                "updated": "Propiedad Actualizada",
+                "updatedDescription": "Tu propiedad ha sido actualizada exitosamente.",
+                "published": "Propiedad Publicada",
+                "publishedDescription": "Tu propiedad ahora es visible para potenciales inquilinos.",
+                "unpublished": "Propiedad Despublicada",
+                "unpublishedDescription": "Tu propiedad ya no es visible para potenciales inquilinos."
+            },
+            "error": {
+                "saving": "Error al Guardar la Propiedad",
+                "savingDescription": "Hubo un error al guardar tu propiedad. Por favor, inténtalo de nuevo."
             }
         }
     },

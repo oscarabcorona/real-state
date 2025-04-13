@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { X, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   FormField,
   FormItem,
@@ -19,6 +20,7 @@ interface ImageUploadFieldProps {
 export function ImageUploadField({ form }: ImageUploadFieldProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation();
 
   // Function to handle image removal
   const handleRemoveImage = (index: number) => {
@@ -85,11 +87,8 @@ export function ImageUploadField({ form }: ImageUploadFieldProps) {
       name="images"
       render={({ field }) => (
         <FormItem className="space-y-4">
-          <FormLabel>Property Images</FormLabel>
-          <FormDescription>
-            High-quality images increase interest in your property. Add multiple
-            photos to showcase different areas.
-          </FormDescription>
+          <FormLabel>{t("properties.form.propertyImages")}</FormLabel>
+          <FormDescription>{t("properties.form.imagesHelp")}</FormDescription>
 
           {/* Image Gallery */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -142,9 +141,11 @@ export function ImageUploadField({ form }: ImageUploadFieldProps) {
               <div className="rounded-full bg-primary/10 p-2 mb-2">
                 <Plus className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-sm font-medium">Add Image</p>
+              <p className="text-sm font-medium">
+                {t("properties.form.addImage")}
+              </p>
               <p className="text-xs text-muted-foreground px-4 text-center mt-1">
-                Drag & drop or click to upload
+                {t("properties.form.dragDropImage")}
               </p>
             </div>
           </div>

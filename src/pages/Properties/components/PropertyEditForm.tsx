@@ -16,6 +16,7 @@ import {
   Globe,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -56,6 +57,7 @@ export function PropertyEditForm({
 }: PropertyEditFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
+  const { t } = useTranslation();
 
   // Initialize form
   const form = useForm<PropertyFormValues>({
@@ -95,17 +97,24 @@ export function PropertyEditForm({
     try {
       await saveProperty(userId, formData, property?.id, workspaceId);
 
-      toast.success("Property updated", {
-        description: "Your property has been updated successfully.",
-      });
+      toast.success(
+        property
+          ? t("properties.form.success.updated")
+          : t("properties.form.success.created"),
+        {
+          description: property
+            ? t("properties.form.success.updatedDescription")
+            : t("properties.form.success.createdDescription"),
+        }
+      );
 
       if (property?.id) {
         onSaved(property.id);
       }
     } catch (error) {
       console.error("Error updating property:", error);
-      toast.error("Error", {
-        description: "There was an error updating the property.",
+      toast.error(t("properties.form.error.saving"), {
+        description: t("properties.form.error.savingDescription"),
       });
     } finally {
       setIsLoading(false);
@@ -121,13 +130,15 @@ export function PropertyEditForm({
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-2xl font-semibold">
-              {property ? "Edit Property" : "Create Property"}
+              {property
+                ? t("properties.form.editProperty")
+                : t("properties.form.createProperty")}
             </h1>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onCancel}>
               <X className="h-4 w-4 mr-2" />
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
@@ -139,7 +150,9 @@ export function PropertyEditForm({
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              {property ? "Save Changes" : "Create Property"}
+              {property
+                ? t("properties.form.saveChanges")
+                : t("properties.form.createButton")}
             </Button>
           </div>
         </CardHeader>
@@ -160,28 +173,28 @@ export function PropertyEditForm({
                     className="flex items-center gap-2"
                   >
                     <Home className="h-4 w-4" />
-                    <span>Basic Info</span>
+                    <span>{t("properties.form.basicInfo")}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="details"
                     className="flex items-center gap-2"
                   >
                     <Layers className="h-4 w-4" />
-                    <span>Details</span>
+                    <span>{t("properties.form.details")}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="media"
                     className="flex items-center gap-2"
                   >
                     <ImageIcon className="h-4 w-4" />
-                    <span>Media</span>
+                    <span>{t("properties.form.media")}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="publishing"
                     className="flex items-center gap-2"
                   >
                     <Globe className="h-4 w-4" />
-                    <span>Publishing</span>
+                    <span>{t("properties.form.publishing")}</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -196,11 +209,11 @@ export function PropertyEditForm({
                         <FormItem>
                           <FormLabel className="flex items-center gap-2">
                             <Home className="h-4 w-4 text-muted-foreground" />
-                            Property Name
+                            {t("properties.form.propertyName")}
                           </FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Enter property name"
+                              placeholder={t("properties.form.propertyName")}
                               {...field}
                             />
                           </FormControl>
@@ -214,19 +227,33 @@ export function PropertyEditForm({
                       name="property_type"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Property Type</FormLabel>
+                          <FormLabel>
+                            {t("properties.form.propertyType")}
+                          </FormLabel>
                           <FormControl>
                             <select
                               className="w-full px-3 py-2 border rounded-md border-input bg-background"
                               {...field}
                               value={field.value || ""}
                             >
-                              <option value="house">House</option>
-                              <option value="apartment">Apartment</option>
-                              <option value="condo">Condo</option>
-                              <option value="townhouse">Townhouse</option>
-                              <option value="land">Land</option>
-                              <option value="commercial">Commercial</option>
+                              <option value="house">
+                                {t("properties.form.types.house")}
+                              </option>
+                              <option value="apartment">
+                                {t("properties.form.types.apartment")}
+                              </option>
+                              <option value="condo">
+                                {t("properties.form.types.condo")}
+                              </option>
+                              <option value="townhouse">
+                                {t("properties.form.types.townhouse")}
+                              </option>
+                              <option value="land">
+                                {t("properties.form.types.land")}
+                              </option>
+                              <option value="commercial">
+                                {t("properties.form.types.commercial")}
+                              </option>
                             </select>
                           </FormControl>
                           <FormMessage />
@@ -239,7 +266,7 @@ export function PropertyEditForm({
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium flex items-center gap-2">
                       <Map className="h-5 w-5 text-muted-foreground" />
-                      Location
+                      {t("properties.form.location")}
                     </h3>
                     <div className="grid grid-cols-1 gap-6">
                       <FormField
@@ -247,9 +274,14 @@ export function PropertyEditForm({
                         name="address"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Address</FormLabel>
+                            <FormLabel>
+                              {t("properties.form.address")}
+                            </FormLabel>
                             <FormControl>
-                              <Input placeholder="Street address" {...field} />
+                              <Input
+                                placeholder={t("properties.form.address")}
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -262,9 +294,12 @@ export function PropertyEditForm({
                           name="city"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>City</FormLabel>
+                              <FormLabel>{t("properties.form.city")}</FormLabel>
                               <FormControl>
-                                <Input placeholder="City" {...field} />
+                                <Input
+                                  placeholder={t("properties.form.city")}
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -276,9 +311,14 @@ export function PropertyEditForm({
                           name="state"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>State</FormLabel>
+                              <FormLabel>
+                                {t("properties.form.state")}
+                              </FormLabel>
                               <FormControl>
-                                <Input placeholder="State" {...field} />
+                                <Input
+                                  placeholder={t("properties.form.state")}
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -290,9 +330,14 @@ export function PropertyEditForm({
                           name="zip_code"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Zip Code</FormLabel>
+                              <FormLabel>
+                                {t("properties.form.zipCode")}
+                              </FormLabel>
                               <FormControl>
-                                <Input placeholder="Zip code" {...field} />
+                                <Input
+                                  placeholder={t("properties.form.zipCode")}
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -308,18 +353,19 @@ export function PropertyEditForm({
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Description</FormLabel>
+                        <FormLabel>
+                          {t("properties.form.description")}
+                        </FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Property description"
+                            placeholder={t("properties.form.description")}
                             className="min-h-[150px]"
                             {...field}
                             value={field.value || ""}
                           />
                         </FormControl>
                         <FormDescription>
-                          Describe the property in detail to attract potential
-                          tenants.
+                          {t("properties.form.descriptionHelp")}
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -333,7 +379,7 @@ export function PropertyEditForm({
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium flex items-center gap-2">
                       <Bed className="h-5 w-5 text-muted-foreground" />
-                      Property Details
+                      {t("properties.form.propertyDetails")}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
@@ -343,12 +389,12 @@ export function PropertyEditForm({
                           <FormItem>
                             <FormLabel className="flex items-center gap-2">
                               <DollarSign className="h-4 w-4 text-muted-foreground" />
-                              Price
+                              {t("properties.form.price")}
                             </FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
-                                placeholder="Price"
+                                placeholder={t("properties.form.price")}
                                 {...field}
                                 value={field.value?.toString() || ""}
                                 onChange={(e) =>
@@ -366,7 +412,9 @@ export function PropertyEditForm({
                         name="available_date"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Available Date</FormLabel>
+                            <FormLabel>
+                              {t("properties.form.availableDate")}
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 type="date"
@@ -375,7 +423,7 @@ export function PropertyEditForm({
                               />
                             </FormControl>
                             <FormDescription>
-                              When will this property be available?
+                              {t("properties.form.availableDateHelp")}
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -387,11 +435,13 @@ export function PropertyEditForm({
                         name="bedrooms"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Bedrooms</FormLabel>
+                            <FormLabel>
+                              {t("properties.form.bedrooms")}
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
-                                placeholder="Number of bedrooms"
+                                placeholder={t("properties.form.bedrooms")}
                                 {...field}
                                 value={field.value?.toString() || ""}
                                 onChange={(e) =>
@@ -409,11 +459,13 @@ export function PropertyEditForm({
                         name="bathrooms"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Bathrooms</FormLabel>
+                            <FormLabel>
+                              {t("properties.form.bathrooms")}
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
-                                placeholder="Number of bathrooms"
+                                placeholder={t("properties.form.bathrooms")}
                                 {...field}
                                 value={field.value?.toString() || ""}
                                 onChange={(e) =>
@@ -431,11 +483,13 @@ export function PropertyEditForm({
                         name="square_feet"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Square Feet</FormLabel>
+                            <FormLabel>
+                              {t("properties.form.squareFeet")}
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
-                                placeholder="Square feet"
+                                placeholder={t("properties.form.squareFeet")}
                                 {...field}
                                 value={field.value?.toString() || ""}
                                 onChange={(e) =>
@@ -457,7 +511,7 @@ export function PropertyEditForm({
                   <div className="space-y-4">
                     <h3 className="text-lg font-medium flex items-center gap-2">
                       <FileText className="h-5 w-5 text-muted-foreground" />
-                      Policies & Terms
+                      {t("properties.form.policiesTerms")}
                     </h3>
                     <div className="grid grid-cols-1 gap-6">
                       <FormField
@@ -465,18 +519,19 @@ export function PropertyEditForm({
                         name="pet_policy"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Pet Policy</FormLabel>
+                            <FormLabel>
+                              {t("properties.form.petPolicy")}
+                            </FormLabel>
                             <FormControl>
                               <Textarea
-                                placeholder="Pet policy details"
+                                placeholder={t("properties.form.petPolicy")}
                                 className="min-h-[80px]"
                                 {...field}
                                 value={field.value || ""}
                               />
                             </FormControl>
                             <FormDescription>
-                              Describe your pet policy (e.g., no pets, cats
-                              only, pet deposit required)
+                              {t("properties.form.petPolicyHelp")}
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -488,17 +543,19 @@ export function PropertyEditForm({
                         name="lease_terms"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Lease Terms</FormLabel>
+                            <FormLabel>
+                              {t("properties.form.leaseTerms")}
+                            </FormLabel>
                             <FormControl>
                               <Textarea
-                                placeholder="Lease terms details"
+                                placeholder={t("properties.form.leaseTerms")}
                                 className="min-h-[80px]"
                                 {...field}
                                 value={field.value || ""}
                               />
                             </FormControl>
                             <FormDescription>
-                              Describe lease length options and other terms
+                              {t("properties.form.leaseTermsHelp")}
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -522,9 +579,11 @@ export function PropertyEditForm({
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Published</FormLabel>
+                          <FormLabel className="text-base">
+                            {t("properties.form.published")}
+                          </FormLabel>
                           <FormDescription>
-                            Make this property visible to the public
+                            {t("properties.form.publishedHelp")}
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -539,9 +598,11 @@ export function PropertyEditForm({
 
                   {/* Syndication */}
                   <div className="border rounded-lg p-4">
-                    <h3 className="text-lg font-medium mb-3">Syndication</h3>
+                    <h3 className="text-lg font-medium mb-3">
+                      {t("properties.form.syndication")}
+                    </h3>
                     <FormDescription className="mb-4">
-                      Select where you want to list this property
+                      {t("properties.form.syndicationHelp")}
                     </FormDescription>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
@@ -556,7 +617,7 @@ export function PropertyEditForm({
                               />
                             </FormControl>
                             <FormLabel className="!m-0 font-medium">
-                              Zillow
+                              {t("properties.form.syndication.zillow")}
                             </FormLabel>
                           </FormItem>
                         )}
@@ -573,7 +634,7 @@ export function PropertyEditForm({
                               />
                             </FormControl>
                             <FormLabel className="!m-0 font-medium">
-                              Trulia
+                              {t("properties.form.syndication.trulia")}
                             </FormLabel>
                           </FormItem>
                         )}
@@ -590,7 +651,7 @@ export function PropertyEditForm({
                               />
                             </FormControl>
                             <FormLabel className="!m-0 font-medium">
-                              Realtor.com
+                              {t("properties.form.syndication.realtor")}
                             </FormLabel>
                           </FormItem>
                         )}
@@ -607,7 +668,7 @@ export function PropertyEditForm({
                               />
                             </FormControl>
                             <FormLabel className="!m-0 font-medium">
-                              HotPads
+                              {t("properties.form.syndication.hotpads")}
                             </FormLabel>
                           </FormItem>
                         )}

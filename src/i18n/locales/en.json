@@ -17,7 +17,10 @@
         "profile": "Profile",
         "search": "Search",
         "filter": "Filter",
-        "sort": "Sort",
+        "sort": {
+            "asc": "Ascending",
+            "desc": "Descending"
+        },
         "view": "View",
         "edit": "Edit",
         "delete": "Delete",
@@ -35,7 +38,13 @@
         "apply": "Apply Filters",
         "reset": "Reset",
         "selected": "selected",
-        "toggleColumns": "Toggle columns"
+        "toggleColumns": "Toggle columns",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "total": "total",
+        "hide": "Hide",
+        "selectAll": "Select all",
+        "selectRow": "Select row"
     },
     "dashboard": {
         "tenant": {
@@ -651,7 +660,17 @@
         "viewDetails": "View Details",
         "contact": "Contact",
         "applyNow": "Apply Now",
-        "bookViewing": "Book Viewing"
+        "bookViewing": "Book Viewing",
+        "success": {
+            "created": "Property Created",
+            "createdDescription": "Your property has been successfully created.",
+            "updated": "Property Updated",
+            "updatedDescription": "Your property has been successfully updated.",
+            "published": "Property Published",
+            "publishedDescription": "Your property is now visible to potential tenants.",
+            "unpublished": "Property Unpublished",
+            "unpublishedDescription": "Your property is no longer visible to potential tenants."
+        }
     },
     "payment": {
         "amount": "Amount",
@@ -884,11 +903,24 @@
         }
     },
     "properties": {
+        "title": "Properties",
+        "subtitle": "Manage your real estate properties",
+        "columns": {
+            "image": "Image",
+            "property": "Property",
+            "status": "Status",
+            "type": "Type"
+        },
+        "statuses": {
+            "published": "Published",
+            "draft": "Draft",
+            "unknown": "Unknown"
+        },
         "table": {
             "filterPlaceholder": "Filter properties...",
             "statusFilter": "Status",
-            "typeFilter": "Type",
-            "resetFilters": "Reset",
+            "typeFilter": "Property Type",
+            "resetFilters": "Reset filters",
             "addProperty": "Add Property",
             "add": "Add",
             "loading": "Loading properties...",
@@ -929,6 +961,41 @@
                 "of": "of",
                 "page": "Page",
                 "showingResultsText": "Showing {{start}} to {{end}} of {{total}}"
+            }
+        },
+        "form": {
+            "basicInfo": "Basic Info",
+            "details": "Details",
+            "media": "Media",
+            "publishing": "Publishing",
+            "editProperty": "Edit Property",
+            "createProperty": "Create Property",
+            "saveChanges": "Save Changes",
+            "createButton": "Create Property",
+            "propertyName": "Property Name",
+            "propertyType": "Property Type",
+            "types": {
+                "house": "House",
+                "apartment": "Apartment",
+                "condo": "Condo",
+                "townhouse": "Townhouse",
+                "land": "Land",
+                "commercial": "Commercial",
+                "unknown": "Unknown"
+            },
+            "success": {
+                "created": "Property Created",
+                "createdDescription": "Your property has been successfully created.",
+                "updated": "Property Updated",
+                "updatedDescription": "Your property has been successfully updated.",
+                "published": "Property Published",
+                "publishedDescription": "Your property is now visible to potential tenants.",
+                "unpublished": "Property Unpublished",
+                "unpublishedDescription": "Your property is no longer visible to potential tenants."
+            },
+            "error": {
+                "saving": "Error Saving Property",
+                "savingDescription": "There was an error saving your property. Please try again."
             }
         }
     },

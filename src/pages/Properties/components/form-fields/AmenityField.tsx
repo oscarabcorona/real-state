@@ -12,6 +12,7 @@ import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { PropertyFormValues } from "../../types";
+import { useTranslation } from "react-i18next";
 
 interface AmenityFieldProps {
   form: UseFormReturn<PropertyFormValues>;
@@ -20,6 +21,7 @@ interface AmenityFieldProps {
 
 export function AmenityField({ form, icon }: AmenityFieldProps) {
   const [amenityInput, setAmenityInput] = useState("");
+  const { t } = useTranslation();
 
   // Add amenity to the list
   const handleAddAmenity = () => {
@@ -46,11 +48,11 @@ export function AmenityField({ form, icon }: AmenityFieldProps) {
         <FormItem>
           <FormLabel className="flex items-center">
             {icon}
-            Amenities
+            {t("properties.form.amenities")}
           </FormLabel>
           <div className="flex gap-2 mb-2">
             <Input
-              placeholder="Add amenity (e.g. Garage, Pool, etc.)"
+              placeholder={t("properties.form.amenities")}
               value={amenityInput}
               onChange={(e) => setAmenityInput(e.target.value)}
               className="flex-1"
@@ -68,13 +70,13 @@ export function AmenityField({ form, icon }: AmenityFieldProps) {
               className="gap-1"
             >
               <Plus className="h-4 w-4" />
-              Add
+              {t("common.add")}
             </Button>
           </div>
           <div className="flex flex-wrap gap-2 mt-2 min-h-[50px] border rounded-md p-2 bg-muted/30">
             {(field.value || []).length === 0 ? (
               <p className="text-sm text-muted-foreground p-1">
-                No amenities added yet
+                {t("properties.form.noAmenitiesYet")}
               </p>
             ) : (
               (field.value || []).map((amenity, index) => (
@@ -98,7 +100,7 @@ export function AmenityField({ form, icon }: AmenityFieldProps) {
             )}
           </div>
           <FormDescription>
-            Popular amenities: Pool, Garage, Laundry, Gym, Air Conditioning
+            {t("properties.form.popularAmenities")}
           </FormDescription>
           <FormMessage />
         </FormItem>

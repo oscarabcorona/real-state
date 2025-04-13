@@ -1,19 +1,22 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "./components/table/data-table";
-import { columns } from "./components/table/columns";
+import { usePropertyColumns } from "./components/table/columns";
 import { PROPERTIES_REFRESH_EVENT } from "./components/table/data-table-row-actions";
 import { useProperties } from "./hooks/useProperties";
 import { Property } from "./types";
 import { PropertyEditForm } from "./components/PropertyEditForm";
 import { useAuthStore } from "@/store/authStore";
+import { useTranslation } from "react-i18next";
 
 /**
  * Properties page component for managing real estate properties
  * Displays a data table with properties and allows adding/editing properties
  */
 export function Properties() {
+  const { t } = useTranslation();
+
   // Property management state using our custom hook
   const { properties, isLoading, error, loadProperties } = useProperties({
     autoLoad: true,
@@ -30,7 +33,7 @@ export function Properties() {
   );
 
   // Memoize columns to prevent unnecessary re-renders
-  const tableColumns = useMemo(() => columns, []);
+  const tableColumns = usePropertyColumns();
 
   // Handle canceling edit/create mode
   const handleCancel = useCallback(() => {
@@ -93,14 +96,14 @@ export function Properties() {
           <Building2 className="h-6 w-6 text-primary" />
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              Properties
+              {t("properties.title", "Properties")}
             </h1>
             <p className="text-sm text-muted-foreground">
-              Manage your real estate properties
+              {t("properties.subtitle", "Manage your real estate properties")}
             </p>
           </div>
           <Badge variant="outline" className="ml-auto">
-            {properties.length} total
+            {properties.length} {t("common.total", "total")}
           </Badge>
         </div>
 

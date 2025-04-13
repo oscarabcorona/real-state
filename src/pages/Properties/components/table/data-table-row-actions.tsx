@@ -29,6 +29,7 @@ import {
 import { toast } from "sonner";
 import { Property } from "../../types";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   deleteProperty,
   togglePropertyPublishStatus,
@@ -59,6 +60,7 @@ export function DataTableRowActions<TData>({
   const property = row.original as Property;
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const { t } = useTranslation();
 
   // Safely access the onEditProperty function with optional chaining
   const rowWithTable = row as RowWithTable<TData>;
@@ -75,12 +77,12 @@ export function DataTableRowActions<TData>({
       await togglePropertyPublishStatus(property);
 
       if (property.status === "published") {
-        toast.success("Property unpublished", {
-          description: "The property has been unpublished successfully.",
+        toast.success(t("properties.form.success.unpublished"), {
+          description: t("properties.form.success.unpublishedDescription"),
         });
       } else {
-        toast.success("Property published", {
-          description: "The property has been published successfully.",
+        toast.success(t("properties.form.success.published"), {
+          description: t("properties.form.success.publishedDescription"),
         });
       }
 
@@ -88,8 +90,8 @@ export function DataTableRowActions<TData>({
       triggerRefresh();
     } catch (error: unknown) {
       console.error("Error toggling property status:", error);
-      toast.error("Error", {
-        description: "There was an error updating the property status.",
+      toast.error(t("properties.form.error.saving"), {
+        description: t("properties.form.error.savingDescription"),
       });
     }
   };
@@ -108,8 +110,8 @@ export function DataTableRowActions<TData>({
       setDeleteDialogOpen(false);
     } catch (error: unknown) {
       console.error("Error deleting property:", error);
-      toast.error("Error", {
-        description: "There was an error deleting the property.",
+      toast.error(t("properties.form.error.saving"), {
+        description: t("properties.form.error.savingDescription"),
       });
     }
   };
@@ -131,7 +133,7 @@ export function DataTableRowActions<TData>({
             onClick={() => navigate(`/dashboard/properties/${property.id}`)}
           >
             <Eye className="mr-2 h-4 w-4" />
-            View
+            {t("common.view")}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
@@ -143,19 +145,19 @@ export function DataTableRowActions<TData>({
             }}
           >
             <Pencil className="mr-2 h-4 w-4" />
-            Edit
+            {t("common.edit")}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleToggleStatus}>
             {property.status === "published" ? (
               <>
                 <FileX className="mr-2 h-4 w-4" />
-                Unpublish
+                {t("common.unpublish")}
               </>
             ) : (
               <>
                 <Globe className="mr-2 h-4 w-4" />
-                Publish
+                {t("common.publish")}
               </>
             )}
           </DropdownMenuItem>
@@ -165,7 +167,7 @@ export function DataTableRowActions<TData>({
             className="text-red-600"
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            {t("common.delete")}
             <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -175,20 +177,20 @@ export function DataTableRowActions<TData>({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Are you sure you want to delete this property?
+              {t("common.delete")} {property.name}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete "
-              {property.name}" and remove all associated data from our servers.
+              Are you sure you want to delete "{property.name}"? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteProperty}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
