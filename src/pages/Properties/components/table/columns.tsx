@@ -278,23 +278,18 @@ export const columns: ColumnDef<Property>[] = [
       <DataTableColumnHeader column={column} title="Type" />
     ),
     cell: ({ row }) => {
-      const type = propertyTypes.find(
+      const propertyType = propertyTypes.find(
         (type) => type.value === row.original.property_type
       );
 
-      if (!type) {
-        return null;
-      }
-
       return (
         <div className="flex items-center gap-2">
-          {type.icon && <type.icon className="h-4 w-4 text-muted-foreground" />}
-          <div>{type.label}</div>
+          {propertyType?.icon && (
+            <propertyType.icon className="h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{propertyType?.label || row.original.property_type}</span>
         </div>
       );
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
     },
     enableSorting: true,
     enableHiding: true,
@@ -305,7 +300,9 @@ export const columns: ColumnDef<Property>[] = [
       <DataTableColumnHeader column={column} title="Beds" />
     ),
     cell: ({ row }) => {
-      return <div className="text-center">{row.original.bedrooms ?? 0}</div>;
+      // Use the bedrooms property from the property data
+      const bedrooms = row.original.bedrooms || 0;
+      return <div className="font-medium text-center">{bedrooms}</div>;
     },
     enableSorting: true,
     enableHiding: true,
@@ -313,5 +310,7 @@ export const columns: ColumnDef<Property>[] = [
   {
     id: "actions",
     cell: ({ row }) => <RowActions row={row} />,
+    enableSorting: false,
+    enableHiding: false,
   },
 ];

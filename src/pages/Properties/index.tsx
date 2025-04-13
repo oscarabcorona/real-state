@@ -65,7 +65,7 @@ export function Properties() {
 
   return (
     <div className="flex-1">
-      <div className="container py-6">
+      <div className="py-6">
         <div className="flex items-center gap-4 mb-6">
           <Building2 className="h-6 w-6 text-primary" />
           <div>
