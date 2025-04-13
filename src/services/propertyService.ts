@@ -2,6 +2,12 @@ import { Property, PropertyFormValues } from "@/pages/Properties/types";
 import { supabase } from "../lib/supabase";
 import { handleServiceError } from "./utilityService";
 import { Tenant } from "@/pages/Properties/types";
+import { PostgrestError } from "@supabase/supabase-js";
+import { Database } from "@/types/database.types";
+
+// Define type for database insert/update operations
+type PropertyInsert = Database["public"]["Tables"]["properties"]["Insert"];
+type PropertyUpdate = Database["public"]["Tables"]["properties"]["Update"];
 
 export async function fetchTenants(): Promise<Tenant[]> {
   try {
@@ -56,13 +62,13 @@ export async function saveProperty(
     };
     
     if (propertyId) { 
-      // Update existing property
+      // Update existing property using the proper database type
       const { error } = await supabase
         .from("properties")
         .update({
           ...dataToSave,
           updated_at: new Date().toISOString(),
-        })
+        } as PropertyUpdate) // Type assertion using the database Update type
         .eq("id", propertyId);
 
       if (error) throw error;
@@ -116,7 +122,7 @@ export async function saveProperty(
         workspaceId = workspaceData;
       }
       
-      // Insert the property with processed data
+      // Insert the property with processed data using the proper database type
       const { data: newProperty, error } = await supabase
         .from("properties")
         .insert({
@@ -124,7 +130,7 @@ export async function saveProperty(
           user_id: userId,
           workspace_id: workspaceId,
           compliance_status: "pending",
-        })
+        } as PropertyInsert) // Type assertion using the database Insert type
         .select();
 
       if (error) throw error;
@@ -151,7 +157,8 @@ export async function saveProperty(
       return null;
     }
   } catch (error) {
-    handleServiceError(error, "saveProperty");
+    const err = error as PostgrestError | Error;
+    handleServiceError(err, "saveProperty");
     return null;
   }
 }
@@ -204,7 +211,12 @@ export async function fetchPropertyById(propertyId: string): Promise<Property | 
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Add the status field to match Property interface
+    return data ? {
+      ...data,
+      status: data.published ? "published" : "draft"
+    } : null;
   } catch (error) {
     console.error("Error fetching property details:", error);
     return null;
