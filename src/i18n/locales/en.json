@@ -931,5 +931,92 @@
                 "showingResultsText": "Showing {{start}} to {{end}} of {{total}}"
             }
         }
+    },
+    "payments": {
+        "transactions": {
+            "title": "Transactions"
+        },
+        "details": {
+            "title": "Payment Details",
+            "summary": "Payment Summary",
+            "transactionId": "Transaction ID",
+            "backToPayments": "Back to Payments",
+            "notFound": "Payment not found",
+            "downloadReceipt": "Download Receipt",
+            "invoiceNumber": "Invoice Number",
+            "noDescription": "No description provided",
+            "paymentDetails": "Payment Details",
+            "creditCard": {
+                "cardType": "Card Type",
+                "lastFour": "Card Number",
+                "expiryDate": "Expiry Date",
+                "cardholderName": "Cardholder Name"
+            },
+            "ach": {
+                "bankName": "Bank Name",
+                "accountLastFour": "Account Number",
+                "routingNumber": "Routing Number",
+                "transferId": "Transfer ID",
+                "accountType": "Account Type"
+            },
+            "cash": {
+                "receivedBy": "Received By",
+                "location": "Payment Location",
+                "receiptNumber": "Receipt Number",
+                "notes": "Notes"
+            },
+            "paypal": {
+                "email": "PayPal Email",
+                "transactionId": "Transaction ID",
+                "paymentSource": "Payment Source"
+            },
+            "bankTransfer": {
+                "bankName": "Bank Name",
+                "referenceNumber": "Reference Number",
+                "senderName": "Sender Name"
+            },
+            "check": {
+                "checkNumber": "Check Number",
+                "bankName": "Bank Name",
+                "depositDate": "Deposit Date",
+                "returnReason": "Return Reason"
+            }
+        },
+        "table": {
+            "filterPlaceholder": "Filter transactions...",
+            "statusFilter": "Status",
+            "methodFilter": "Payment Method",
+            "resetFilters": "Reset",
+            "export": "Export",
+            "loading": "Loading transactions...",
+            "noResults": "No results found",
+            "noTransactionsFound": "No transactions found",
+            "tryAnotherFilter": "Try another filter or check back later",
+            "columns": {
+                "property": "Property",
+                "amount": "Amount",
+                "status": "Status",
+                "paymentMethod": "Payment Method",
+                "date": "Date",
+                "description": "Description",
+                "actions": "Actions"
+            },
+            "statusValues": {
+                "completed": "Completed",
+                "pending": "Pending",
+                "failed": "Failed"
+            },
+            "paymentMethods": {
+                "credit_card": "Credit Card",
+                "ach": "ACH",
+                "cash": "Cash"
+            },
+            "pagination": {
+                "rowsPerPage": "Rows per page",
+                "of": "of",
+                "page": "Page",
+                "showingResultsText": "Showing {{start}} to {{end}} of {{total}}"
+            }
+        }
     }
 }

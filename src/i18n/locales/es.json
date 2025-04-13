@@ -902,5 +902,92 @@
                 "showingResultsText": "Mostrando {{start}} a {{end}} de {{total}}"
             }
         }
+    },
+    "payments": {
+        "transactions": {
+            "title": "Transacciones"
+        },
+        "details": {
+            "title": "Detalles del Pago",
+            "summary": "Resumen del Pago",
+            "transactionId": "ID de Transacción",
+            "backToPayments": "Volver a Pagos",
+            "notFound": "Pago no encontrado",
+            "downloadReceipt": "Descargar Recibo",
+            "invoiceNumber": "Número de Factura",
+            "noDescription": "Sin descripción",
+            "paymentDetails": "Detalles del Método de Pago",
+            "creditCard": {
+                "cardType": "Tipo de Tarjeta",
+                "lastFour": "Número de Tarjeta",
+                "expiryDate": "Fecha de Vencimiento",
+                "cardholderName": "Nombre del Titular"
+            },
+            "ach": {
+                "bankName": "Nombre del Banco",
+                "accountLastFour": "Número de Cuenta",
+                "routingNumber": "Número de Ruta",
+                "transferId": "ID de Transferencia",
+                "accountType": "Tipo de Cuenta"
+            },
+            "cash": {
+                "receivedBy": "Recibido Por",
+                "location": "Ubicación de Pago",
+                "receiptNumber": "Número de Recibo",
+                "notes": "Notas"
+            },
+            "paypal": {
+                "email": "Correo Electrónico de PayPal",
+                "transactionId": "ID de Transacción",
+                "paymentSource": "Fuente de Pago"
+            },
+            "bankTransfer": {
+                "bankName": "Nombre del Banco",
+                "referenceNumber": "Número de Referencia",
+                "senderName": "Nombre del Remitente"
+            },
+            "check": {
+                "checkNumber": "Número de Cheque",
+                "bankName": "Nombre del Banco",
+                "depositDate": "Fecha de Depósito",
+                "returnReason": "Motivo de Devolución"
+            }
+        },
+        "table": {
+            "filterPlaceholder": "Filtrar transacciones...",
+            "statusFilter": "Estado",
+            "methodFilter": "Método de Pago",
+            "resetFilters": "Restablecer",
+            "export": "Exportar",
+            "loading": "Cargando transacciones...",
+            "noResults": "No se encontraron resultados",
+            "noTransactionsFound": "No se encontraron transacciones",
+            "tryAnotherFilter": "Intenta con otro filtro o vuelve más tarde",
+            "columns": {
+                "property": "Propiedad",
+                "amount": "Monto",
+                "status": "Estado",
+                "paymentMethod": "Método de Pago",
+                "date": "Fecha",
+                "description": "Descripción",
+                "actions": "Acciones"
+            },
+            "statusValues": {
+                "completed": "Completado",
+                "pending": "Pendiente",
+                "failed": "Fallido"
+            },
+            "paymentMethods": {
+                "credit_card": "Tarjeta de Crédito",
+                "ach": "Transferencia ACH",
+                "cash": "Efectivo"
+            },
+            "pagination": {
+                "rowsPerPage": "Filas por página",
+                "of": "de",
+                "page": "Página",
+                "showingResultsText": "Mostrando {{start}} a {{end}} de {{total}}"
+            }
+        }
     }
 }

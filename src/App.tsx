@@ -15,6 +15,7 @@ import { Marketplace } from "./pages/Marketplace";
 import { Notifications } from "./pages/Notifications";
 import { Payments } from "./pages/Payments";
 import { PaymentTenant } from "./pages/PaymentTenant";
+import { PaymentDetails } from "./pages/Payments/PaymentDetails";
 import { Properties } from "./pages/Properties";
 import { PublicProperties } from "./pages/PublicProperties";
 import { Reports } from "./pages/Reports";
@@ -92,6 +93,7 @@ function App() {
                 user?.role === "tenant" ? <PaymentTenant /> : <Payments />
               }
             />
+            <Route path="payments/:id" element={<PaymentDetails />} />
             <Route
               path="documents"
               element={user?.role === "tenant" ? <Documents /> : null}
