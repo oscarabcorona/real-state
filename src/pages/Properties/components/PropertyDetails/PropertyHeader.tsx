@@ -1,12 +1,4 @@
-import {
-  ArrowLeft,
-  Building2,
-  Edit,
-  Trash2,
-  Calendar,
-  Globe,
-  EyeOff,
-} from "lucide-react";
+import { ArrowLeft, Building2, Edit, Trash2, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Property } from "../../types";
 import { Button } from "@/components/ui/button";
@@ -31,7 +23,6 @@ interface PropertyHeaderProps {
   onDelete: () => Promise<void>;
   onEditClick: () => void;
   onScheduleClick: () => void;
-  onPublishToggle?: (published: boolean) => Promise<void>;
 }
 
 export function PropertyHeader({
@@ -40,7 +31,6 @@ export function PropertyHeader({
   onDelete,
   onEditClick,
   onScheduleClick,
-  onPublishToggle,
 }: PropertyHeaderProps) {
   const navigate = useNavigate();
   const statusDetails = getPropertyStatusDetails(property);
@@ -75,25 +65,6 @@ export function PropertyHeader({
       <div className="flex gap-2">
         {isLessor ? (
           <>
-            {onPublishToggle && (
-              <Button
-                variant="outline"
-                onClick={() => onPublishToggle(!property.published)}
-              >
-                {property.published ? (
-                  <>
-                    <EyeOff className="h-4 w-4 mr-2" />
-                    {t("common.unpublish")}
-                  </>
-                ) : (
-                  <>
-                    <Globe className="h-4 w-4 mr-2" />
-                    {t("common.publish")}
-                  </>
-                )}
-              </Button>
-            )}
-
             <Button variant="outline" onClick={onEditClick}>
               <Edit className="h-4 w-4 mr-2" />
               {t("common.edit")}

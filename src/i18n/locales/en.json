@@ -917,6 +917,35 @@
             "draft": "Draft",
             "unknown": "Unknown"
         },
+        "invite": {
+            "invite": "Invite",
+            "title": "Invite Someone",
+            "description": "Send an invitation to access this property to tenants, lawyers, contractors, or agents.",
+            "email": "Email",
+            "role": "Role",
+            "selectRole": "Select role",
+            "message": "Message (optional)",
+            "messagePlaceholder": "Include a personal message...",
+            "send": "Send Invitation",
+            "success": "Invitation Sent",
+            "successDescription": "An invitation has been sent to {{email}}",
+            "emailRequired": "Email address is required",
+            "errorTitle": "Invitation Failed",
+            "errorAlreadyAccess": "This user already has access to this property.",
+            "errorInvalidEmail": "Please provide a valid email address.",
+            "errorCreateInvite": "Failed to create the invitation. Please try again.",
+            "errorPropertyDetails": "Could not retrieve property details. Please try again.",
+            "errorUserDetails": "Could not retrieve your user details. Please try again.",
+            "errorGeneric": "There was a problem sending the invitation. Please try again later.",
+            "warnTitle": "Partial Success",
+            "warnEmailDelivery": "Invite created but there was a problem sending the email.",
+            "roles": {
+                "tenant": "Tenant",
+                "lawyer": "Legal Advisor",
+                "contractor": "Contractor",
+                "agent": "Real Estate Agent"
+            }
+        },
         "table": {
             "filterPlaceholder": "Filter properties...",
             "statusFilter": "Status",

@@ -26,6 +26,7 @@ import "./i18n/i18n"; // Import i18n configuration
 import { useLocale } from "./hooks/useLocale";
 import { PropertyDetails } from "./pages/Properties/PropertyDetails";
 import { Loader2 } from "lucide-react";
+import InviteAccept from "./pages/Invites/InviteAccept";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/invites/:token" element={<InviteAccept />} />
           <Route
             path="/dashboard"
             element={

@@ -866,7 +866,7 @@
     },
     "properties": {
         "title": "Propiedades",
-        "subtitle": "Administra tus propiedades inmobiliarias",
+        "subtitle": "Gestiona tus propiedades inmobiliarias",
         "columns": {
             "image": "Imagen",
             "property": "Propiedad",
@@ -874,9 +874,38 @@
             "type": "Tipo"
         },
         "statuses": {
-            "published": "Publicada",
+            "published": "Publicado",
             "draft": "Borrador",
             "unknown": "Desconocido"
+        },
+        "invite": {
+            "invite": "Invitar",
+            "title": "Invitar a Alguien",
+            "description": "Envía una invitación para acceder a esta propiedad a inquilinos, abogados, contratistas o agentes inmobiliarios.",
+            "email": "Correo electrónico",
+            "role": "Rol",
+            "selectRole": "Seleccionar rol",
+            "message": "Mensaje (opcional)",
+            "messagePlaceholder": "Incluir un mensaje personal...",
+            "send": "Enviar Invitación",
+            "success": "Invitación Enviada",
+            "successDescription": "Se ha enviado una invitación a {{email}}",
+            "emailRequired": "El correo electrónico es obligatorio",
+            "errorTitle": "Error en la Invitación",
+            "errorAlreadyAccess": "Este usuario ya tiene acceso a esta propiedad.",
+            "errorInvalidEmail": "Por favor, proporciona una dirección de correo electrónico válida.",
+            "errorCreateInvite": "No se pudo crear la invitación. Por favor, inténtalo de nuevo.",
+            "errorPropertyDetails": "No se pudieron recuperar los detalles de la propiedad. Por favor, inténtalo de nuevo.",
+            "errorUserDetails": "No se pudieron recuperar tus datos de usuario. Por favor, inténtalo de nuevo.",
+            "errorGeneric": "Hubo un problema al enviar la invitación. Por favor, inténtalo más tarde.",
+            "warnTitle": "Éxito Parcial",
+            "warnEmailDelivery": "Invitación creada pero hubo un problema al enviar el correo electrónico.",
+            "roles": {
+                "tenant": "Inquilino",
+                "lawyer": "Asesor Legal",
+                "contractor": "Contratista",
+                "agent": "Agente Inmobiliario"
+            }
         },
         "table": {
             "filterPlaceholder": "Filtrar propiedades...",

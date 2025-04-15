@@ -633,6 +633,56 @@ export type Database = {
           },
         ]
       }
+      property_invites: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string
+          expires_at: string
+          id: string
+          invite_token: string
+          invite_type: Database["public"]["Enums"]["invite_type"]
+          message: string | null
+          property_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          invite_token?: string
+          invite_type: Database["public"]["Enums"]["invite_type"]
+          message?: string | null
+          property_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invite_token?: string
+          invite_type?: Database["public"]["Enums"]["invite_type"]
+          message?: string | null
+          property_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_invites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       property_leases: {
         Row: {
           created_at: string | null
@@ -1054,6 +1104,7 @@ export type Database = {
       }
     }
     Enums: {
+      invite_type: "tenant" | "lawyer" | "contractor" | "agent"
       measurement_system: "imperial" | "metric"
       notification_type:
         | "appointment_scheduled"

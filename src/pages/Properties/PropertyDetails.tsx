@@ -1,22 +1,24 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { Property } from "./types";
 import { useAuthStore } from "@/store/authStore";
 import {
-  PropertyHeader,
-  PropertyGallery,
-  PropertyFeatures,
-  PropertyInformation,
   AppointmentModal,
+  PropertyFeatures,
+  PropertyGallery,
+  PropertyHeader,
+  PropertyInformation,
 } from "./components/PropertyDetails";
-import { useProperties } from "./hooks/useProperties";
 import { PropertyEditForm } from "./components/PropertyEditForm";
+import { InviteDialog, PropertyInvites } from "./components/invites";
+import { useProperties } from "./hooks/useProperties";
+import { Property } from "./types";
 
 /**
  * PropertyDetails component for displaying detailed information about a specific property
@@ -29,6 +31,7 @@ export function PropertyDetails() {
   const [isLoading, setIsLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [showInviteDialog, setShowInviteDialog] = useState(false);
   const navigate = useNavigate();
   const { user, workspace } = useAuthStore();
   const { t } = useTranslation();
@@ -89,19 +92,6 @@ export function PropertyDetails() {
     }
   };
 
-  // Handle property publish/unpublish
-  const handlePublishToggle = async (published: boolean) => {
-    if (!property) return;
-
-    // Update property and reload
-    const updatedProperty = { ...property, published };
-    setProperty(updatedProperty);
-
-    if (id) {
-      loadPropertyData(id);
-    }
-  };
-
   // Handle saving success
   const handleSaveSuccess = () => {
     toast.success(t("properties.form.success.updated"), {
@@ -135,6 +125,11 @@ export function PropertyDetails() {
     );
   }
 
+  // Create invite handler
+  const handleNewInvite = () => {
+    setShowInviteDialog(true);
+  };
+
   return (
     <>
       <div className="w-full h-full flex flex-col">
@@ -147,32 +142,57 @@ export function PropertyDetails() {
               onDelete={handleDelete}
               onEditClick={() => setEditMode(true)}
               onScheduleClick={() => setShowAppointmentModal(true)}
-              onPublishToggle={isLessor ? handlePublishToggle : undefined}
             />
             <Separator className="my-0" />
           </>
         )}
 
         {!editMode ? (
-          <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Left column - property images and features */}
-            <div className="lg:col-span-2 space-y-4">
-              <PropertyGallery
-                images={property.images}
-                propertyName={property.name}
-              />
-
-              <PropertyFeatures
-                description={property.description}
-                amenities={property.amenities}
-              />
+          <Tabs defaultValue="details" className="w-full">
+            <div className="flex items-center justify-between px-4 pt-2">
+              <TabsList>
+                <TabsTrigger value="details">
+                  {t("properties.tabs.details", "Details")}
+                </TabsTrigger>
+                {isLessor && (
+                  <TabsTrigger value="invites">
+                    {t("properties.tabs.invites", "Invites")}
+                  </TabsTrigger>
+                )}
+              </TabsList>
             </div>
 
-            {/* Right column - property information */}
-            <div>
-              <PropertyInformation property={property} />
-            </div>
-          </div>
+            <TabsContent value="details" className="p-0 m-0 border-0">
+              <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Left column - property images and features */}
+                <div className="lg:col-span-2 space-y-4">
+                  <PropertyGallery
+                    images={property.images}
+                    propertyName={property.name}
+                  />
+
+                  <PropertyFeatures
+                    description={property.description}
+                    amenities={property.amenities}
+                  />
+                </div>
+
+                {/* Right column - property information */}
+                <div>
+                  <PropertyInformation property={property} />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="invites" className="p-0 m-0 border-0">
+              <div className="p-4">
+                <PropertyInvites
+                  propertyId={property.id}
+                  onNewInvite={isLessor ? handleNewInvite : undefined}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
         ) : (
           <PropertyEditForm
             property={property}
@@ -191,6 +211,25 @@ export function PropertyDetails() {
         property={property}
         user={user}
       />
+
+      {/* Invite Dialog */}
+      {property && (
+        <InviteDialog
+          isOpen={showInviteDialog}
+          onClose={() => setShowInviteDialog(false)}
+          propertyId={property.id}
+          onSuccess={() => {
+            // If we're on the invites tab, refresh the invites list
+            const invitesTab = document.querySelector(
+              '[data-state="active"][data-value="invites"]'
+            );
+            if (invitesTab) {
+              // Trigger a refresh of the invites list
+              window.dispatchEvent(new CustomEvent("refresh-invites"));
+            }
+          }}
+        />
+      )}
     </>
   );
 }
