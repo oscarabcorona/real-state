@@ -19,6 +19,9 @@ export interface PropertyInvite {
   expires_at: string;
   created_at: string;
   updated_at: string;
+  property_name?: string;
+  inviter_email?: string;
+  inviter_name?: string;
 }
 
 interface PropertyInviteParams {
@@ -180,7 +183,7 @@ export const updateInviteStatus = async (inviteId: string, status: string) => {
 export const getPropertyInvites = async (propertyId: string): Promise<PropertyInvite[]> => {
   try {
     const { data, error } = await supabase
-      .from('property_invites')
+      .from('property_invites_with_details')
       .select('*')
       .eq('property_id', propertyId)
       .order('created_at', { ascending: false });
