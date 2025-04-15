@@ -11,6 +11,7 @@ import { Documents } from "./pages/Documents";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Auth/Login";
 import { Register } from "./pages/Auth/Register";
+import SetPassword from "./pages/Auth/SetPassword";
 import { Marketplace } from "./pages/Marketplace";
 import { Notifications } from "./pages/Notifications";
 import { Payments } from "./pages/Payments";
@@ -26,7 +27,6 @@ import "./i18n/i18n"; // Import i18n configuration
 import { useLocale } from "./hooks/useLocale";
 import { PropertyDetails } from "./pages/Properties/PropertyDetails";
 import { Loader2 } from "lucide-react";
-import InviteAccept from "./pages/Invites/InviteAccept";
 
 const queryClient = new QueryClient();
 
@@ -67,7 +67,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/invites/:token" element={<InviteAccept />} />
+          <Route path="/auth/set-password" element={<SetPassword />} />
           <Route
             path="/dashboard"
             element={
